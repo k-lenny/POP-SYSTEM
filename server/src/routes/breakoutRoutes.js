@@ -3,8 +3,6 @@ const express = require('express')
 const router  = express.Router()
 
 const breakoutEngine = require('../signals/dataProcessor/breakouts')
-const swingEngine    = require('../signals/dataProcessor/swings')
-const signalEngine   = require('../signals/signalEngine')
 
 const {
   resolveSymbol,
@@ -16,9 +14,16 @@ const {
   getValidGranularities,
 } = require('../utils/resolvers')
 
+// Helper: ensure data is loaded from disk for this symbol/granularity
+async function ensureBreakoutsLoaded(symbol, granularity) {
+  const existing = breakoutEngine.get(symbol, granularity)
+  if (existing.length === 0) {
+    await breakoutEngine._loadFromDisk(symbol, granularity)
+  }
+}
 
-// ── GET /breakouts/:symbol/:granularity ──
-router.get('/:symbol/:granularity', (req, res) => {
+// GET /breakouts/:symbol/:granularity – returns ALL breakouts (with optional limit)
+router.get('/:symbol/:granularity', async (req, res) => {
   logRequest(req)
   try {
     const symbol = resolveSymbol(req.params.symbol)
@@ -27,31 +32,18 @@ router.get('/:symbol/:granularity', (req, res) => {
     const granularity = resolveGranularity(req.params.granularity)
     if (!granularity) return sendError(res, 400, `Invalid granularity "${req.params.granularity}"`, { validGranularities: getValidGranularities() })
 
-    const strength = parseInt(req.query.strength) || 1
-    const candles  = signalEngine.getCandles(symbol, granularity, true)
+    await ensureBreakoutsLoaded(symbol, granularity)
 
-    if (!candles.length) {
-      return sendSuccess(res, {
-        message:    'No candles loaded yet — wait a few seconds and refresh',
-        symbol,
-        granularity,
-        breakouts:  [],
-      })
+    const limit = req.query.limit ? parseInt(req.query.limit) : undefined
+    let breakouts = breakoutEngine.get(symbol, granularity)
+    if (limit && limit > 0) {
+      breakouts = breakouts.slice(-limit)
     }
-
-    const confirmed = candles.slice(0, -1)
-
-    swingEngine.detectAll(symbol, granularity, confirmed, strength)
-    const breakouts = breakoutEngine.detectAll(symbol, granularity, confirmed)
-    const summary   = breakoutEngine.getSummary(symbol, granularity)
 
     return sendSuccess(res, {
       symbol,
       granularity,
-      strength,
-      candleCount:   confirmed.length,
-      breakoutCount: breakouts.length,
-      summary,
+      count: breakouts.length,
       breakouts,
     })
 
@@ -61,9 +53,8 @@ router.get('/:symbol/:granularity', (req, res) => {
   }
 })
 
-
-// ── GET /breakouts/:symbol/:granularity/sustained ──
-router.get('/:symbol/:granularity/sustained', (req, res) => {
+// GET /breakouts/:symbol/:granularity/sustained
+router.get('/:symbol/:granularity/sustained', async (req, res) => {
   logRequest(req)
   try {
     const symbol = resolveSymbol(req.params.symbol)
@@ -72,18 +63,18 @@ router.get('/:symbol/:granularity/sustained', (req, res) => {
     const granularity = resolveGranularity(req.params.granularity)
     if (!granularity) return sendError(res, 400, `Invalid granularity "${req.params.granularity}"`, { validGranularities: getValidGranularities() })
 
+    await ensureBreakoutsLoaded(symbol, granularity)
     const breakouts = breakoutEngine.getSustained(symbol, granularity)
-    return sendSuccess(res, { symbol, granularity, type: 'BOS_SUSTAINED', count: breakouts.length, breakouts })
 
+    return sendSuccess(res, { symbol, granularity, type: 'BOS_SUSTAINED', count: breakouts.length, breakouts })
   } catch (err) {
     console.error('[BreakoutRoute] Sustained error:', err)
     return sendError(res, 500, 'Internal server error', { message: err.message })
   }
 })
 
-
-// ── GET /breakouts/:symbol/:granularity/summary ──
-router.get('/:symbol/:granularity/summary', (req, res) => {
+// GET /breakouts/:symbol/:granularity/summary
+router.get('/:symbol/:granularity/summary', async (req, res) => {
   logRequest(req)
   try {
     const symbol = resolveSymbol(req.params.symbol)
@@ -92,17 +83,18 @@ router.get('/:symbol/:granularity/summary', (req, res) => {
     const granularity = resolveGranularity(req.params.granularity)
     if (!granularity) return sendError(res, 400, `Invalid granularity "${req.params.granularity}"`, { validGranularities: getValidGranularities() })
 
-    return sendSuccess(res, { summary: breakoutEngine.getSummary(symbol, granularity) })
+    await ensureBreakoutsLoaded(symbol, granularity)
+    const summary = breakoutEngine.getSummary(symbol, granularity)
 
+    return sendSuccess(res, { summary })
   } catch (err) {
     console.error('[BreakoutRoute] Summary error:', err)
     return sendError(res, 500, 'Internal server error', { message: err.message })
   }
 })
 
-
-// ── GET /breakouts/:symbol/:granularity/latest ──
-router.get('/:symbol/:granularity/latest', (req, res) => {
+// GET /breakouts/:symbol/:granularity/latest
+router.get('/:symbol/:granularity/latest', async (req, res) => {
   logRequest(req)
   try {
     const symbol = resolveSymbol(req.params.symbol)
@@ -111,17 +103,18 @@ router.get('/:symbol/:granularity/latest', (req, res) => {
     const granularity = resolveGranularity(req.params.granularity)
     if (!granularity) return sendError(res, 400, `Invalid granularity "${req.params.granularity}"`, { validGranularities: getValidGranularities() })
 
-    return sendSuccess(res, { symbol, granularity, latest: breakoutEngine.getLatest(symbol, granularity) })
+    await ensureBreakoutsLoaded(symbol, granularity)
+    const latest = breakoutEngine.getLatest(symbol, granularity)
 
+    return sendSuccess(res, { symbol, granularity, latest })
   } catch (err) {
     console.error('[BreakoutRoute] Latest error:', err)
     return sendError(res, 500, 'Internal server error', { message: err.message })
   }
 })
 
-
-// ── GET /breakouts/:symbol/:granularity/bullish ──
-router.get('/:symbol/:granularity/bullish', (req, res) => {
+// GET /breakouts/:symbol/:granularity/bullish
+router.get('/:symbol/:granularity/bullish', async (req, res) => {
   logRequest(req)
   try {
     const symbol = resolveSymbol(req.params.symbol)
@@ -130,18 +123,18 @@ router.get('/:symbol/:granularity/bullish', (req, res) => {
     const granularity = resolveGranularity(req.params.granularity)
     if (!granularity) return sendError(res, 400, `Invalid granularity "${req.params.granularity}"`, { validGranularities: getValidGranularities() })
 
+    await ensureBreakoutsLoaded(symbol, granularity)
     const breakouts = breakoutEngine.getBullish(symbol, granularity)
-    return sendSuccess(res, { symbol, granularity, direction: 'bullish', count: breakouts.length, breakouts })
 
+    return sendSuccess(res, { symbol, granularity, direction: 'bullish', count: breakouts.length, breakouts })
   } catch (err) {
     console.error('[BreakoutRoute] Bullish error:', err)
     return sendError(res, 500, 'Internal server error', { message: err.message })
   }
 })
 
-
-// ── GET /breakouts/:symbol/:granularity/bearish ──
-router.get('/:symbol/:granularity/bearish', (req, res) => {
+// GET /breakouts/:symbol/:granularity/bearish
+router.get('/:symbol/:granularity/bearish', async (req, res) => {
   logRequest(req)
   try {
     const symbol = resolveSymbol(req.params.symbol)
@@ -150,18 +143,18 @@ router.get('/:symbol/:granularity/bearish', (req, res) => {
     const granularity = resolveGranularity(req.params.granularity)
     if (!granularity) return sendError(res, 400, `Invalid granularity "${req.params.granularity}"`, { validGranularities: getValidGranularities() })
 
+    await ensureBreakoutsLoaded(symbol, granularity)
     const breakouts = breakoutEngine.getBearish(symbol, granularity)
-    return sendSuccess(res, { symbol, granularity, direction: 'bearish', count: breakouts.length, breakouts })
 
+    return sendSuccess(res, { symbol, granularity, direction: 'bearish', count: breakouts.length, breakouts })
   } catch (err) {
     console.error('[BreakoutRoute] Bearish error:', err)
     return sendError(res, 500, 'Internal server error', { message: err.message })
   }
 })
 
-
-// ── GET /breakouts/:symbol/:granularity/choch ──
-router.get('/:symbol/:granularity/choch', (req, res) => {
+// GET /breakouts/:symbol/:granularity/choch
+router.get('/:symbol/:granularity/choch', async (req, res) => {
   logRequest(req)
   try {
     const symbol = resolveSymbol(req.params.symbol)
@@ -170,18 +163,18 @@ router.get('/:symbol/:granularity/choch', (req, res) => {
     const granularity = resolveGranularity(req.params.granularity)
     if (!granularity) return sendError(res, 400, `Invalid granularity "${req.params.granularity}"`, { validGranularities: getValidGranularities() })
 
+    await ensureBreakoutsLoaded(symbol, granularity)
     const breakouts = breakoutEngine.getCHoCH(symbol, granularity)
-    return sendSuccess(res, { symbol, granularity, type: 'CHoCH', count: breakouts.length, breakouts })
 
+    return sendSuccess(res, { symbol, granularity, type: 'CHoCH', count: breakouts.length, breakouts })
   } catch (err) {
     console.error('[BreakoutRoute] CHoCH error:', err)
     return sendError(res, 500, 'Internal server error', { message: err.message })
   }
 })
 
-
-// ── GET /breakouts/:symbol/:granularity/strong ──
-router.get('/:symbol/:granularity/strong', (req, res) => {
+// GET /breakouts/:symbol/:granularity/strong
+router.get('/:symbol/:granularity/strong', async (req, res) => {
   logRequest(req)
   try {
     const symbol = resolveSymbol(req.params.symbol)
@@ -190,10 +183,12 @@ router.get('/:symbol/:granularity/strong', (req, res) => {
     const granularity = resolveGranularity(req.params.granularity)
     if (!granularity) return sendError(res, 400, `Invalid granularity "${req.params.granularity}"`, { validGranularities: getValidGranularities() })
 
-    const minStrength = parseInt(req.query.minStrength) || 2
-    const breakouts   = breakoutEngine.getByStrength(symbol, granularity, minStrength)
-    return sendSuccess(res, { symbol, granularity, minStrength, count: breakouts.length, breakouts })
+    await ensureBreakoutsLoaded(symbol, granularity)
 
+    const minStrength = parseInt(req.query.minStrength) || 2
+    const breakouts = breakoutEngine.getByStrength(symbol, granularity, minStrength)
+
+    return sendSuccess(res, { symbol, granularity, minStrength, count: breakouts.length, breakouts })
   } catch (err) {
     console.error('[BreakoutRoute] Strong error:', err)
     return sendError(res, 500, 'Internal server error', { message: err.message })
