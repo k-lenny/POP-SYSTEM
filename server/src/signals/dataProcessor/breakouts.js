@@ -1,7 +1,5 @@
 // server/src/signals/dataProcessor/breakouts.js
 const EventEmitter = require('events');
-const fs = require('fs').promises;
-const path = require('path');
 const swingEngine = require('./swings');
 const {
   buildCandleIndexMap,
@@ -18,7 +16,6 @@ class BreakoutEngine extends EventEmitter {
    * @param {Object} options - Configuration options.
    * @param {Logger} options.logger - Logger instance.
    * @param {boolean} options.emitEvents - Whether to emit events.
-   * @param {string} options.dataDir - Directory for persistence.
    */
   constructor(options = {}) {
     super();
@@ -31,7 +28,6 @@ class BreakoutEngine extends EventEmitter {
 
     this.logger     = options.logger     || new Logger('BreakoutEngine');
     this.emitEvents = options.emitEvents ?? getConfig().ENABLE_EVENTS;
-    this.dataDir    = options.dataDir    || path.join(__dirname, '../../data/breakouts');
   }
 
   // ── Concurrency lock ──
@@ -58,47 +54,9 @@ class BreakoutEngine extends EventEmitter {
 
   // ── Confidence scoring ──
   _calculateConfidence(breakout) {
-    // Simple confidence based on strength and whether it's CHoCH
-    // Stronger breakouts get higher confidence
     const base = breakout.strength / 3; // 0.33, 0.66, 1.0
-    // If it's a CHoCH (change of character), increase confidence
     const chochBonus = breakout.isCHoCH ? 0.2 : 0;
     return Math.min(base + chochBonus, 1.0);
-  }
-
-  // ── Persistence ──
-  async _saveToDisk(symbol, granularity) {
-    const filePath = path.join(this.dataDir, `${symbol}_${granularity}.json`);
-    const data = {
-      store: this.store[symbol]?.[granularity] || [],
-      lastBullishBOS: this.lastBullishBOS[symbol]?.[granularity] || null,
-      lastBearishBOS: this.lastBearishBOS[symbol]?.[granularity] || null,
-    };
-    await fs.mkdir(this.dataDir, { recursive: true });
-    await fs.writeFile(filePath, JSON.stringify(data, null, 2));
-    this.logger.debug(`Saved breakouts for ${symbol} @ ${granularity} to disk`);
-  }
-
-  async _loadFromDisk(symbol, granularity) {
-    const filePath = path.join(this.dataDir, `${symbol}_${granularity}.json`);
-    try {
-      const data = JSON.parse(await fs.readFile(filePath, 'utf8'));
-      if (data.store) {
-        this._initStore(symbol, granularity);
-        this.store[symbol][granularity] = data.store;
-        this.lastBullishBOS[symbol][granularity] = data.lastBullishBOS;
-        this.lastBearishBOS[symbol][granularity] = data.lastBearishBOS;
-
-        // Rebuild indexSets and counts from loaded store
-        for (const breakout of data.store) {
-          this._registerBreakout(symbol, granularity, breakout);
-          this._updateCounts(symbol, granularity, breakout);
-        }
-        this.logger.info(`Loaded breakouts for ${symbol} @ ${granularity} from disk (${data.store.length} breakouts)`);
-      }
-    } catch (err) {
-      if (err.code !== 'ENOENT') this.logger.error(`Failed to load breakouts for ${symbol} @ ${granularity}: ${err.message}`);
-    }
   }
 
   // ── Initialize store ──
@@ -258,10 +216,8 @@ class BreakoutEngine extends EventEmitter {
         firstCloseBOS = candle;
         const firstClosePos = candleIndexMap.get(firstCloseBOS.index);
         if (firstClosePos === undefined) return null;
-        const config = this._getConfig(); // we don't have symbol/gran here, but config is same for all? We'll pass symbol/gran from caller.
-        // Actually, we need symbol/gran to get config. We'll modify callers to pass config.
-        // For now, use default.
-        const maxScan = this._getConfig().MAX_BOS_SCAN_CANDLES;
+        const config = this._getConfig();
+        const maxScan = config.MAX_BOS_SCAN_CANDLES;
         const endIdx = Math.min(candles.length - 1, firstClosePos + maxScan);
 
         for (let k = i + 1; k <= endIdx; k++) {
@@ -315,9 +271,6 @@ class BreakoutEngine extends EventEmitter {
 
     const oldBosType = existing.bosType;
 
-    // Preserve confidence? We'll recalc after upgrade.
-    const oldConfidence = existing.confidence;
-
     Object.assign(existing, {
       bosType:                     result.bosType,
       strength:                    result.strength,
@@ -363,7 +316,7 @@ class BreakoutEngine extends EventEmitter {
         this.logger.error(`Failed to get swings for ${symbol} @ ${granularity}s: ${err.message}`);
         metrics.increment('swingEngine_errors');
         metrics.endTimer(timer);
-        return []; // graceful degradation
+        return [];
       }
 
       if (!swings.length) {
@@ -390,8 +343,6 @@ class BreakoutEngine extends EventEmitter {
       metrics.set(`breakouts_${symbol}_${granularity}`, breakouts.length);
       const elapsed = metrics.endTimer(timer);
       this.logger.info(`${symbol} @ ${granularity}s — ${breakouts.length} breakouts detected [${elapsed}ms]`);
-
-      if (this.dataDir) await this._saveToDisk(symbol, granularity);
 
       return breakouts;
     });
@@ -447,8 +398,6 @@ class BreakoutEngine extends EventEmitter {
 
       const elapsed = metrics.endTimer(timer);
       this.logger.debug(`detectLatest for ${symbol} @ ${granularity}s completed in ${elapsed}ms, ${newBreakouts.length} new breakouts`);
-
-      if (this.dataDir && newBreakouts.length > 0) await this._saveToDisk(symbol, granularity);
 
       return newBreakouts;
     });

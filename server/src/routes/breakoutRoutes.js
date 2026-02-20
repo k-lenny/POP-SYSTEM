@@ -3,6 +3,8 @@ const express = require('express')
 const router  = express.Router()
 
 const breakoutEngine = require('../signals/dataProcessor/breakouts')
+const swingEngine    = require('../signals/dataProcessor/swings')
+const signalEngine   = require('../signals/signalEngine')
 
 const {
   resolveSymbol,
@@ -14,12 +16,89 @@ const {
   getValidGranularities,
 } = require('../utils/resolvers')
 
-// Helper: ensure data is loaded from disk for this symbol/granularity
+// Helper: ensure breakouts exist in memory for this symbol/granularity.
+// If none present, run detection using candles from the signal engine.
 async function ensureBreakoutsLoaded(symbol, granularity) {
-  const existing = breakoutEngine.get(symbol, granularity)
-  if (existing.length === 0) {
-    await breakoutEngine._loadFromDisk(symbol, granularity)
+  let breakouts = breakoutEngine.get(symbol, granularity)
+  if (breakouts.length > 0) return breakouts
+
+  // No data in memory – run detection
+  try {
+    let candles = signalEngine.getCandles(symbol, granularity, true)
+    
+    // If no candles yet, subscribe and WAIT for them
+    if (!candles || candles.length === 0) {
+      console.log(`[BreakoutRoute] No candles for ${symbol} @ ${granularity}s, subscribing and waiting...`)
+      
+      try { 
+        signalEngine.subscribeSymbol(symbol, granularity) 
+      } catch (e) {}
+
+      const minCandles = 10
+      const timeoutMs = 60000
+      const intervalMs = 1000
+      const start = Date.now()
+      
+      while (Date.now() - start < timeoutMs) {
+        await new Promise(r => setTimeout(r, intervalMs))
+        candles = signalEngine.getCandles(symbol, granularity, true)
+        
+        if (candles && candles.length >= minCandles) {
+          console.log(`[BreakoutRoute] Got ${candles.length} candles for ${symbol} @ ${granularity}s after ${Date.now() - start}ms`)
+          break
+        }
+        
+        if ((Date.now() - start) % 5000 < 1000) {
+          console.log(`[BreakoutRoute] Still waiting for ${symbol} @ ${granularity}s... (${Date.now() - start}ms elapsed)`)
+        }
+      }
+
+      // If still no candles after timeout, try more aggressive approach
+      if (!candles || candles.length === 0) {
+        console.log(`[BreakoutRoute] Timeout waiting for ${symbol} @ ${granularity}s, trying to force subscription...`)
+        
+        if (typeof signalEngine.subscribeToAllSymbols === 'function') {
+          try {
+            signalEngine.subscribeToAllSymbols()
+          } catch (e) {}
+        }
+        
+        const extraTimeout = 30000
+        const extraStart = Date.now()
+        while (Date.now() - extraStart < extraTimeout) {
+          await new Promise(r => setTimeout(r, intervalMs))
+          candles = signalEngine.getCandles(symbol, granularity, true)
+          if (candles && candles.length >= minCandles) break
+        }
+      }
+    }
+
+    if (candles && candles.length) {
+      console.log(`[BreakoutRoute] Running detection for ${symbol} @ ${granularity}s with ${candles.length} candles`)
+      
+      // Ensure swings exist
+      try {
+        const swings = swingEngine.get(symbol, granularity)
+        if (!swings.length) {
+          console.log(`[BreakoutRoute] No swings found, detecting swings first...`)
+          await swingEngine.detectAll(symbol, granularity, candles)
+        }
+      } catch (e) {
+        console.error('[BreakoutRoute] swing detection error:', e)
+      }
+
+      // Run breakout detection
+      await breakoutEngine.detectAll(symbol, granularity, candles)
+      
+      console.log(`[BreakoutRoute] Detection complete for ${symbol} @ ${granularity}s`)
+    } else {
+      console.log(`[BreakoutRoute] WARNING: No candles available for ${symbol} @ ${granularity}s after all attempts`)
+    }
+  } catch (err) {
+    console.error('[BreakoutRoute] ensureBreakoutsLoaded error:', err)
   }
+  
+  return breakoutEngine.get(symbol, granularity)
 }
 
 // GET /breakouts/:symbol/:granularity – returns ALL breakouts (with optional limit)
@@ -32,19 +111,19 @@ router.get('/:symbol/:granularity', async (req, res) => {
     const granularity = resolveGranularity(req.params.granularity)
     if (!granularity) return sendError(res, 400, `Invalid granularity "${req.params.granularity}"`, { validGranularities: getValidGranularities() })
 
-    await ensureBreakoutsLoaded(symbol, granularity)
+    const breakouts = await ensureBreakoutsLoaded(symbol, granularity)
 
     const limit = req.query.limit ? parseInt(req.query.limit) : undefined
-    let breakouts = breakoutEngine.get(symbol, granularity)
+    let resultBreakouts = breakouts
     if (limit && limit > 0) {
-      breakouts = breakouts.slice(-limit)
+      resultBreakouts = breakouts.slice(-limit)
     }
 
     return sendSuccess(res, {
       symbol,
       granularity,
-      count: breakouts.length,
-      breakouts,
+      count: resultBreakouts.length,
+      breakouts: resultBreakouts,
     })
 
   } catch (err) {

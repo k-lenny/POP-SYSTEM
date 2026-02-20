@@ -18,104 +18,120 @@ const {
 } = require('../utils/resolvers')
 
 // Helper: ensure levels exist in memory for this symbol/granularity.
-// If none present, run a detection using candles from the signal engine.
+// If none present, try loading from disk, then run detection if still empty.
 async function ensureLevelsLoaded(symbol, granularity) {
-  const existing = eqhEqlEngine.get(symbol, granularity)
-  if (existing.length > 0) return existing
+  // 1. Check if already in memory (filtered view)
+  let levels = eqhEqlEngine.get(symbol, granularity);
+  if (levels.length > 0) {
+    console.log(`[EqhEqlRoute] Using ${levels.length} cached levels for ${symbol} @ ${granularity}s`);
+    return levels;
+  }
 
-  // Attempt to get candles and run a full detection to populate memory.
+  // 2. Try loading from disk
+  console.log(`[EqhEqlRoute] Attempting to load from disk for ${symbol} @ ${granularity}s`);
+  await eqhEqlEngine._loadFromDisk(symbol, granularity);
+  
+  // Check the raw store (unfiltered) to see if any levels exist at all
+  const rawStore = eqhEqlEngine.store[symbol]?.[granularity];
+  if (rawStore && rawStore.length > 0) {
+    // There are levels in the store, even if all are filtered out by validation.
+    levels = eqhEqlEngine.get(symbol, granularity);
+    console.log(`[EqhEqlRoute] Loaded ${rawStore.length} raw levels, ${levels.length} valid after filter for ${symbol} @ ${granularity}s`);
+    return levels;
+  }
+
+  // 3. Raw store is empty – run detection
+  console.log(`[EqhEqlRoute] No levels found on disk or memory for ${symbol} @ ${granularity}s, starting detection...`);
+  
   try {
-    let candles = signalEngine.getCandles(symbol, granularity, true)
+    let candles = signalEngine.getCandles(symbol, granularity, true);
     
     // If no candles yet, subscribe and WAIT for them
     if (!candles || candles.length === 0) {
-      console.log(`[EqhEqlRoute] No candles for ${symbol} @ ${granularity}s, subscribing and waiting...`)
+      console.log(`[EqhEqlRoute] No candles for ${symbol} @ ${granularity}s, subscribing and waiting...`);
       
-      // Ask signalEngine to subscribe
       try { 
-        signalEngine.subscribeSymbol(symbol, granularity) 
+        signalEngine.subscribeSymbol(symbol, granularity); 
       } catch (e) {}
 
-      const minCandles = 10
-      const timeoutMs = 60000 // Wait up to 60 seconds
-      const intervalMs = 1000
-      const start = Date.now()
+      const minCandles = 10;
+      const timeoutMs = 60000; // Wait up to 60 seconds
+      const intervalMs = 1000;
+      const start = Date.now();
       
-      // Wait for candles to arrive
       while (Date.now() - start < timeoutMs) {
-        await new Promise(r => setTimeout(r, intervalMs))
-        candles = signalEngine.getCandles(symbol, granularity, true)
+        await new Promise(r => setTimeout(r, intervalMs));
+        candles = signalEngine.getCandles(symbol, granularity, true);
         
         if (candles && candles.length >= minCandles) {
-          console.log(`[EqhEqlRoute] Got ${candles.length} candles for ${symbol} @ ${granularity}s after ${Date.now() - start}ms`)
-          break
+          console.log(`[EqhEqlRoute] Got ${candles.length} candles for ${symbol} @ ${granularity}s after ${Date.now() - start}ms`);
+          break;
         }
         
-        // Log progress every 5 seconds
         if ((Date.now() - start) % 5000 < 1000) {
-          console.log(`[EqhEqlRoute] Still waiting for ${symbol} @ ${granularity}s... (${Date.now() - start}ms elapsed)`)
+          console.log(`[EqhEqlRoute] Still waiting for ${symbol} @ ${granularity}s... (${Date.now() - start}ms elapsed)`);
         }
       }
 
-      // If still no candles after timeout, try more aggressive approach
       if (!candles || candles.length === 0) {
-        console.log(`[EqhEqlRoute] Timeout waiting for ${symbol} @ ${granularity}s, trying to force subscription...`)
+        console.log(`[EqhEqlRoute] Timeout waiting for ${symbol} @ ${granularity}s, trying to force subscription...`);
         
-        // Try subscribing to all symbols as a fallback
         if (typeof signalEngine.subscribeToAllSymbols === 'function') {
           try {
-            signalEngine.subscribeToAllSymbols()
+            signalEngine.subscribeToAllSymbols();
           } catch (e) {}
         }
         
-        // Wait a bit longer
-        const extraTimeout = 30000
-        const extraStart = Date.now()
+        const extraTimeout = 30000;
+        const extraStart = Date.now();
         while (Date.now() - extraStart < extraTimeout) {
-          await new Promise(r => setTimeout(r, intervalMs))
-          candles = signalEngine.getCandles(symbol, granularity, true)
-          if (candles && candles.length >= minCandles) break
+          await new Promise(r => setTimeout(r, intervalMs));
+          candles = signalEngine.getCandles(symbol, granularity, true);
+          if (candles && candles.length >= minCandles) break;
         }
       }
     }
 
-    // If we have candles now, run detections
     if (candles && candles.length) {
-      console.log(`[EqhEqlRoute] Running detections for ${symbol} @ ${granularity}s with ${candles.length} candles`)
+      console.log(`[EqhEqlRoute] Running detections for ${symbol} @ ${granularity}s with ${candles.length} candles`);
       
       // Ensure swings exist
       try {
-        const swings = swingEngine.get(symbol, granularity)
+        const swings = swingEngine.get(symbol, granularity);
         if (!swings.length) {
-          await swingEngine.detectAll(symbol, granularity, candles)
+          console.log(`[EqhEqlRoute] No swings found, detecting swings first...`);
+          await swingEngine.detectAll(symbol, granularity, candles);
         }
       } catch (e) {
-        console.error('[EqhEqlRoute] swing detection error:', e)
+        console.error('[EqhEqlRoute] swing detection error:', e);
       }
 
-      // Ensure breakouts exist
+      // Ensure breakouts exist (optional, but used for bias)
       try {
-        const breakouts = breakoutEngine.get(symbol, granularity)
+        const breakouts = breakoutEngine.get(symbol, granularity);
         if (!breakouts.length) {
-          await breakoutEngine.detectAll(symbol, granularity, candles)
+          await breakoutEngine.detectAll(symbol, granularity, candles);
         }
       } catch (e) {
-        console.error('[EqhEqlRoute] breakout detection error:', e)
+        console.error('[EqhEqlRoute] breakout detection error:', e);
       }
 
       // Run EQH/EQL detection
-      await eqhEqlEngine.detectAll(symbol, granularity, candles)
+      const detectedLevels = await eqhEqlEngine.detectAll(symbol, granularity, candles);
+      console.log(`[EqhEqlRoute] Detection complete: ${detectedLevels.length} levels found for ${symbol} @ ${granularity}s`);
       
-      console.log(`[EqhEqlRoute] Detection complete for ${symbol} @ ${granularity}s`)
+      // After detection, check raw store again
+      const newRawStore = eqhEqlEngine.store[symbol]?.[granularity];
+      console.log(`[EqhEqlRoute] Raw store now has ${newRawStore ? newRawStore.length : 0} levels`);
     } else {
-      console.log(`[EqhEqlRoute] WARNING: No candles available for ${symbol} @ ${granularity}s after all attempts`)
+      console.log(`[EqhEqlRoute] WARNING: No candles available for ${symbol} @ ${granularity}s after all attempts`);
     }
   } catch (err) {
-    console.error('[EqhEqlRoute] ensureLevelsLoaded error:', err)
+    console.error('[EqhEqlRoute] ensureLevelsLoaded error:', err);
   }
   
-  // Return whatever we have now
-  return eqhEqlEngine.get(symbol, granularity)
+  // Return filtered view
+  return eqhEqlEngine.get(symbol, granularity);
 }
 
 // ── STATUS ROUTES (must come BEFORE parameterized routes) ──
@@ -149,7 +165,6 @@ router.get('/loading-status/:granularity', async (req, res) => {
     const totalSymbols = symbols.length
     const percentComplete = ((symbolsWithData / totalSymbols) * 100).toFixed(1)
     
-    // Get subscription progress from signalEngine if available
     let subscriptionProgress = null
     if (typeof signalEngine.getSubscriptionProgress === 'function') {
       subscriptionProgress = signalEngine.getSubscriptionProgress()
@@ -209,7 +224,6 @@ router.get('/debug/candles/:symbol/:granularity', async (req, res) => {
     const granularity = resolveGranularity(req.params.granularity)
     if (!granularity) return sendError(res, 400, `Invalid granularity "${req.params.granularity}"`, { validGranularities: getValidGranularities() })
 
-    // Support multiple ways to specify the two boundary candles:
     let firstIdx = req.query.firstIdx ? parseInt(req.query.firstIdx) : undefined
     let secondIdx = req.query.secondIdx ? parseInt(req.query.secondIdx) : undefined
     const firstSwingIdx = req.query.firstSwingIdx ? parseInt(req.query.firstSwingIdx) : undefined
@@ -225,7 +239,6 @@ router.get('/debug/candles/:symbol/:granularity', async (req, res) => {
     const indexMap = new Map()
     candles.forEach((c, i) => indexMap.set(c.index, i))
 
-    // If swing indices were provided, resolve them to candle indices
     if (firstSwingIdx != null || secondSwingIdx != null) {
       const swings = swingEngine.get(symbol, granularity) || []
       if (firstSwingIdx != null) {
@@ -298,12 +311,10 @@ router.get('/:symbol/:granularity', async (req, res) => {
   try {
     let symbol = resolveSymbol(req.params.symbol)
     if (!symbol) {
-      // Accept raw code values as well
       const raw = req.params.symbol
       const allCodes = Object.values(signalEngine.volatilitySymbols || {})
       if (allCodes.includes(raw)) symbol = raw
       else {
-        // try case-insensitive name match
         const nameKey = Object.keys(signalEngine.volatilitySymbols || {}).find(k => k.toLowerCase() === raw.toLowerCase())
         if (nameKey) symbol = signalEngine.volatilitySymbols[nameKey]
       }
@@ -313,7 +324,6 @@ router.get('/:symbol/:granularity', async (req, res) => {
     const granularity = resolveGranularity(req.params.granularity)
     if (!granularity) return sendError(res, 400, `Invalid granularity "${req.params.granularity}"`, { validGranularities: getValidGranularities() })
 
-    // This will now WAIT for data to load
     const levels = await ensureLevelsLoaded(symbol, granularity)
 
     const limit = req.query.limit ? parseInt(req.query.limit) : undefined
@@ -531,13 +541,11 @@ router.post('/redetect/:symbol/:granularity', async (req, res) => {
     const granularity = resolveGranularity(req.params.granularity)
     if (!granularity) return sendError(res, 400, `Invalid granularity "${req.params.granularity}"`, { validGranularities: getValidGranularities() })
 
-    // Get all candles (with indices) for this symbol/granularity
     const candles = signalEngine.getCandles(symbol, granularity, true)
     if (!candles.length) {
       return sendError(res, 400, 'No candles available for this symbol/granularity')
     }
 
-    // Run detectAll (this will replace the stored levels)
     const levels = await eqhEqlEngine.detectAll(symbol, granularity, candles)
 
     return sendSuccess(res, {

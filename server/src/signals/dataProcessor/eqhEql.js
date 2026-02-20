@@ -34,8 +34,7 @@ class EqhEqlEngine extends EventEmitter {
 
     this.logger      = options.logger      || new Logger('EqhEqlEngine');
     this.emitEvents  = options.emitEvents  ?? getConfig().ENABLE_EVENTS;
-    // Disable disk persistence by default — set options.dataDir to enable
-    this.dataDir     = options.dataDir ?? null;
+    this.dataDir = options.dataDir || path.join(__dirname, '../../data/eqhEql');
   }
 
   // ─────────────────────────────────────────────
@@ -71,21 +70,29 @@ class EqhEqlEngine extends EventEmitter {
     return Math.min(statusConf + bosBoost, 1.0);
   }
 
-  // ── Validate preBreakoutVDepth constraint ──
-  // For EQH: preBreakoutVDepth must NOT be below vShapeDepth (lower = worse for EQH)
-  // For EQL: preBreakoutVDepth must NOT be above vShapeDepth (higher = worse for EQL)
-  // Allow Infinity/-Infinity (not yet updated) and null values (valid edge cases)
   _isValidPreBreakoutV(level) {
-    if (level.vShapeDepth === null || level.preBreakoutVDepth === null) return true;
-    // Allow Infinity/-Infinity (not yet updated from initial state)
+    // If vShapeDepth is null, the level is invalid (shouldn't happen)
+    if (level.vShapeDepth === null) return false;
+
+    // If preBreakoutVDepth is null, it means we haven't tracked any candles yet.
+    // This can only happen for very old levels that were never updated.
+    // We treat them as valid (no crossing known).
+    if (level.preBreakoutVDepth === null) return true;
+
+    // Infinity/-Infinity means we are still tracking – no crossing yet.
     if (!isFinite(level.preBreakoutVDepth)) return true;
+
+    // Now check whether the pre‑breakout extreme crossed the v‑shape.
     if (level.type === 'EQH') {
-      // For EQH, preBreakoutVDepth should be >= vShapeDepth (not lower/worse)
-      return level.preBreakoutVDepth >= level.vShapeDepth;
-    } else { // EQL
-      // For EQL, preBreakoutVDepth should be <= vShapeDepth (not higher/worse)
-      return level.preBreakoutVDepth <= level.vShapeDepth;
+      // For EQH: crossing occurs when preBreakoutVDepth goes **below** vShapeDepth
+      if (level.preBreakoutVDepth < level.vShapeDepth) return false;
+    } else {
+      // For EQL: crossing occurs when preBreakoutVDepth goes **above** vShapeDepth
+      if (level.preBreakoutVDepth > level.vShapeDepth) return false;
     }
+
+    // No crossing – level is valid.
+    return true;
   }
 
   // ── Persistence ──
@@ -146,9 +153,9 @@ class EqhEqlEngine extends EventEmitter {
       migrated = true;
     }
     
-    // Ensure all pre-breakout fields exist
+    // Initialize preBreakoutVDepth based on type
     if (!level.hasOwnProperty('preBreakoutVDepth')) {
-      level.preBreakoutVDepth = null;
+      level.preBreakoutVDepth = level.type === 'EQH' ? Infinity : -Infinity;
       migrated = true;
     }
     if (!level.hasOwnProperty('preBreakoutVFormattedTime')) {
@@ -279,9 +286,8 @@ class EqhEqlEngine extends EventEmitter {
       hasCandles = true;
       candleCount++;
 
-      // Reject if this candle's wick/body intersects the zone area
-      // (i.e. any part of the candle lies between zoneLow and zoneHigh)
-      if (c.high >= zoneLow && c.low <= zoneHigh) return null;
+      // Reject if this candle's close lies inside the zone area
+      if (c.close >= zoneLow && c.close <= zoneHigh) return null;
 
       if (type === 'EQH' && c.low  < vExtreme) { vExtreme = c.low;  vExtremeCandle = c; }
       if (type === 'EQL' && c.high > vExtreme) { vExtreme = c.high; vExtremeCandle = c; }
@@ -355,7 +361,7 @@ class EqhEqlEngine extends EventEmitter {
       candlesBetween:      candleCount,
 
       // V-shape that occurs AFTER second swing, BEFORE breakout (pre-breakout extreme)
-      preBreakoutVDepth:         null,
+      preBreakoutVDepth:         type === 'EQH' ? Infinity : -Infinity,
       preBreakoutVIndex:         null,
       preBreakoutVTime:          null,
       preBreakoutVFormattedTime: null,
@@ -402,6 +408,67 @@ class EqhEqlEngine extends EventEmitter {
       }
     }
     return 'BOS_CLOSE';
+  }
+
+  /**
+   * Backfill pre‑breakout extreme values for levels that still have infinite or null values.
+   * Uses historical candles to compute the actual extreme between second swing and breakout (or latest candle).
+   */
+  _backfillPreBreakoutV(symbol, granularity, candles) {
+    const levels = this.store[symbol]?.[granularity];
+    if (!levels || !candles.length) return;
+
+    const candleIndexMap = buildCandleIndexMap(candles);
+    let backfilledCount = 0;
+
+    for (const level of levels) {
+      // Skip if already has a finite value (real extreme)
+      if (level.preBreakoutVDepth !== null && isFinite(level.preBreakoutVDepth)) continue;
+
+      const secondSwingIdx = level.secondSwingIndex;
+      const brokenIdx = level.brokenIndex; // may be null if still active
+
+      const startPos = candleIndexMap.get(secondSwingIdx);
+      if (startPos === undefined) continue;
+      const start = startPos + 1;
+
+      let endPos;
+      if (brokenIdx !== null) {
+        endPos = candleIndexMap.get(brokenIdx);
+        if (endPos === undefined) continue;
+        endPos = endPos - 1; // stop before breakout candle
+      } else {
+        endPos = candles.length - 1; // up to latest candle
+      }
+
+      if (start > endPos) continue;
+
+      let extremeValue = level.type === 'EQH' ? Infinity : -Infinity;
+      let extremeCandle = null;
+
+      for (let i = start; i <= endPos; i++) {
+        const c = candles[i];
+        if (level.type === 'EQH' && c.low < extremeValue) {
+          extremeValue = c.low;
+          extremeCandle = c;
+        } else if (level.type === 'EQL' && c.high > extremeValue) {
+          extremeValue = c.high;
+          extremeCandle = c;
+        }
+      }
+
+      if (extremeCandle) {
+        level.preBreakoutVDepth = extremeValue;
+        level.preBreakoutVIndex = extremeCandle.index;
+        level.preBreakoutVTime = extremeCandle.time;
+        level.preBreakoutVFormattedTime = extremeCandle.formattedTime;
+        backfilledCount++;
+      }
+    }
+
+    if (backfilledCount > 0) {
+      this.logger.info(`Backfilled ${backfilledCount} pre‑breakout extremes for ${symbol} @ ${granularity}s`);
+    }
   }
 
   _checkLevelStatus(level, candles, candleIndexMap) {
@@ -671,6 +738,9 @@ class EqhEqlEngine extends EventEmitter {
       }
 
       this.store[symbol][granularity].sort((a, b) => a.time - b.time);
+
+      // Backfill pre‑breakout extremes for any levels that still need it
+      this._backfillPreBreakoutV(symbol, granularity, candles);
 
       const sorted = this.store[symbol][granularity];
       if (sorted.length) {

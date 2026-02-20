@@ -2495,22 +2495,6 @@
       "strength": 1,
       "candleIndex": 363,
       "direction": "LL"
-    },
-    {
-      "type": "high",
-      "price": 2928.988,
-      "keyPrice": 2915.231,
-      "open": 2780.338,
-      "high": 2928.988,
-      "low": 2775.383,
-      "close": 2915.231,
-      "time": 1771459200,
-      "formattedTime": "2026-02-19 00:00:00",
-      "date": "2026-02-19",
-      "index": 364,
-      "strength": 1,
-      "candleIndex": 364,
-      "direction": "HH"
     }
   ]
 }

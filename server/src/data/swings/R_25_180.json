@@ -2,1126 +2,6 @@
   "store": [
     {
       "type": "low",
-      "price": 2808.536,
-      "keyPrice": 2809.097,
-      "open": 2809.097,
-      "high": 2812.038,
-      "low": 2808.536,
-      "close": 2811.996,
-      "time": 1771404480,
-      "formattedTime": "2026-02-18 08:48:00",
-      "date": "2026-02-18",
-      "index": 1,
-      "strength": 1,
-      "candleIndex": 1,
-      "direction": "FIRST"
-    },
-    {
-      "type": "high",
-      "price": 2815.871,
-      "keyPrice": 2814.073,
-      "open": 2812.101,
-      "high": 2815.871,
-      "low": 2811.871,
-      "close": 2814.073,
-      "time": 1771404660,
-      "formattedTime": "2026-02-18 08:51:00",
-      "date": "2026-02-18",
-      "index": 2,
-      "strength": 1,
-      "candleIndex": 2,
-      "direction": "FIRST"
-    },
-    {
-      "type": "low",
-      "price": 2810.088,
-      "keyPrice": 2811.466,
-      "open": 2811.466,
-      "high": 2811.981,
-      "low": 2810.088,
-      "close": 2811.645,
-      "time": 1771405380,
-      "formattedTime": "2026-02-18 09:03:00",
-      "date": "2026-02-18",
-      "index": 6,
-      "strength": 1,
-      "candleIndex": 6,
-      "direction": "HL"
-    },
-    {
-      "type": "high",
-      "price": 2813.845,
-      "keyPrice": 2813.116,
-      "open": 2811.895,
-      "high": 2813.845,
-      "low": 2811.066,
-      "close": 2813.116,
-      "time": 1771405560,
-      "formattedTime": "2026-02-18 09:06:00",
-      "date": "2026-02-18",
-      "index": 7,
-      "strength": 1,
-      "candleIndex": 7,
-      "direction": "LH"
-    },
-    {
-      "type": "low",
-      "price": 2810.788,
-      "keyPrice": 2812.176,
-      "open": 2812.955,
-      "high": 2813.449,
-      "low": 2810.788,
-      "close": 2812.176,
-      "time": 1771405740,
-      "formattedTime": "2026-02-18 09:09:00",
-      "date": "2026-02-18",
-      "index": 8,
-      "strength": 1,
-      "candleIndex": 8,
-      "direction": "HL"
-    },
-    {
-      "type": "high",
-      "price": 2814.626,
-      "keyPrice": 2813.856,
-      "open": 2812.34,
-      "high": 2814.626,
-      "low": 2811.546,
-      "close": 2813.856,
-      "time": 1771405920,
-      "formattedTime": "2026-02-18 09:12:00",
-      "date": "2026-02-18",
-      "index": 9,
-      "strength": 1,
-      "candleIndex": 9,
-      "direction": "HH"
-    },
-    {
-      "type": "low",
-      "price": 2806.91,
-      "keyPrice": 2808.076,
-      "open": 2808.076,
-      "high": 2809.58,
-      "low": 2806.91,
-      "close": 2808.972,
-      "time": 1771406640,
-      "formattedTime": "2026-02-18 09:24:00",
-      "date": "2026-02-18",
-      "index": 13,
-      "strength": 1,
-      "candleIndex": 13,
-      "direction": "LL"
-    },
-    {
-      "type": "high",
-      "price": 2809.517,
-      "keyPrice": 2808.791,
-      "open": 2808.791,
-      "high": 2809.517,
-      "low": 2807.945,
-      "close": 2807.973,
-      "time": 1771407000,
-      "formattedTime": "2026-02-18 09:30:00",
-      "date": "2026-02-18",
-      "index": 15,
-      "strength": 1,
-      "candleIndex": 15,
-      "direction": "LH"
-    },
-    {
-      "type": "low",
-      "price": 2807.212,
-      "keyPrice": 2807.895,
-      "open": 2807.895,
-      "high": 2809.478,
-      "low": 2807.212,
-      "close": 2808.511,
-      "time": 1771407180,
-      "formattedTime": "2026-02-18 09:33:00",
-      "date": "2026-02-18",
-      "index": 16,
-      "strength": 1,
-      "candleIndex": 16,
-      "direction": "HL"
-    },
-    {
-      "type": "high",
-      "price": 2811.841,
-      "keyPrice": 2810.642,
-      "open": 2810.642,
-      "high": 2811.841,
-      "low": 2808.914,
-      "close": 2809.479,
-      "time": 1771407720,
-      "formattedTime": "2026-02-18 09:42:00",
-      "date": "2026-02-18",
-      "index": 19,
-      "strength": 1,
-      "candleIndex": 19,
-      "direction": "HH"
-    },
-    {
-      "type": "low",
-      "price": 2807.363,
-      "keyPrice": 2807.806,
-      "open": 2807.806,
-      "high": 2809.506,
-      "low": 2807.363,
-      "close": 2808.719,
-      "time": 1771408080,
-      "formattedTime": "2026-02-18 09:48:00",
-      "date": "2026-02-18",
-      "index": 21,
-      "strength": 1,
-      "candleIndex": 21,
-      "direction": "HL"
-    },
-    {
-      "type": "high",
-      "price": 2814.084,
-      "keyPrice": 2813.504,
-      "open": 2813.214,
-      "high": 2814.084,
-      "low": 2812.558,
-      "close": 2813.504,
-      "time": 1771408440,
-      "formattedTime": "2026-02-18 09:54:00",
-      "date": "2026-02-18",
-      "index": 23,
-      "strength": 1,
-      "candleIndex": 23,
-      "direction": "HH"
-    },
-    {
-      "type": "low",
-      "price": 2809.168,
-      "keyPrice": 2810.738,
-      "open": 2811.372,
-      "high": 2811.707,
-      "low": 2809.168,
-      "close": 2810.738,
-      "time": 1771408800,
-      "formattedTime": "2026-02-18 10:00:00",
-      "date": "2026-02-18",
-      "index": 25,
-      "strength": 1,
-      "candleIndex": 25,
-      "direction": "HL"
-    },
-    {
-      "type": "high",
-      "price": 2811.723,
-      "keyPrice": 2810.641,
-      "open": 2810.641,
-      "high": 2811.723,
-      "low": 2809.921,
-      "close": 2810.127,
-      "time": 1771408980,
-      "formattedTime": "2026-02-18 10:03:00",
-      "date": "2026-02-18",
-      "index": 26,
-      "strength": 1,
-      "candleIndex": 26,
-      "direction": "LH"
-    },
-    {
-      "type": "low",
-      "price": 2809.403,
-      "keyPrice": 2810.199,
-      "open": 2810.199,
-      "high": 2811.425,
-      "low": 2809.403,
-      "close": 2810.467,
-      "time": 1771409160,
-      "formattedTime": "2026-02-18 10:06:00",
-      "date": "2026-02-18",
-      "index": 27,
-      "strength": 1,
-      "candleIndex": 27,
-      "direction": "HL"
-    },
-    {
-      "type": "high",
-      "price": 2813.896,
-      "keyPrice": 2813.896,
-      "open": 2813.896,
-      "high": 2813.896,
-      "low": 2810.309,
-      "close": 2810.799,
-      "time": 1771409700,
-      "formattedTime": "2026-02-18 10:15:00",
-      "date": "2026-02-18",
-      "index": 30,
-      "strength": 1,
-      "candleIndex": 30,
-      "direction": "HH"
-    },
-    {
-      "type": "high",
-      "price": 2814.736,
-      "keyPrice": 2813.955,
-      "open": 2813.955,
-      "high": 2814.736,
-      "low": 2812.92,
-      "close": 2813.266,
-      "time": 1771410240,
-      "formattedTime": "2026-02-18 10:24:00",
-      "date": "2026-02-18",
-      "index": 33,
-      "strength": 1,
-      "candleIndex": 33,
-      "direction": "HH"
-    },
-    {
-      "type": "low",
-      "price": 2804.904,
-      "keyPrice": 2806.463,
-      "open": 2806.463,
-      "high": 2806.983,
-      "low": 2804.904,
-      "close": 2806.738,
-      "time": 1771411140,
-      "formattedTime": "2026-02-18 10:39:00",
-      "date": "2026-02-18",
-      "index": 38,
-      "strength": 1,
-      "candleIndex": 38,
-      "direction": "LL"
-    },
-    {
-      "type": "high",
-      "price": 2816.691,
-      "keyPrice": 2816.672,
-      "open": 2816.672,
-      "high": 2816.691,
-      "low": 2815.225,
-      "close": 2816.422,
-      "time": 1771412580,
-      "formattedTime": "2026-02-18 11:03:00",
-      "date": "2026-02-18",
-      "index": 46,
-      "strength": 1,
-      "candleIndex": 46,
-      "direction": "HH"
-    },
-    {
-      "type": "low",
-      "price": 2813.153,
-      "keyPrice": 2813.428,
-      "open": 2813.428,
-      "high": 2815.805,
-      "low": 2813.153,
-      "close": 2815.625,
-      "time": 1771412940,
-      "formattedTime": "2026-02-18 11:09:00",
-      "date": "2026-02-18",
-      "index": 48,
-      "strength": 1,
-      "candleIndex": 48,
-      "direction": "HL"
-    },
-    {
-      "type": "high",
-      "price": 2817.616,
-      "keyPrice": 2817.021,
-      "open": 2817.021,
-      "high": 2817.616,
-      "low": 2815.611,
-      "close": 2815.974,
-      "time": 1771413480,
-      "formattedTime": "2026-02-18 11:18:00",
-      "date": "2026-02-18",
-      "index": 51,
-      "strength": 1,
-      "candleIndex": 51,
-      "direction": "HH"
-    },
-    {
-      "type": "low",
-      "price": 2813.345,
-      "keyPrice": 2814.765,
-      "open": 2814.765,
-      "high": 2815.523,
-      "low": 2813.345,
-      "close": 2815.319,
-      "time": 1771413840,
-      "formattedTime": "2026-02-18 11:24:00",
-      "date": "2026-02-18",
-      "index": 53,
-      "strength": 1,
-      "candleIndex": 53,
-      "direction": "HL"
-    },
-    {
-      "type": "high",
-      "price": 2827.734,
-      "keyPrice": 2827.211,
-      "open": 2827.211,
-      "high": 2827.734,
-      "low": 2826.087,
-      "close": 2826.087,
-      "time": 1771415280,
-      "formattedTime": "2026-02-18 11:48:00",
-      "date": "2026-02-18",
-      "index": 61,
-      "strength": 1,
-      "candleIndex": 61,
-      "direction": "HH"
-    },
-    {
-      "type": "low",
-      "price": 2824.408,
-      "keyPrice": 2825.738,
-      "open": 2825.738,
-      "high": 2826.904,
-      "low": 2824.408,
-      "close": 2826.815,
-      "time": 1771415460,
-      "formattedTime": "2026-02-18 11:51:00",
-      "date": "2026-02-18",
-      "index": 62,
-      "strength": 1,
-      "candleIndex": 62,
-      "direction": "HL"
-    },
-    {
-      "type": "high",
-      "price": 2827.766,
-      "keyPrice": 2826.707,
-      "open": 2826.707,
-      "high": 2827.766,
-      "low": 2825.85,
-      "close": 2826.141,
-      "time": 1771415640,
-      "formattedTime": "2026-02-18 11:54:00",
-      "date": "2026-02-18",
-      "index": 63,
-      "strength": 1,
-      "candleIndex": 63,
-      "direction": "HH"
-    },
-    {
-      "type": "high",
-      "price": 2832.905,
-      "keyPrice": 2831.744,
-      "open": 2831.744,
-      "high": 2832.905,
-      "low": 2828.541,
-      "close": 2829.53,
-      "time": 1771416540,
-      "formattedTime": "2026-02-18 12:09:00",
-      "date": "2026-02-18",
-      "index": 68,
-      "strength": 1,
-      "candleIndex": 68,
-      "direction": "HH"
-    },
-    {
-      "type": "low",
-      "price": 2824.907,
-      "keyPrice": 2826.091,
-      "open": 2826.693,
-      "high": 2827.016,
-      "low": 2824.907,
-      "close": 2826.091,
-      "time": 1771417080,
-      "formattedTime": "2026-02-18 12:18:00",
-      "date": "2026-02-18",
-      "index": 71,
-      "strength": 1,
-      "candleIndex": 71,
-      "direction": "HL"
-    },
-    {
-      "type": "high",
-      "price": 2827.158,
-      "keyPrice": 2826.13,
-      "open": 2826.13,
-      "high": 2827.158,
-      "low": 2825.161,
-      "close": 2825.986,
-      "time": 1771417260,
-      "formattedTime": "2026-02-18 12:21:00",
-      "date": "2026-02-18",
-      "index": 72,
-      "strength": 1,
-      "candleIndex": 72,
-      "direction": "LH"
-    },
-    {
-      "type": "high",
-      "price": 2820.095,
-      "keyPrice": 2818.286,
-      "open": 2818.286,
-      "high": 2820.095,
-      "low": 2816.899,
-      "close": 2817.387,
-      "time": 1771418700,
-      "formattedTime": "2026-02-18 12:45:00",
-      "date": "2026-02-18",
-      "index": 80,
-      "strength": 1,
-      "candleIndex": 80,
-      "direction": "LH"
-    },
-    {
-      "type": "low",
-      "price": 2815.474,
-      "keyPrice": 2816.766,
-      "open": 2817.472,
-      "high": 2817.472,
-      "low": 2815.474,
-      "close": 2816.766,
-      "time": 1771418880,
-      "formattedTime": "2026-02-18 12:48:00",
-      "date": "2026-02-18",
-      "index": 81,
-      "strength": 1,
-      "candleIndex": 81,
-      "direction": "LL"
-    },
-    {
-      "type": "high",
-      "price": 2819.901,
-      "keyPrice": 2819.901,
-      "open": 2819.901,
-      "high": 2819.901,
-      "low": 2817.865,
-      "close": 2819.24,
-      "time": 1771419420,
-      "formattedTime": "2026-02-18 12:57:00",
-      "date": "2026-02-18",
-      "index": 84,
-      "strength": 1,
-      "candleIndex": 84,
-      "direction": "LH"
-    },
-    {
-      "type": "high",
-      "price": 2817.509,
-      "keyPrice": 2816.667,
-      "open": 2816.667,
-      "high": 2817.509,
-      "low": 2815.436,
-      "close": 2816.372,
-      "time": 1771420320,
-      "formattedTime": "2026-02-18 13:12:00",
-      "date": "2026-02-18",
-      "index": 89,
-      "strength": 1,
-      "candleIndex": 89,
-      "direction": "LH"
-    },
-    {
-      "type": "low",
-      "price": 2806.329,
-      "keyPrice": 2807.386,
-      "open": 2807.386,
-      "high": 2809.536,
-      "low": 2806.329,
-      "close": 2809.536,
-      "time": 1771421400,
-      "formattedTime": "2026-02-18 13:30:00",
-      "date": "2026-02-18",
-      "index": 95,
-      "strength": 1,
-      "candleIndex": 95,
-      "direction": "LL"
-    },
-    {
-      "type": "high",
-      "price": 2815.078,
-      "keyPrice": 2812.848,
-      "open": 2811.688,
-      "high": 2815.078,
-      "low": 2811.583,
-      "close": 2812.848,
-      "time": 1771421760,
-      "formattedTime": "2026-02-18 13:36:00",
-      "date": "2026-02-18",
-      "index": 97,
-      "strength": 1,
-      "candleIndex": 97,
-      "direction": "LH"
-    },
-    {
-      "type": "high",
-      "price": 2818.031,
-      "keyPrice": 2817.639,
-      "open": 2817.639,
-      "high": 2818.031,
-      "low": 2815.31,
-      "close": 2815.505,
-      "time": 1771422660,
-      "formattedTime": "2026-02-18 13:51:00",
-      "date": "2026-02-18",
-      "index": 102,
-      "strength": 1,
-      "candleIndex": 102,
-      "direction": "HH"
-    },
-    {
-      "type": "high",
-      "price": 2815.795,
-      "keyPrice": 2813.768,
-      "open": 2813.768,
-      "high": 2815.795,
-      "low": 2812.927,
-      "close": 2813.567,
-      "time": 1771423020,
-      "formattedTime": "2026-02-18 13:57:00",
-      "date": "2026-02-18",
-      "index": 104,
-      "strength": 1,
-      "candleIndex": 104,
-      "direction": "LH"
-    },
-    {
-      "type": "low",
-      "price": 2807.624,
-      "keyPrice": 2808.398,
-      "open": 2808.398,
-      "high": 2811.575,
-      "low": 2807.624,
-      "close": 2811.414,
-      "time": 1771423920,
-      "formattedTime": "2026-02-18 14:12:00",
-      "date": "2026-02-18",
-      "index": 109,
-      "strength": 1,
-      "candleIndex": 109,
-      "direction": "HL"
-    },
-    {
-      "type": "high",
-      "price": 2812.708,
-      "keyPrice": 2811.487,
-      "open": 2811.487,
-      "high": 2812.708,
-      "low": 2811.28,
-      "close": 2811.298,
-      "time": 1771424100,
-      "formattedTime": "2026-02-18 14:15:00",
-      "date": "2026-02-18",
-      "index": 110,
-      "strength": 1,
-      "candleIndex": 110,
-      "direction": "LH"
-    },
-    {
-      "type": "low",
-      "price": 2807.011,
-      "keyPrice": 2809.268,
-      "open": 2809.305,
-      "high": 2809.919,
-      "low": 2807.011,
-      "close": 2809.268,
-      "time": 1771424460,
-      "formattedTime": "2026-02-18 14:21:00",
-      "date": "2026-02-18",
-      "index": 112,
-      "strength": 1,
-      "candleIndex": 112,
-      "direction": "LL"
-    },
-    {
-      "type": "high",
-      "price": 2810.442,
-      "keyPrice": 2809.21,
-      "open": 2809.21,
-      "high": 2810.442,
-      "low": 2808.39,
-      "close": 2808.677,
-      "time": 1771424640,
-      "formattedTime": "2026-02-18 14:24:00",
-      "date": "2026-02-18",
-      "index": 113,
-      "strength": 1,
-      "candleIndex": 113,
-      "direction": "LH"
-    },
-    {
-      "type": "low",
-      "price": 2807.991,
-      "keyPrice": 2808.706,
-      "open": 2808.706,
-      "high": 2809.83,
-      "low": 2807.991,
-      "close": 2809.541,
-      "time": 1771424820,
-      "formattedTime": "2026-02-18 14:27:00",
-      "date": "2026-02-18",
-      "index": 114,
-      "strength": 1,
-      "candleIndex": 114,
-      "direction": "HL"
-    },
-    {
-      "type": "high",
-      "price": 2813.313,
-      "keyPrice": 2812.818,
-      "open": 2812.556,
-      "high": 2813.313,
-      "low": 2811.722,
-      "close": 2812.818,
-      "time": 1771425360,
-      "formattedTime": "2026-02-18 14:36:00",
-      "date": "2026-02-18",
-      "index": 117,
-      "strength": 1,
-      "candleIndex": 117,
-      "direction": "HH"
-    },
-    {
-      "type": "low",
-      "price": 2805.918,
-      "keyPrice": 2807.318,
-      "open": 2808.241,
-      "high": 2808.544,
-      "low": 2805.918,
-      "close": 2807.318,
-      "time": 1771426260,
-      "formattedTime": "2026-02-18 14:51:00",
-      "date": "2026-02-18",
-      "index": 122,
-      "strength": 1,
-      "candleIndex": 122,
-      "direction": "LL"
-    },
-    {
-      "type": "high",
-      "price": 2808.605,
-      "keyPrice": 2807.288,
-      "open": 2807.288,
-      "high": 2808.605,
-      "low": 2806.556,
-      "close": 2807.269,
-      "time": 1771426440,
-      "formattedTime": "2026-02-18 14:54:00",
-      "date": "2026-02-18",
-      "index": 123,
-      "strength": 1,
-      "candleIndex": 123,
-      "direction": "LH"
-    },
-    {
-      "type": "low",
-      "price": 2802.814,
-      "keyPrice": 2803.196,
-      "open": 2803.196,
-      "high": 2805.391,
-      "low": 2802.814,
-      "close": 2805.22,
-      "time": 1771426980,
-      "formattedTime": "2026-02-18 15:03:00",
-      "date": "2026-02-18",
-      "index": 126,
-      "strength": 1,
-      "candleIndex": 126,
-      "direction": "LL"
-    },
-    {
-      "type": "low",
-      "price": 2804.195,
-      "keyPrice": 2805.505,
-      "open": 2805.505,
-      "high": 2807.228,
-      "low": 2804.195,
-      "close": 2807.228,
-      "time": 1771427700,
-      "formattedTime": "2026-02-18 15:15:00",
-      "date": "2026-02-18",
-      "index": 130,
-      "strength": 1,
-      "candleIndex": 130,
-      "direction": "HL"
-    },
-    {
-      "type": "high",
-      "price": 2807.976,
-      "keyPrice": 2807.754,
-      "open": 2806.506,
-      "high": 2807.976,
-      "low": 2805.737,
-      "close": 2807.754,
-      "time": 1771428060,
-      "formattedTime": "2026-02-18 15:21:00",
-      "date": "2026-02-18",
-      "index": 132,
-      "strength": 1,
-      "candleIndex": 132,
-      "direction": "LH"
-    },
-    {
-      "type": "low",
-      "price": 2805.253,
-      "keyPrice": 2806.485,
-      "open": 2806.54,
-      "high": 2807.201,
-      "low": 2805.253,
-      "close": 2806.485,
-      "time": 1771428420,
-      "formattedTime": "2026-02-18 15:27:00",
-      "date": "2026-02-18",
-      "index": 134,
-      "strength": 1,
-      "candleIndex": 134,
-      "direction": "HL"
-    },
-    {
-      "type": "high",
-      "price": 2808.255,
-      "keyPrice": 2807.889,
-      "open": 2806.45,
-      "high": 2808.255,
-      "low": 2805.996,
-      "close": 2807.889,
-      "time": 1771428600,
-      "formattedTime": "2026-02-18 15:30:00",
-      "date": "2026-02-18",
-      "index": 135,
-      "strength": 1,
-      "candleIndex": 135,
-      "direction": "HH"
-    },
-    {
-      "type": "low",
-      "price": 2796.62,
-      "keyPrice": 2797.294,
-      "open": 2798.785,
-      "high": 2798.949,
-      "low": 2796.62,
-      "close": 2797.294,
-      "time": 1771429320,
-      "formattedTime": "2026-02-18 15:42:00",
-      "date": "2026-02-18",
-      "index": 139,
-      "strength": 1,
-      "candleIndex": 139,
-      "direction": "LL"
-    },
-    {
-      "type": "high",
-      "price": 2799.997,
-      "keyPrice": 2798.756,
-      "open": 2798.756,
-      "high": 2799.997,
-      "low": 2797.578,
-      "close": 2797.578,
-      "time": 1771429680,
-      "formattedTime": "2026-02-18 15:48:00",
-      "date": "2026-02-18",
-      "index": 141,
-      "strength": 1,
-      "candleIndex": 141,
-      "direction": "LH"
-    },
-    {
-      "type": "low",
-      "price": 2793.772,
-      "keyPrice": 2794.547,
-      "open": 2794.841,
-      "high": 2795.868,
-      "low": 2793.772,
-      "close": 2794.547,
-      "time": 1771430400,
-      "formattedTime": "2026-02-18 16:00:00",
-      "date": "2026-02-18",
-      "index": 145,
-      "strength": 1,
-      "candleIndex": 145,
-      "direction": "LL"
-    },
-    {
-      "type": "high",
-      "price": 2796.104,
-      "keyPrice": 2794.429,
-      "open": 2794.429,
-      "high": 2796.104,
-      "low": 2793.882,
-      "close": 2793.882,
-      "time": 1771430580,
-      "formattedTime": "2026-02-18 16:03:00",
-      "date": "2026-02-18",
-      "index": 146,
-      "strength": 1,
-      "candleIndex": 146,
-      "direction": "LH"
-    },
-    {
-      "type": "low",
-      "price": 2791.883,
-      "keyPrice": 2792.195,
-      "open": 2793.97,
-      "high": 2794.322,
-      "low": 2791.883,
-      "close": 2792.195,
-      "time": 1771430760,
-      "formattedTime": "2026-02-18 16:06:00",
-      "date": "2026-02-18",
-      "index": 147,
-      "strength": 1,
-      "candleIndex": 147,
-      "direction": "LL"
-    },
-    {
-      "type": "high",
-      "price": 2794.665,
-      "keyPrice": 2793.729,
-      "open": 2792.369,
-      "high": 2794.665,
-      "low": 2792.322,
-      "close": 2793.729,
-      "time": 1771430940,
-      "formattedTime": "2026-02-18 16:09:00",
-      "date": "2026-02-18",
-      "index": 148,
-      "strength": 1,
-      "candleIndex": 148,
-      "direction": "LH"
-    },
-    {
-      "type": "low",
-      "price": 2791.728,
-      "keyPrice": 2792.722,
-      "open": 2792.722,
-      "high": 2794.281,
-      "low": 2791.728,
-      "close": 2793.843,
-      "time": 1771431300,
-      "formattedTime": "2026-02-18 16:15:00",
-      "date": "2026-02-18",
-      "index": 150,
-      "strength": 1,
-      "candleIndex": 150,
-      "direction": "LL"
-    },
-    {
-      "type": "low",
-      "price": 2796.282,
-      "keyPrice": 2797.643,
-      "open": 2797.643,
-      "high": 2798.59,
-      "low": 2796.282,
-      "close": 2797.908,
-      "time": 1771432200,
-      "formattedTime": "2026-02-18 16:30:00",
-      "date": "2026-02-18",
-      "index": 155,
-      "strength": 1,
-      "candleIndex": 155,
-      "direction": "HL"
-    },
-    {
-      "type": "high",
-      "price": 2800.321,
-      "keyPrice": 2798.156,
-      "open": 2798.027,
-      "high": 2800.321,
-      "low": 2797.516,
-      "close": 2798.156,
-      "time": 1771432380,
-      "formattedTime": "2026-02-18 16:33:00",
-      "date": "2026-02-18",
-      "index": 156,
-      "strength": 1,
-      "candleIndex": 156,
-      "direction": "HH"
-    },
-    {
-      "type": "low",
-      "price": 2795.72,
-      "keyPrice": 2795.971,
-      "open": 2797.669,
-      "high": 2797.68,
-      "low": 2795.72,
-      "close": 2795.971,
-      "time": 1771432740,
-      "formattedTime": "2026-02-18 16:39:00",
-      "date": "2026-02-18",
-      "index": 158,
-      "strength": 1,
-      "candleIndex": 158,
-      "direction": "LL"
-    },
-    {
-      "type": "high",
-      "price": 2799.5,
-      "keyPrice": 2798.591,
-      "open": 2797.934,
-      "high": 2799.5,
-      "low": 2797.48,
-      "close": 2798.591,
-      "time": 1771433280,
-      "formattedTime": "2026-02-18 16:48:00",
-      "date": "2026-02-18",
-      "index": 161,
-      "strength": 1,
-      "candleIndex": 161,
-      "direction": "LH"
-    },
-    {
-      "type": "low",
-      "price": 2793.712,
-      "keyPrice": 2794.036,
-      "open": 2795.374,
-      "high": 2796.239,
-      "low": 2793.712,
-      "close": 2794.036,
-      "time": 1771433820,
-      "formattedTime": "2026-02-18 16:57:00",
-      "date": "2026-02-18",
-      "index": 164,
-      "strength": 1,
-      "candleIndex": 164,
-      "direction": "LL"
-    },
-    {
-      "type": "high",
-      "price": 2798.727,
-      "keyPrice": 2797.547,
-      "open": 2796.688,
-      "high": 2798.727,
-      "low": 2796.406,
-      "close": 2797.547,
-      "time": 1771434180,
-      "formattedTime": "2026-02-18 17:03:00",
-      "date": "2026-02-18",
-      "index": 166,
-      "strength": 1,
-      "candleIndex": 166,
-      "direction": "LH"
-    },
-    {
-      "type": "low",
-      "price": 2793.327,
-      "keyPrice": 2793.758,
-      "open": 2794.567,
-      "high": 2794.907,
-      "low": 2793.327,
-      "close": 2793.758,
-      "time": 1771434720,
-      "formattedTime": "2026-02-18 17:12:00",
-      "date": "2026-02-18",
-      "index": 169,
-      "strength": 1,
-      "candleIndex": 169,
-      "direction": "LL"
-    },
-    {
-      "type": "high",
-      "price": 2796.273,
-      "keyPrice": 2795.835,
-      "open": 2795.267,
-      "high": 2796.273,
-      "low": 2794.606,
-      "close": 2795.835,
-      "time": 1771435080,
-      "formattedTime": "2026-02-18 17:18:00",
-      "date": "2026-02-18",
-      "index": 171,
-      "strength": 1,
-      "candleIndex": 171,
-      "direction": "LH"
-    },
-    {
-      "type": "low",
-      "price": 2792.552,
-      "keyPrice": 2793.644,
-      "open": 2796.207,
-      "high": 2796.207,
-      "low": 2792.552,
-      "close": 2793.644,
-      "time": 1771435260,
-      "formattedTime": "2026-02-18 17:21:00",
-      "date": "2026-02-18",
-      "index": 172,
-      "strength": 1,
-      "candleIndex": 172,
-      "direction": "LL"
-    },
-    {
-      "type": "high",
-      "price": 2803.245,
-      "keyPrice": 2802.209,
-      "open": 2802.209,
-      "high": 2803.245,
-      "low": 2801.305,
-      "close": 2801.758,
-      "time": 1771435980,
-      "formattedTime": "2026-02-18 17:33:00",
-      "date": "2026-02-18",
-      "index": 176,
-      "strength": 1,
-      "candleIndex": 176,
-      "direction": "HH"
-    },
-    {
-      "type": "low",
-      "price": 2799.345,
-      "keyPrice": 2801.291,
-      "open": 2801.291,
-      "high": 2803.523,
-      "low": 2799.345,
-      "close": 2803.048,
-      "time": 1771436340,
-      "formattedTime": "2026-02-18 17:39:00",
-      "date": "2026-02-18",
-      "index": 178,
-      "strength": 1,
-      "candleIndex": 178,
-      "direction": "HL"
-    },
-    {
-      "type": "high",
-      "price": 2805.381,
-      "keyPrice": 2804.649,
-      "open": 2804.649,
-      "high": 2805.381,
-      "low": 2803.08,
-      "close": 2803.091,
-      "time": 1771436700,
-      "formattedTime": "2026-02-18 17:45:00",
-      "date": "2026-02-18",
-      "index": 180,
-      "strength": 1,
-      "candleIndex": 180,
-      "direction": "HH"
-    },
-    {
-      "type": "low",
-      "price": 2797.925,
-      "keyPrice": 2798.415,
-      "open": 2798.415,
-      "high": 2799.807,
-      "low": 2797.925,
-      "close": 2799.251,
-      "time": 1771437240,
-      "formattedTime": "2026-02-18 17:54:00",
-      "date": "2026-02-18",
-      "index": 183,
-      "strength": 1,
-      "candleIndex": 183,
-      "direction": "LL"
-    },
-    {
-      "type": "high",
-      "price": 2800.683,
-      "keyPrice": 2799.166,
-      "open": 2799.166,
-      "high": 2800.683,
-      "low": 2798.2,
-      "close": 2798.258,
-      "time": 1771437420,
-      "formattedTime": "2026-02-18 17:57:00",
-      "date": "2026-02-18",
-      "index": 184,
-      "strength": 1,
-      "candleIndex": 184,
-      "direction": "LH"
-    },
-    {
-      "type": "low",
       "price": 2796.66,
       "keyPrice": 2797.093,
       "open": 2797.093,
@@ -1131,10 +11,10 @@
       "time": 1771438140,
       "formattedTime": "2026-02-18 18:09:00",
       "date": "2026-02-18",
-      "index": 188,
+      "index": 2,
       "strength": 1,
-      "candleIndex": 188,
-      "direction": "LL"
+      "candleIndex": 2,
+      "direction": "FIRST"
     },
     {
       "type": "high",
@@ -1147,10 +27,10 @@
       "time": 1771439040,
       "formattedTime": "2026-02-18 18:24:00",
       "date": "2026-02-18",
-      "index": 193,
+      "index": 7,
       "strength": 1,
-      "candleIndex": 193,
-      "direction": "HH"
+      "candleIndex": 7,
+      "direction": "FIRST"
     },
     {
       "type": "low",
@@ -1163,9 +43,9 @@
       "time": 1771439760,
       "formattedTime": "2026-02-18 18:36:00",
       "date": "2026-02-18",
-      "index": 197,
+      "index": 11,
       "strength": 1,
-      "candleIndex": 197,
+      "candleIndex": 11,
       "direction": "HL"
     },
     {
@@ -1179,9 +59,9 @@
       "time": 1771439940,
       "formattedTime": "2026-02-18 18:39:00",
       "date": "2026-02-18",
-      "index": 198,
+      "index": 12,
       "strength": 1,
-      "candleIndex": 198,
+      "candleIndex": 12,
       "direction": "LH"
     },
     {
@@ -1195,9 +75,9 @@
       "time": 1771440660,
       "formattedTime": "2026-02-18 18:51:00",
       "date": "2026-02-18",
-      "index": 202,
+      "index": 16,
       "strength": 1,
-      "candleIndex": 202,
+      "candleIndex": 16,
       "direction": "LH"
     },
     {
@@ -1211,9 +91,9 @@
       "time": 1771440660,
       "formattedTime": "2026-02-18 18:51:00",
       "date": "2026-02-18",
-      "index": 202,
+      "index": 16,
       "strength": 1,
-      "candleIndex": 202,
+      "candleIndex": 16,
       "direction": "LL"
     },
     {
@@ -1227,9 +107,9 @@
       "time": 1771441740,
       "formattedTime": "2026-02-18 19:09:00",
       "date": "2026-02-18",
-      "index": 208,
+      "index": 22,
       "strength": 1,
-      "candleIndex": 208,
+      "candleIndex": 22,
       "direction": "LL"
     },
     {
@@ -1243,9 +123,9 @@
       "time": 1771442280,
       "formattedTime": "2026-02-18 19:18:00",
       "date": "2026-02-18",
-      "index": 211,
+      "index": 25,
       "strength": 1,
-      "candleIndex": 211,
+      "candleIndex": 25,
       "direction": "LH"
     },
     {
@@ -1259,9 +139,9 @@
       "time": 1771443000,
       "formattedTime": "2026-02-18 19:30:00",
       "date": "2026-02-18",
-      "index": 215,
+      "index": 29,
       "strength": 1,
-      "candleIndex": 215,
+      "candleIndex": 29,
       "direction": "LL"
     },
     {
@@ -1275,9 +155,9 @@
       "time": 1771443540,
       "formattedTime": "2026-02-18 19:39:00",
       "date": "2026-02-18",
-      "index": 218,
+      "index": 32,
       "strength": 1,
-      "candleIndex": 218,
+      "candleIndex": 32,
       "direction": "HH"
     },
     {
@@ -1291,9 +171,9 @@
       "time": 1771443720,
       "formattedTime": "2026-02-18 19:42:00",
       "date": "2026-02-18",
-      "index": 219,
+      "index": 33,
       "strength": 1,
-      "candleIndex": 219,
+      "candleIndex": 33,
       "direction": "HL"
     },
     {
@@ -1307,9 +187,9 @@
       "time": 1771444260,
       "formattedTime": "2026-02-18 19:51:00",
       "date": "2026-02-18",
-      "index": 222,
+      "index": 36,
       "strength": 1,
-      "candleIndex": 222,
+      "candleIndex": 36,
       "direction": "LH"
     },
     {
@@ -1323,9 +203,9 @@
       "time": 1771444800,
       "formattedTime": "2026-02-18 20:00:00",
       "date": "2026-02-18",
-      "index": 225,
+      "index": 39,
       "strength": 1,
-      "candleIndex": 225,
+      "candleIndex": 39,
       "direction": "LL"
     },
     {
@@ -1339,9 +219,9 @@
       "time": 1771445160,
       "formattedTime": "2026-02-18 20:06:00",
       "date": "2026-02-18",
-      "index": 227,
+      "index": 41,
       "strength": 1,
-      "candleIndex": 227,
+      "candleIndex": 41,
       "direction": "LH"
     },
     {
@@ -1355,9 +235,9 @@
       "time": 1771445700,
       "formattedTime": "2026-02-18 20:15:00",
       "date": "2026-02-18",
-      "index": 230,
+      "index": 44,
       "strength": 1,
-      "candleIndex": 230,
+      "candleIndex": 44,
       "direction": "LL"
     },
     {
@@ -1371,9 +251,9 @@
       "time": 1771445880,
       "formattedTime": "2026-02-18 20:18:00",
       "date": "2026-02-18",
-      "index": 231,
+      "index": 45,
       "strength": 1,
-      "candleIndex": 231,
+      "candleIndex": 45,
       "direction": "LH"
     },
     {
@@ -1387,9 +267,9 @@
       "time": 1771446060,
       "formattedTime": "2026-02-18 20:21:00",
       "date": "2026-02-18",
-      "index": 232,
+      "index": 46,
       "strength": 1,
-      "candleIndex": 232,
+      "candleIndex": 46,
       "direction": "LL"
     },
     {
@@ -1403,9 +283,9 @@
       "time": 1771446960,
       "formattedTime": "2026-02-18 20:36:00",
       "date": "2026-02-18",
-      "index": 237,
+      "index": 51,
       "strength": 1,
-      "candleIndex": 237,
+      "candleIndex": 51,
       "direction": "HH"
     },
     {
@@ -1419,9 +299,9 @@
       "time": 1771447500,
       "formattedTime": "2026-02-18 20:45:00",
       "date": "2026-02-18",
-      "index": 240,
+      "index": 54,
       "strength": 1,
-      "candleIndex": 240,
+      "candleIndex": 54,
       "direction": "HL"
     },
     {
@@ -1435,9 +315,9 @@
       "time": 1771447860,
       "formattedTime": "2026-02-18 20:51:00",
       "date": "2026-02-18",
-      "index": 242,
+      "index": 56,
       "strength": 1,
-      "candleIndex": 242,
+      "candleIndex": 56,
       "direction": "HL"
     },
     {
@@ -1451,9 +331,9 @@
       "time": 1771448220,
       "formattedTime": "2026-02-18 20:57:00",
       "date": "2026-02-18",
-      "index": 244,
+      "index": 58,
       "strength": 1,
-      "candleIndex": 244,
+      "candleIndex": 58,
       "direction": "HH"
     },
     {
@@ -1467,9 +347,9 @@
       "time": 1771448400,
       "formattedTime": "2026-02-18 21:00:00",
       "date": "2026-02-18",
-      "index": 245,
+      "index": 59,
       "strength": 1,
-      "candleIndex": 245,
+      "candleIndex": 59,
       "direction": "HL"
     },
     {
@@ -1483,9 +363,9 @@
       "time": 1771448760,
       "formattedTime": "2026-02-18 21:06:00",
       "date": "2026-02-18",
-      "index": 247,
+      "index": 61,
       "strength": 1,
-      "candleIndex": 247,
+      "candleIndex": 61,
       "direction": "LL"
     },
     {
@@ -1499,9 +379,9 @@
       "time": 1771448940,
       "formattedTime": "2026-02-18 21:09:00",
       "date": "2026-02-18",
-      "index": 248,
+      "index": 62,
       "strength": 1,
-      "candleIndex": 248,
+      "candleIndex": 62,
       "direction": "LH"
     },
     {
@@ -1515,9 +395,9 @@
       "time": 1771449840,
       "formattedTime": "2026-02-18 21:24:00",
       "date": "2026-02-18",
-      "index": 253,
+      "index": 67,
       "strength": 1,
-      "candleIndex": 253,
+      "candleIndex": 67,
       "direction": "LL"
     },
     {
@@ -1531,9 +411,9 @@
       "time": 1771450560,
       "formattedTime": "2026-02-18 21:36:00",
       "date": "2026-02-18",
-      "index": 257,
+      "index": 71,
       "strength": 1,
-      "candleIndex": 257,
+      "candleIndex": 71,
       "direction": "LH"
     },
     {
@@ -1547,9 +427,9 @@
       "time": 1771450740,
       "formattedTime": "2026-02-18 21:39:00",
       "date": "2026-02-18",
-      "index": 258,
+      "index": 72,
       "strength": 1,
-      "candleIndex": 258,
+      "candleIndex": 72,
       "direction": "HL"
     },
     {
@@ -1563,9 +443,9 @@
       "time": 1771451100,
       "formattedTime": "2026-02-18 21:45:00",
       "date": "2026-02-18",
-      "index": 260,
+      "index": 74,
       "strength": 1,
-      "candleIndex": 260,
+      "candleIndex": 74,
       "direction": "LL"
     },
     {
@@ -1579,9 +459,9 @@
       "time": 1771451460,
       "formattedTime": "2026-02-18 21:51:00",
       "date": "2026-02-18",
-      "index": 262,
+      "index": 76,
       "strength": 1,
-      "candleIndex": 262,
+      "candleIndex": 76,
       "direction": "LH"
     },
     {
@@ -1595,9 +475,9 @@
       "time": 1771451820,
       "formattedTime": "2026-02-18 21:57:00",
       "date": "2026-02-18",
-      "index": 264,
+      "index": 78,
       "strength": 1,
-      "candleIndex": 264,
+      "candleIndex": 78,
       "direction": "LL"
     },
     {
@@ -1611,9 +491,9 @@
       "time": 1771452180,
       "formattedTime": "2026-02-18 22:03:00",
       "date": "2026-02-18",
-      "index": 266,
+      "index": 80,
       "strength": 1,
-      "candleIndex": 266,
+      "candleIndex": 80,
       "direction": "LH"
     },
     {
@@ -1627,9 +507,9 @@
       "time": 1771452540,
       "formattedTime": "2026-02-18 22:09:00",
       "date": "2026-02-18",
-      "index": 268,
+      "index": 82,
       "strength": 1,
-      "candleIndex": 268,
+      "candleIndex": 82,
       "direction": "LH"
     },
     {
@@ -1643,9 +523,9 @@
       "time": 1771452540,
       "formattedTime": "2026-02-18 22:09:00",
       "date": "2026-02-18",
-      "index": 268,
+      "index": 82,
       "strength": 1,
-      "candleIndex": 268,
+      "candleIndex": 82,
       "direction": "LL"
     },
     {
@@ -1659,9 +539,9 @@
       "time": 1771453080,
       "formattedTime": "2026-02-18 22:18:00",
       "date": "2026-02-18",
-      "index": 271,
+      "index": 85,
       "strength": 1,
-      "candleIndex": 271,
+      "candleIndex": 85,
       "direction": "HL"
     },
     {
@@ -1675,9 +555,9 @@
       "time": 1771453800,
       "formattedTime": "2026-02-18 22:30:00",
       "date": "2026-02-18",
-      "index": 275,
+      "index": 89,
       "strength": 1,
-      "candleIndex": 275,
+      "candleIndex": 89,
       "direction": "HH"
     },
     {
@@ -1691,9 +571,9 @@
       "time": 1771454340,
       "formattedTime": "2026-02-18 22:39:00",
       "date": "2026-02-18",
-      "index": 278,
+      "index": 92,
       "strength": 1,
-      "candleIndex": 278,
+      "candleIndex": 92,
       "direction": "LL"
     },
     {
@@ -1707,9 +587,9 @@
       "time": 1771454520,
       "formattedTime": "2026-02-18 22:42:00",
       "date": "2026-02-18",
-      "index": 279,
+      "index": 93,
       "strength": 1,
-      "candleIndex": 279,
+      "candleIndex": 93,
       "direction": "LH"
     },
     {
@@ -1723,9 +603,9 @@
       "time": 1771455600,
       "formattedTime": "2026-02-18 23:00:00",
       "date": "2026-02-18",
-      "index": 285,
+      "index": 99,
       "strength": 1,
-      "candleIndex": 285,
+      "candleIndex": 99,
       "direction": "LL"
     },
     {
@@ -1739,9 +619,9 @@
       "time": 1771456140,
       "formattedTime": "2026-02-18 23:09:00",
       "date": "2026-02-18",
-      "index": 288,
+      "index": 102,
       "strength": 1,
-      "candleIndex": 288,
+      "candleIndex": 102,
       "direction": "LH"
     },
     {
@@ -1755,9 +635,9 @@
       "time": 1771456500,
       "formattedTime": "2026-02-18 23:15:00",
       "date": "2026-02-18",
-      "index": 290,
+      "index": 104,
       "strength": 1,
-      "candleIndex": 290,
+      "candleIndex": 104,
       "direction": "LH"
     },
     {
@@ -1771,9 +651,9 @@
       "time": 1771456680,
       "formattedTime": "2026-02-18 23:18:00",
       "date": "2026-02-18",
-      "index": 291,
+      "index": 105,
       "strength": 1,
-      "candleIndex": 291,
+      "candleIndex": 105,
       "direction": "LL"
     },
     {
@@ -1787,9 +667,9 @@
       "time": 1771457580,
       "formattedTime": "2026-02-18 23:33:00",
       "date": "2026-02-18",
-      "index": 296,
+      "index": 110,
       "strength": 1,
-      "candleIndex": 296,
+      "candleIndex": 110,
       "direction": "HH"
     },
     {
@@ -1803,9 +683,9 @@
       "time": 1771457940,
       "formattedTime": "2026-02-18 23:39:00",
       "date": "2026-02-18",
-      "index": 298,
+      "index": 112,
       "strength": 1,
-      "candleIndex": 298,
+      "candleIndex": 112,
       "direction": "HL"
     },
     {
@@ -1819,9 +699,9 @@
       "time": 1771458300,
       "formattedTime": "2026-02-18 23:45:00",
       "date": "2026-02-18",
-      "index": 300,
+      "index": 114,
       "strength": 1,
-      "candleIndex": 300,
+      "candleIndex": 114,
       "direction": "LL"
     },
     {
@@ -1835,9 +715,9 @@
       "time": 1771458480,
       "formattedTime": "2026-02-18 23:48:00",
       "date": "2026-02-18",
-      "index": 301,
+      "index": 115,
       "strength": 1,
-      "candleIndex": 301,
+      "candleIndex": 115,
       "direction": "LH"
     },
     {
@@ -1851,9 +731,9 @@
       "time": 1771458840,
       "formattedTime": "2026-02-18 23:54:00",
       "date": "2026-02-18",
-      "index": 303,
+      "index": 117,
       "strength": 1,
-      "candleIndex": 303,
+      "candleIndex": 117,
       "direction": "HL"
     },
     {
@@ -1867,9 +747,9 @@
       "time": 1771459200,
       "formattedTime": "2026-02-19 00:00:00",
       "date": "2026-02-19",
-      "index": 305,
+      "index": 119,
       "strength": 1,
-      "candleIndex": 305,
+      "candleIndex": 119,
       "direction": "LL"
     },
     {
@@ -1883,9 +763,9 @@
       "time": 1771459380,
       "formattedTime": "2026-02-19 00:03:00",
       "date": "2026-02-19",
-      "index": 306,
+      "index": 120,
       "strength": 1,
-      "candleIndex": 306,
+      "candleIndex": 120,
       "direction": "HH"
     },
     {
@@ -1899,9 +779,9 @@
       "time": 1771459740,
       "formattedTime": "2026-02-19 00:09:00",
       "date": "2026-02-19",
-      "index": 308,
+      "index": 122,
       "strength": 1,
-      "candleIndex": 308,
+      "candleIndex": 122,
       "direction": "LL"
     },
     {
@@ -1915,9 +795,9 @@
       "time": 1771460280,
       "formattedTime": "2026-02-19 00:18:00",
       "date": "2026-02-19",
-      "index": 311,
+      "index": 125,
       "strength": 1,
-      "candleIndex": 311,
+      "candleIndex": 125,
       "direction": "LH"
     },
     {
@@ -1931,9 +811,9 @@
       "time": 1771460820,
       "formattedTime": "2026-02-19 00:27:00",
       "date": "2026-02-19",
-      "index": 314,
+      "index": 128,
       "strength": 1,
-      "candleIndex": 314,
+      "candleIndex": 128,
       "direction": "HH"
     },
     {
@@ -1947,9 +827,9 @@
       "time": 1771461000,
       "formattedTime": "2026-02-19 00:30:00",
       "date": "2026-02-19",
-      "index": 315,
+      "index": 129,
       "strength": 1,
-      "candleIndex": 315,
+      "candleIndex": 129,
       "direction": "HL"
     },
     {
@@ -1963,9 +843,9 @@
       "time": 1771461900,
       "formattedTime": "2026-02-19 00:45:00",
       "date": "2026-02-19",
-      "index": 320,
+      "index": 134,
       "strength": 1,
-      "candleIndex": 320,
+      "candleIndex": 134,
       "direction": "HH"
     },
     {
@@ -1979,9 +859,9 @@
       "time": 1771462620,
       "formattedTime": "2026-02-19 00:57:00",
       "date": "2026-02-19",
-      "index": 324,
+      "index": 138,
       "strength": 1,
-      "candleIndex": 324,
+      "candleIndex": 138,
       "direction": "HH"
     },
     {
@@ -1995,9 +875,9 @@
       "time": 1771462980,
       "formattedTime": "2026-02-19 01:03:00",
       "date": "2026-02-19",
-      "index": 326,
+      "index": 140,
       "strength": 1,
-      "candleIndex": 326,
+      "candleIndex": 140,
       "direction": "HL"
     },
     {
@@ -2011,9 +891,9 @@
       "time": 1771463160,
       "formattedTime": "2026-02-19 01:06:00",
       "date": "2026-02-19",
-      "index": 327,
+      "index": 141,
       "strength": 1,
-      "candleIndex": 327,
+      "candleIndex": 141,
       "direction": "LH"
     },
     {
@@ -2027,9 +907,9 @@
       "time": 1771463340,
       "formattedTime": "2026-02-19 01:09:00",
       "date": "2026-02-19",
-      "index": 328,
+      "index": 142,
       "strength": 1,
-      "candleIndex": 328,
+      "candleIndex": 142,
       "direction": "LL"
     },
     {
@@ -2043,9 +923,9 @@
       "time": 1771463700,
       "formattedTime": "2026-02-19 01:15:00",
       "date": "2026-02-19",
-      "index": 330,
+      "index": 144,
       "strength": 1,
-      "candleIndex": 330,
+      "candleIndex": 144,
       "direction": "LL"
     },
     {
@@ -2059,9 +939,9 @@
       "time": 1771463880,
       "formattedTime": "2026-02-19 01:18:00",
       "date": "2026-02-19",
-      "index": 331,
+      "index": 145,
       "strength": 1,
-      "candleIndex": 331,
+      "candleIndex": 145,
       "direction": "LH"
     },
     {
@@ -2075,9 +955,9 @@
       "time": 1771464240,
       "formattedTime": "2026-02-19 01:24:00",
       "date": "2026-02-19",
-      "index": 333,
+      "index": 147,
       "strength": 1,
-      "candleIndex": 333,
+      "candleIndex": 147,
       "direction": "HH"
     },
     {
@@ -2091,9 +971,9 @@
       "time": 1771464420,
       "formattedTime": "2026-02-19 01:27:00",
       "date": "2026-02-19",
-      "index": 334,
+      "index": 148,
       "strength": 1,
-      "candleIndex": 334,
+      "candleIndex": 148,
       "direction": "HL"
     },
     {
@@ -2107,9 +987,9 @@
       "time": 1771465500,
       "formattedTime": "2026-02-19 01:45:00",
       "date": "2026-02-19",
-      "index": 340,
+      "index": 154,
       "strength": 1,
-      "candleIndex": 340,
+      "candleIndex": 154,
       "direction": "HH"
     },
     {
@@ -2123,9 +1003,9 @@
       "time": 1771465680,
       "formattedTime": "2026-02-19 01:48:00",
       "date": "2026-02-19",
-      "index": 341,
+      "index": 155,
       "strength": 1,
-      "candleIndex": 341,
+      "candleIndex": 155,
       "direction": "HL"
     },
     {
@@ -2139,9 +1019,9 @@
       "time": 1771465860,
       "formattedTime": "2026-02-19 01:51:00",
       "date": "2026-02-19",
-      "index": 342,
+      "index": 156,
       "strength": 1,
-      "candleIndex": 342,
+      "candleIndex": 156,
       "direction": "HH"
     },
     {
@@ -2155,9 +1035,9 @@
       "time": 1771466940,
       "formattedTime": "2026-02-19 02:09:00",
       "date": "2026-02-19",
-      "index": 348,
+      "index": 162,
       "strength": 1,
-      "candleIndex": 348,
+      "candleIndex": 162,
       "direction": "HL"
     },
     {
@@ -2171,9 +1051,9 @@
       "time": 1771467660,
       "formattedTime": "2026-02-19 02:21:00",
       "date": "2026-02-19",
-      "index": 352,
+      "index": 166,
       "strength": 1,
-      "candleIndex": 352,
+      "candleIndex": 166,
       "direction": "HH"
     },
     {
@@ -2187,9 +1067,9 @@
       "time": 1771468380,
       "formattedTime": "2026-02-19 02:33:00",
       "date": "2026-02-19",
-      "index": 356,
+      "index": 170,
       "strength": 1,
-      "candleIndex": 356,
+      "candleIndex": 170,
       "direction": "HL"
     },
     {
@@ -2203,9 +1083,9 @@
       "time": 1771469100,
       "formattedTime": "2026-02-19 02:45:00",
       "date": "2026-02-19",
-      "index": 360,
+      "index": 174,
       "strength": 1,
-      "candleIndex": 360,
+      "candleIndex": 174,
       "direction": "HL"
     },
     {
@@ -2219,9 +1099,9 @@
       "time": 1771469820,
       "formattedTime": "2026-02-19 02:57:00",
       "date": "2026-02-19",
-      "index": 364,
+      "index": 178,
       "strength": 1,
-      "candleIndex": 364,
+      "candleIndex": 178,
       "direction": "HH"
     },
     {
@@ -2235,9 +1115,9 @@
       "time": 1771470720,
       "formattedTime": "2026-02-19 03:12:00",
       "date": "2026-02-19",
-      "index": 369,
+      "index": 183,
       "strength": 1,
-      "candleIndex": 369,
+      "candleIndex": 183,
       "direction": "HL"
     },
     {
@@ -2251,9 +1131,9 @@
       "time": 1771471080,
       "formattedTime": "2026-02-19 03:18:00",
       "date": "2026-02-19",
-      "index": 371,
+      "index": 185,
       "strength": 1,
-      "candleIndex": 371,
+      "candleIndex": 185,
       "direction": "LH"
     },
     {
@@ -2267,9 +1147,9 @@
       "time": 1771471260,
       "formattedTime": "2026-02-19 03:21:00",
       "date": "2026-02-19",
-      "index": 372,
+      "index": 186,
       "strength": 1,
-      "candleIndex": 372,
+      "candleIndex": 186,
       "direction": "HL"
     },
     {
@@ -2283,9 +1163,9 @@
       "time": 1771471440,
       "formattedTime": "2026-02-19 03:24:00",
       "date": "2026-02-19",
-      "index": 373,
+      "index": 187,
       "strength": 1,
-      "candleIndex": 373,
+      "candleIndex": 187,
       "direction": "LH"
     },
     {
@@ -2299,9 +1179,9 @@
       "time": 1771471620,
       "formattedTime": "2026-02-19 03:27:00",
       "date": "2026-02-19",
-      "index": 374,
+      "index": 188,
       "strength": 1,
-      "candleIndex": 374,
+      "candleIndex": 188,
       "direction": "LL"
     },
     {
@@ -2315,9 +1195,9 @@
       "time": 1771471980,
       "formattedTime": "2026-02-19 03:33:00",
       "date": "2026-02-19",
-      "index": 376,
+      "index": 190,
       "strength": 1,
-      "candleIndex": 376,
+      "candleIndex": 190,
       "direction": "LH"
     },
     {
@@ -2331,9 +1211,9 @@
       "time": 1771472880,
       "formattedTime": "2026-02-19 03:48:00",
       "date": "2026-02-19",
-      "index": 381,
+      "index": 195,
       "strength": 1,
-      "candleIndex": 381,
+      "candleIndex": 195,
       "direction": "LL"
     },
     {
@@ -2347,9 +1227,9 @@
       "time": 1771473240,
       "formattedTime": "2026-02-19 03:54:00",
       "date": "2026-02-19",
-      "index": 383,
+      "index": 197,
       "strength": 1,
-      "candleIndex": 383,
+      "candleIndex": 197,
       "direction": "HL"
     },
     {
@@ -2363,9 +1243,9 @@
       "time": 1771473420,
       "formattedTime": "2026-02-19 03:57:00",
       "date": "2026-02-19",
-      "index": 384,
+      "index": 198,
       "strength": 1,
-      "candleIndex": 384,
+      "candleIndex": 198,
       "direction": "LH"
     },
     {
@@ -2379,9 +1259,9 @@
       "time": 1771474320,
       "formattedTime": "2026-02-19 04:12:00",
       "date": "2026-02-19",
-      "index": 389,
+      "index": 203,
       "strength": 1,
-      "candleIndex": 389,
+      "candleIndex": 203,
       "direction": "HH"
     },
     {
@@ -2395,9 +1275,9 @@
       "time": 1771475220,
       "formattedTime": "2026-02-19 04:27:00",
       "date": "2026-02-19",
-      "index": 394,
+      "index": 208,
       "strength": 1,
-      "candleIndex": 394,
+      "candleIndex": 208,
       "direction": "HL"
     },
     {
@@ -2411,9 +1291,9 @@
       "time": 1771475400,
       "formattedTime": "2026-02-19 04:30:00",
       "date": "2026-02-19",
-      "index": 395,
+      "index": 209,
       "strength": 1,
-      "candleIndex": 395,
+      "candleIndex": 209,
       "direction": "HH"
     },
     {
@@ -2427,9 +1307,9 @@
       "time": 1771475760,
       "formattedTime": "2026-02-19 04:36:00",
       "date": "2026-02-19",
-      "index": 397,
+      "index": 211,
       "strength": 1,
-      "candleIndex": 397,
+      "candleIndex": 211,
       "direction": "LL"
     },
     {
@@ -2443,9 +1323,9 @@
       "time": 1771476120,
       "formattedTime": "2026-02-19 04:42:00",
       "date": "2026-02-19",
-      "index": 399,
+      "index": 213,
       "strength": 1,
-      "candleIndex": 399,
+      "candleIndex": 213,
       "direction": "HH"
     },
     {
@@ -2459,9 +1339,9 @@
       "time": 1771476480,
       "formattedTime": "2026-02-19 04:48:00",
       "date": "2026-02-19",
-      "index": 401,
+      "index": 215,
       "strength": 1,
-      "candleIndex": 401,
+      "candleIndex": 215,
       "direction": "HL"
     },
     {
@@ -2475,9 +1355,9 @@
       "time": 1771476660,
       "formattedTime": "2026-02-19 04:51:00",
       "date": "2026-02-19",
-      "index": 402,
+      "index": 216,
       "strength": 1,
-      "candleIndex": 402,
+      "candleIndex": 216,
       "direction": "HH"
     },
     {
@@ -2491,9 +1371,9 @@
       "time": 1771477020,
       "formattedTime": "2026-02-19 04:57:00",
       "date": "2026-02-19",
-      "index": 404,
+      "index": 218,
       "strength": 1,
-      "candleIndex": 404,
+      "candleIndex": 218,
       "direction": "LL"
     },
     {
@@ -2507,9 +1387,9 @@
       "time": 1771477740,
       "formattedTime": "2026-02-19 05:09:00",
       "date": "2026-02-19",
-      "index": 408,
+      "index": 222,
       "strength": 1,
-      "candleIndex": 408,
+      "candleIndex": 222,
       "direction": "HH"
     },
     {
@@ -2523,9 +1403,9 @@
       "time": 1771477920,
       "formattedTime": "2026-02-19 05:12:00",
       "date": "2026-02-19",
-      "index": 409,
+      "index": 223,
       "strength": 1,
-      "candleIndex": 409,
+      "candleIndex": 223,
       "direction": "HL"
     },
     {
@@ -2539,9 +1419,9 @@
       "time": 1771478100,
       "formattedTime": "2026-02-19 05:15:00",
       "date": "2026-02-19",
-      "index": 410,
+      "index": 224,
       "strength": 1,
-      "candleIndex": 410,
+      "candleIndex": 224,
       "direction": "LH"
     },
     {
@@ -2555,9 +1435,9 @@
       "time": 1771478640,
       "formattedTime": "2026-02-19 05:24:00",
       "date": "2026-02-19",
-      "index": 413,
+      "index": 227,
       "strength": 1,
-      "candleIndex": 413,
+      "candleIndex": 227,
       "direction": "LL"
     },
     {
@@ -2571,9 +1451,9 @@
       "time": 1771479000,
       "formattedTime": "2026-02-19 05:30:00",
       "date": "2026-02-19",
-      "index": 415,
+      "index": 229,
       "strength": 1,
-      "candleIndex": 415,
+      "candleIndex": 229,
       "direction": "HH"
     },
     {
@@ -2587,9 +1467,9 @@
       "time": 1771479180,
       "formattedTime": "2026-02-19 05:33:00",
       "date": "2026-02-19",
-      "index": 416,
+      "index": 230,
       "strength": 1,
-      "candleIndex": 416,
+      "candleIndex": 230,
       "direction": "LL"
     },
     {
@@ -2603,9 +1483,9 @@
       "time": 1771479540,
       "formattedTime": "2026-02-19 05:39:00",
       "date": "2026-02-19",
-      "index": 418,
+      "index": 232,
       "strength": 1,
-      "candleIndex": 418,
+      "candleIndex": 232,
       "direction": "LH"
     },
     {
@@ -2619,9 +1499,9 @@
       "time": 1771480260,
       "formattedTime": "2026-02-19 05:51:00",
       "date": "2026-02-19",
-      "index": 422,
+      "index": 236,
       "strength": 1,
-      "candleIndex": 422,
+      "candleIndex": 236,
       "direction": "LL"
     },
     {
@@ -2635,9 +1515,9 @@
       "time": 1771480800,
       "formattedTime": "2026-02-19 06:00:00",
       "date": "2026-02-19",
-      "index": 425,
+      "index": 239,
       "strength": 1,
-      "candleIndex": 425,
+      "candleIndex": 239,
       "direction": "LH"
     },
     {
@@ -2651,9 +1531,9 @@
       "time": 1771481160,
       "formattedTime": "2026-02-19 06:06:00",
       "date": "2026-02-19",
-      "index": 427,
+      "index": 241,
       "strength": 1,
-      "candleIndex": 427,
+      "candleIndex": 241,
       "direction": "HL"
     },
     {
@@ -2667,9 +1547,9 @@
       "time": 1771481520,
       "formattedTime": "2026-02-19 06:12:00",
       "date": "2026-02-19",
-      "index": 429,
+      "index": 243,
       "strength": 1,
-      "candleIndex": 429,
+      "candleIndex": 243,
       "direction": "HH"
     },
     {
@@ -2683,9 +1563,9 @@
       "time": 1771482420,
       "formattedTime": "2026-02-19 06:27:00",
       "date": "2026-02-19",
-      "index": 434,
+      "index": 248,
       "strength": 1,
-      "candleIndex": 434,
+      "candleIndex": 248,
       "direction": "HH"
     },
     {
@@ -2699,9 +1579,9 @@
       "time": 1771483500,
       "formattedTime": "2026-02-19 06:45:00",
       "date": "2026-02-19",
-      "index": 440,
+      "index": 254,
       "strength": 1,
-      "candleIndex": 440,
+      "candleIndex": 254,
       "direction": "HH"
     },
     {
@@ -2715,9 +1595,9 @@
       "time": 1771483860,
       "formattedTime": "2026-02-19 06:51:00",
       "date": "2026-02-19",
-      "index": 442,
+      "index": 256,
       "strength": 1,
-      "candleIndex": 442,
+      "candleIndex": 256,
       "direction": "HL"
     },
     {
@@ -2731,9 +1611,9 @@
       "time": 1771484760,
       "formattedTime": "2026-02-19 07:06:00",
       "date": "2026-02-19",
-      "index": 447,
+      "index": 261,
       "strength": 1,
-      "candleIndex": 447,
+      "candleIndex": 261,
       "direction": "HL"
     },
     {
@@ -2747,9 +1627,9 @@
       "time": 1771485480,
       "formattedTime": "2026-02-19 07:18:00",
       "date": "2026-02-19",
-      "index": 451,
+      "index": 265,
       "strength": 1,
-      "candleIndex": 451,
+      "candleIndex": 265,
       "direction": "HL"
     },
     {
@@ -2763,9 +1643,9 @@
       "time": 1771485840,
       "formattedTime": "2026-02-19 07:24:00",
       "date": "2026-02-19",
-      "index": 453,
+      "index": 267,
       "strength": 1,
-      "candleIndex": 453,
+      "candleIndex": 267,
       "direction": "HH"
     },
     {
@@ -2779,9 +1659,9 @@
       "time": 1771486200,
       "formattedTime": "2026-02-19 07:30:00",
       "date": "2026-02-19",
-      "index": 455,
+      "index": 269,
       "strength": 1,
-      "candleIndex": 455,
+      "candleIndex": 269,
       "direction": "LL"
     },
     {
@@ -2795,9 +1675,9 @@
       "time": 1771487100,
       "formattedTime": "2026-02-19 07:45:00",
       "date": "2026-02-19",
-      "index": 460,
+      "index": 274,
       "strength": 1,
-      "candleIndex": 460,
+      "candleIndex": 274,
       "direction": "HH"
     },
     {
@@ -2811,9 +1691,9 @@
       "time": 1771487280,
       "formattedTime": "2026-02-19 07:48:00",
       "date": "2026-02-19",
-      "index": 461,
+      "index": 275,
       "strength": 1,
-      "candleIndex": 461,
+      "candleIndex": 275,
       "direction": "HL"
     },
     {
@@ -2827,9 +1707,9 @@
       "time": 1771487460,
       "formattedTime": "2026-02-19 07:51:00",
       "date": "2026-02-19",
-      "index": 462,
+      "index": 276,
       "strength": 1,
-      "candleIndex": 462,
+      "candleIndex": 276,
       "direction": "LH"
     },
     {
@@ -2843,9 +1723,9 @@
       "time": 1771487820,
       "formattedTime": "2026-02-19 07:57:00",
       "date": "2026-02-19",
-      "index": 464,
+      "index": 278,
       "strength": 1,
-      "candleIndex": 464,
+      "candleIndex": 278,
       "direction": "LL"
     },
     {
@@ -2859,9 +1739,9 @@
       "time": 1771488180,
       "formattedTime": "2026-02-19 08:03:00",
       "date": "2026-02-19",
-      "index": 466,
+      "index": 280,
       "strength": 1,
-      "candleIndex": 466,
+      "candleIndex": 280,
       "direction": "LH"
     },
     {
@@ -2875,9 +1755,9 @@
       "time": 1771488540,
       "formattedTime": "2026-02-19 08:09:00",
       "date": "2026-02-19",
-      "index": 468,
+      "index": 282,
       "strength": 1,
-      "candleIndex": 468,
+      "candleIndex": 282,
       "direction": "HH"
     },
     {
@@ -2891,9 +1771,9 @@
       "time": 1771489080,
       "formattedTime": "2026-02-19 08:18:00",
       "date": "2026-02-19",
-      "index": 471,
+      "index": 285,
       "strength": 1,
-      "candleIndex": 471,
+      "candleIndex": 285,
       "direction": "LH"
     },
     {
@@ -2907,9 +1787,9 @@
       "time": 1771489440,
       "formattedTime": "2026-02-19 08:24:00",
       "date": "2026-02-19",
-      "index": 473,
+      "index": 287,
       "strength": 1,
-      "candleIndex": 473,
+      "candleIndex": 287,
       "direction": "HL"
     },
     {
@@ -2923,9 +1803,9 @@
       "time": 1771490880,
       "formattedTime": "2026-02-19 08:48:00",
       "date": "2026-02-19",
-      "index": 481,
+      "index": 295,
       "strength": 1,
-      "candleIndex": 481,
+      "candleIndex": 295,
       "direction": "HH"
     },
     {
@@ -2939,9 +1819,9 @@
       "time": 1771491780,
       "formattedTime": "2026-02-19 09:03:00",
       "date": "2026-02-19",
-      "index": 486,
+      "index": 300,
       "strength": 1,
-      "candleIndex": 486,
+      "candleIndex": 300,
       "direction": "HL"
     },
     {
@@ -2955,9 +1835,9 @@
       "time": 1771491960,
       "formattedTime": "2026-02-19 09:06:00",
       "date": "2026-02-19",
-      "index": 487,
+      "index": 301,
       "strength": 1,
-      "candleIndex": 487,
+      "candleIndex": 301,
       "direction": "LH"
     },
     {
@@ -2971,9 +1851,9 @@
       "time": 1771492320,
       "formattedTime": "2026-02-19 09:12:00",
       "date": "2026-02-19",
-      "index": 489,
+      "index": 303,
       "strength": 1,
-      "candleIndex": 489,
+      "candleIndex": 303,
       "direction": "LL"
     },
     {
@@ -2987,9 +1867,9 @@
       "time": 1771493040,
       "formattedTime": "2026-02-19 09:24:00",
       "date": "2026-02-19",
-      "index": 493,
+      "index": 307,
       "strength": 1,
-      "candleIndex": 493,
+      "candleIndex": 307,
       "direction": "HH"
     },
     {
@@ -3003,9 +1883,9 @@
       "time": 1771493220,
       "formattedTime": "2026-02-19 09:27:00",
       "date": "2026-02-19",
-      "index": 494,
+      "index": 308,
       "strength": 1,
-      "candleIndex": 494,
+      "candleIndex": 308,
       "direction": "HL"
     },
     {
@@ -3019,9 +1899,9 @@
       "time": 1771493580,
       "formattedTime": "2026-02-19 09:33:00",
       "date": "2026-02-19",
-      "index": 496,
+      "index": 310,
       "strength": 1,
-      "candleIndex": 496,
+      "candleIndex": 310,
       "direction": "HH"
     },
     {
@@ -3035,9 +1915,9 @@
       "time": 1771493940,
       "formattedTime": "2026-02-19 09:39:00",
       "date": "2026-02-19",
-      "index": 498,
+      "index": 312,
       "strength": 1,
-      "candleIndex": 498,
+      "candleIndex": 312,
       "direction": "LL"
     },
     {
@@ -3051,9 +1931,9 @@
       "time": 1771494840,
       "formattedTime": "2026-02-19 09:54:00",
       "date": "2026-02-19",
-      "index": 503,
+      "index": 317,
       "strength": 1,
-      "candleIndex": 503,
+      "candleIndex": 317,
       "direction": "HH"
     },
     {
@@ -3067,9 +1947,9 @@
       "time": 1771495020,
       "formattedTime": "2026-02-19 09:57:00",
       "date": "2026-02-19",
-      "index": 504,
+      "index": 318,
       "strength": 1,
-      "candleIndex": 504,
+      "candleIndex": 318,
       "direction": "HL"
     },
     {
@@ -3083,9 +1963,9 @@
       "time": 1771495380,
       "formattedTime": "2026-02-19 10:03:00",
       "date": "2026-02-19",
-      "index": 506,
+      "index": 320,
       "strength": 1,
-      "candleIndex": 506,
+      "candleIndex": 320,
       "direction": "HH"
     },
     {
@@ -3099,9 +1979,9 @@
       "time": 1771495560,
       "formattedTime": "2026-02-19 10:06:00",
       "date": "2026-02-19",
-      "index": 507,
+      "index": 321,
       "strength": 1,
-      "candleIndex": 507,
+      "candleIndex": 321,
       "direction": "HL"
     },
     {
@@ -3115,9 +1995,9 @@
       "time": 1771495920,
       "formattedTime": "2026-02-19 10:12:00",
       "date": "2026-02-19",
-      "index": 509,
+      "index": 323,
       "strength": 1,
-      "candleIndex": 509,
+      "candleIndex": 323,
       "direction": "HL"
     },
     {
@@ -3131,9 +2011,9 @@
       "time": 1771496100,
       "formattedTime": "2026-02-19 10:15:00",
       "date": "2026-02-19",
-      "index": 510,
+      "index": 324,
       "strength": 1,
-      "candleIndex": 510,
+      "candleIndex": 324,
       "direction": "LH"
     },
     {
@@ -3147,9 +2027,9 @@
       "time": 1771496460,
       "formattedTime": "2026-02-19 10:21:00",
       "date": "2026-02-19",
-      "index": 512,
+      "index": 326,
       "strength": 1,
-      "candleIndex": 512,
+      "candleIndex": 326,
       "direction": "LL"
     },
     {
@@ -3163,9 +2043,9 @@
       "time": 1771496640,
       "formattedTime": "2026-02-19 10:24:00",
       "date": "2026-02-19",
-      "index": 513,
+      "index": 327,
       "strength": 1,
-      "candleIndex": 513,
+      "candleIndex": 327,
       "direction": "LH"
     },
     {
@@ -3179,9 +2059,9 @@
       "time": 1771497180,
       "formattedTime": "2026-02-19 10:33:00",
       "date": "2026-02-19",
-      "index": 516,
+      "index": 330,
       "strength": 1,
-      "candleIndex": 516,
+      "candleIndex": 330,
       "direction": "LL"
     },
     {
@@ -3195,9 +2075,9 @@
       "time": 1771497540,
       "formattedTime": "2026-02-19 10:39:00",
       "date": "2026-02-19",
-      "index": 518,
+      "index": 332,
       "strength": 1,
-      "candleIndex": 518,
+      "candleIndex": 332,
       "direction": "LH"
     },
     {
@@ -3211,9 +2091,9 @@
       "time": 1771497720,
       "formattedTime": "2026-02-19 10:42:00",
       "date": "2026-02-19",
-      "index": 519,
+      "index": 333,
       "strength": 1,
-      "candleIndex": 519,
+      "candleIndex": 333,
       "direction": "LL"
     },
     {
@@ -3227,9 +2107,9 @@
       "time": 1771498440,
       "formattedTime": "2026-02-19 10:54:00",
       "date": "2026-02-19",
-      "index": 523,
+      "index": 337,
       "strength": 1,
-      "candleIndex": 523,
+      "candleIndex": 337,
       "direction": "HH"
     },
     {
@@ -3243,9 +2123,9 @@
       "time": 1771499340,
       "formattedTime": "2026-02-19 11:09:00",
       "date": "2026-02-19",
-      "index": 528,
+      "index": 342,
       "strength": 1,
-      "candleIndex": 528,
+      "candleIndex": 342,
       "direction": "HH"
     },
     {
@@ -3259,9 +2139,9 @@
       "time": 1771499700,
       "formattedTime": "2026-02-19 11:15:00",
       "date": "2026-02-19",
-      "index": 530,
+      "index": 344,
       "strength": 1,
-      "candleIndex": 530,
+      "candleIndex": 344,
       "direction": "HL"
     },
     {
@@ -3275,9 +2155,9 @@
       "time": 1771500240,
       "formattedTime": "2026-02-19 11:24:00",
       "date": "2026-02-19",
-      "index": 533,
+      "index": 347,
       "strength": 1,
-      "candleIndex": 533,
+      "candleIndex": 347,
       "direction": "HH"
     },
     {
@@ -3291,9 +2171,9 @@
       "time": 1771500420,
       "formattedTime": "2026-02-19 11:27:00",
       "date": "2026-02-19",
-      "index": 534,
+      "index": 348,
       "strength": 1,
-      "candleIndex": 534,
+      "candleIndex": 348,
       "direction": "HL"
     },
     {
@@ -3307,9 +2187,9 @@
       "time": 1771500960,
       "formattedTime": "2026-02-19 11:36:00",
       "date": "2026-02-19",
-      "index": 537,
+      "index": 351,
       "strength": 1,
-      "candleIndex": 537,
+      "candleIndex": 351,
       "direction": "HH"
     },
     {
@@ -3323,9 +2203,9 @@
       "time": 1771501320,
       "formattedTime": "2026-02-19 11:42:00",
       "date": "2026-02-19",
-      "index": 539,
+      "index": 353,
       "strength": 1,
-      "candleIndex": 539,
+      "candleIndex": 353,
       "direction": "HL"
     },
     {
@@ -3339,9 +2219,9 @@
       "time": 1771501500,
       "formattedTime": "2026-02-19 11:45:00",
       "date": "2026-02-19",
-      "index": 540,
+      "index": 354,
       "strength": 1,
-      "candleIndex": 540,
+      "candleIndex": 354,
       "direction": "LH"
     },
     {
@@ -3355,9 +2235,9 @@
       "time": 1771501680,
       "formattedTime": "2026-02-19 11:48:00",
       "date": "2026-02-19",
-      "index": 541,
+      "index": 355,
       "strength": 1,
-      "candleIndex": 541,
+      "candleIndex": 355,
       "direction": "LL"
     },
     {
@@ -3371,9 +2251,9 @@
       "time": 1771501860,
       "formattedTime": "2026-02-19 11:51:00",
       "date": "2026-02-19",
-      "index": 542,
+      "index": 356,
       "strength": 1,
-      "candleIndex": 542,
+      "candleIndex": 356,
       "direction": "LH"
     },
     {
@@ -3387,9 +2267,9 @@
       "time": 1771502040,
       "formattedTime": "2026-02-19 11:54:00",
       "date": "2026-02-19",
-      "index": 543,
+      "index": 357,
       "strength": 1,
-      "candleIndex": 543,
+      "candleIndex": 357,
       "direction": "LL"
     },
     {
@@ -3403,9 +2283,9 @@
       "time": 1771502580,
       "formattedTime": "2026-02-19 12:03:00",
       "date": "2026-02-19",
-      "index": 546,
+      "index": 360,
       "strength": 1,
-      "candleIndex": 546,
+      "candleIndex": 360,
       "direction": "LL"
     },
     {
@@ -3419,9 +2299,9 @@
       "time": 1771503120,
       "formattedTime": "2026-02-19 12:12:00",
       "date": "2026-02-19",
-      "index": 549,
+      "index": 363,
       "strength": 1,
-      "candleIndex": 549,
+      "candleIndex": 363,
       "direction": "LH"
     },
     {
@@ -3435,9 +2315,9 @@
       "time": 1771503300,
       "formattedTime": "2026-02-19 12:15:00",
       "date": "2026-02-19",
-      "index": 550,
+      "index": 364,
       "strength": 1,
-      "candleIndex": 550,
+      "candleIndex": 364,
       "direction": "LL"
     },
     {
@@ -3451,9 +2331,9 @@
       "time": 1771503840,
       "formattedTime": "2026-02-19 12:24:00",
       "date": "2026-02-19",
-      "index": 553,
+      "index": 367,
       "strength": 1,
-      "candleIndex": 553,
+      "candleIndex": 367,
       "direction": "HH"
     },
     {
@@ -3467,9 +2347,9 @@
       "time": 1771504020,
       "formattedTime": "2026-02-19 12:27:00",
       "date": "2026-02-19",
-      "index": 554,
+      "index": 368,
       "strength": 1,
-      "candleIndex": 554,
+      "candleIndex": 368,
       "direction": "HL"
     },
     {
@@ -3483,9 +2363,9 @@
       "time": 1771504740,
       "formattedTime": "2026-02-19 12:39:00",
       "date": "2026-02-19",
-      "index": 558,
+      "index": 372,
       "strength": 1,
-      "candleIndex": 558,
+      "candleIndex": 372,
       "direction": "HH"
     },
     {
@@ -3499,9 +2379,9 @@
       "time": 1771505100,
       "formattedTime": "2026-02-19 12:45:00",
       "date": "2026-02-19",
-      "index": 560,
+      "index": 374,
       "strength": 1,
-      "candleIndex": 560,
+      "candleIndex": 374,
       "direction": "HL"
     },
     {
@@ -3515,9 +2395,9 @@
       "time": 1771506000,
       "formattedTime": "2026-02-19 13:00:00",
       "date": "2026-02-19",
-      "index": 565,
+      "index": 379,
       "strength": 1,
-      "candleIndex": 565,
+      "candleIndex": 379,
       "direction": "HH"
     },
     {
@@ -3531,9 +2411,9 @@
       "time": 1771506360,
       "formattedTime": "2026-02-19 13:06:00",
       "date": "2026-02-19",
-      "index": 567,
+      "index": 381,
       "strength": 1,
-      "candleIndex": 567,
+      "candleIndex": 381,
       "direction": "HL"
     },
     {
@@ -3547,9 +2427,9 @@
       "time": 1771506720,
       "formattedTime": "2026-02-19 13:12:00",
       "date": "2026-02-19",
-      "index": 569,
+      "index": 383,
       "strength": 1,
-      "candleIndex": 569,
+      "candleIndex": 383,
       "direction": "HH"
     },
     {
@@ -3563,9 +2443,9 @@
       "time": 1771506900,
       "formattedTime": "2026-02-19 13:15:00",
       "date": "2026-02-19",
-      "index": 570,
+      "index": 384,
       "strength": 1,
-      "candleIndex": 570,
+      "candleIndex": 384,
       "direction": "HL"
     },
     {
@@ -3579,9 +2459,9 @@
       "time": 1771507260,
       "formattedTime": "2026-02-19 13:21:00",
       "date": "2026-02-19",
-      "index": 572,
+      "index": 386,
       "strength": 1,
-      "candleIndex": 572,
+      "candleIndex": 386,
       "direction": "HH"
     },
     {
@@ -3595,9 +2475,9 @@
       "time": 1771507620,
       "formattedTime": "2026-02-19 13:27:00",
       "date": "2026-02-19",
-      "index": 574,
+      "index": 388,
       "strength": 1,
-      "candleIndex": 574,
+      "candleIndex": 388,
       "direction": "HL"
     },
     {
@@ -3611,9 +2491,9 @@
       "time": 1771507980,
       "formattedTime": "2026-02-19 13:33:00",
       "date": "2026-02-19",
-      "index": 576,
+      "index": 390,
       "strength": 1,
-      "candleIndex": 576,
+      "candleIndex": 390,
       "direction": "HH"
     },
     {
@@ -3627,9 +2507,9 @@
       "time": 1771508340,
       "formattedTime": "2026-02-19 13:39:00",
       "date": "2026-02-19",
-      "index": 578,
+      "index": 392,
       "strength": 1,
-      "candleIndex": 578,
+      "candleIndex": 392,
       "direction": "HL"
     },
     {
@@ -3643,9 +2523,9 @@
       "time": 1771508520,
       "formattedTime": "2026-02-19 13:42:00",
       "date": "2026-02-19",
-      "index": 579,
+      "index": 393,
       "strength": 1,
-      "candleIndex": 579,
+      "candleIndex": 393,
       "direction": "HH"
     },
     {
@@ -3659,9 +2539,9 @@
       "time": 1771509240,
       "formattedTime": "2026-02-19 13:54:00",
       "date": "2026-02-19",
-      "index": 583,
+      "index": 397,
       "strength": 1,
-      "candleIndex": 583,
+      "candleIndex": 397,
       "direction": "LH"
     },
     {
@@ -3675,9 +2555,9 @@
       "time": 1771509780,
       "formattedTime": "2026-02-19 14:03:00",
       "date": "2026-02-19",
-      "index": 586,
+      "index": 400,
       "strength": 1,
-      "candleIndex": 586,
+      "candleIndex": 400,
       "direction": "LL"
     },
     {
@@ -3691,9 +2571,9 @@
       "time": 1771509960,
       "formattedTime": "2026-02-19 14:06:00",
       "date": "2026-02-19",
-      "index": 587,
+      "index": 401,
       "strength": 1,
-      "candleIndex": 587,
+      "candleIndex": 401,
       "direction": "LH"
     },
     {
@@ -3707,9 +2587,9 @@
       "time": 1771510140,
       "formattedTime": "2026-02-19 14:09:00",
       "date": "2026-02-19",
-      "index": 588,
+      "index": 402,
       "strength": 1,
-      "candleIndex": 588,
+      "candleIndex": 402,
       "direction": "HL"
     },
     {
@@ -3723,9 +2603,9 @@
       "time": 1771510320,
       "formattedTime": "2026-02-19 14:12:00",
       "date": "2026-02-19",
-      "index": 589,
+      "index": 403,
       "strength": 1,
-      "candleIndex": 589,
+      "candleIndex": 403,
       "direction": "LH"
     },
     {
@@ -3739,9 +2619,9 @@
       "time": 1771510680,
       "formattedTime": "2026-02-19 14:18:00",
       "date": "2026-02-19",
-      "index": 591,
+      "index": 405,
       "strength": 1,
-      "candleIndex": 591,
+      "candleIndex": 405,
       "direction": "LL"
     },
     {
@@ -3755,9 +2635,9 @@
       "time": 1771510860,
       "formattedTime": "2026-02-19 14:21:00",
       "date": "2026-02-19",
-      "index": 592,
+      "index": 406,
       "strength": 1,
-      "candleIndex": 592,
+      "candleIndex": 406,
       "direction": "HH"
     },
     {
@@ -3771,9 +2651,9 @@
       "time": 1771511580,
       "formattedTime": "2026-02-19 14:33:00",
       "date": "2026-02-19",
-      "index": 596,
+      "index": 410,
       "strength": 1,
-      "candleIndex": 596,
+      "candleIndex": 410,
       "direction": "LL"
     },
     {
@@ -3787,9 +2667,9 @@
       "time": 1771511940,
       "formattedTime": "2026-02-19 14:39:00",
       "date": "2026-02-19",
-      "index": 598,
+      "index": 412,
       "strength": 1,
-      "candleIndex": 598,
+      "candleIndex": 412,
       "direction": "HH"
     },
     {
@@ -3803,9 +2683,9 @@
       "time": 1771512480,
       "formattedTime": "2026-02-19 14:48:00",
       "date": "2026-02-19",
-      "index": 601,
+      "index": 415,
       "strength": 1,
-      "candleIndex": 601,
+      "candleIndex": 415,
       "direction": "LL"
     },
     {
@@ -3819,9 +2699,9 @@
       "time": 1771513020,
       "formattedTime": "2026-02-19 14:57:00",
       "date": "2026-02-19",
-      "index": 604,
+      "index": 418,
       "strength": 1,
-      "candleIndex": 604,
+      "candleIndex": 418,
       "direction": "LH"
     },
     {
@@ -3835,9 +2715,9 @@
       "time": 1771514100,
       "formattedTime": "2026-02-19 15:15:00",
       "date": "2026-02-19",
-      "index": 610,
+      "index": 424,
       "strength": 1,
-      "candleIndex": 610,
+      "candleIndex": 424,
       "direction": "HH"
     },
     {
@@ -3851,9 +2731,9 @@
       "time": 1771514100,
       "formattedTime": "2026-02-19 15:15:00",
       "date": "2026-02-19",
-      "index": 610,
+      "index": 424,
       "strength": 1,
-      "candleIndex": 610,
+      "candleIndex": 424,
       "direction": "HL"
     },
     {
@@ -3867,9 +2747,9 @@
       "time": 1771514460,
       "formattedTime": "2026-02-19 15:21:00",
       "date": "2026-02-19",
-      "index": 612,
+      "index": 426,
       "strength": 1,
-      "candleIndex": 612,
+      "candleIndex": 426,
       "direction": "HH"
     },
     {
@@ -3883,9 +2763,9 @@
       "time": 1771515360,
       "formattedTime": "2026-02-19 15:36:00",
       "date": "2026-02-19",
-      "index": 617,
+      "index": 431,
       "strength": 1,
-      "candleIndex": 617,
+      "candleIndex": 431,
       "direction": "HH"
     },
     {
@@ -3899,9 +2779,9 @@
       "time": 1771515360,
       "formattedTime": "2026-02-19 15:36:00",
       "date": "2026-02-19",
-      "index": 617,
+      "index": 431,
       "strength": 1,
-      "candleIndex": 617,
+      "candleIndex": 431,
       "direction": "HL"
     },
     {
@@ -3915,9 +2795,9 @@
       "time": 1771515720,
       "formattedTime": "2026-02-19 15:42:00",
       "date": "2026-02-19",
-      "index": 619,
+      "index": 433,
       "strength": 1,
-      "candleIndex": 619,
+      "candleIndex": 433,
       "direction": "HH"
     },
     {
@@ -3931,9 +2811,9 @@
       "time": 1771516080,
       "formattedTime": "2026-02-19 15:48:00",
       "date": "2026-02-19",
-      "index": 621,
+      "index": 435,
       "strength": 1,
-      "candleIndex": 621,
+      "candleIndex": 435,
       "direction": "HL"
     },
     {
@@ -3947,9 +2827,9 @@
       "time": 1771516800,
       "formattedTime": "2026-02-19 16:00:00",
       "date": "2026-02-19",
-      "index": 625,
+      "index": 439,
       "strength": 1,
-      "candleIndex": 625,
+      "candleIndex": 439,
       "direction": "HL"
     },
     {
@@ -3963,9 +2843,9 @@
       "time": 1771516980,
       "formattedTime": "2026-02-19 16:03:00",
       "date": "2026-02-19",
-      "index": 626,
+      "index": 440,
       "strength": 1,
-      "candleIndex": 626,
+      "candleIndex": 440,
       "direction": "HH"
     },
     {
@@ -3979,9 +2859,9 @@
       "time": 1771517520,
       "formattedTime": "2026-02-19 16:12:00",
       "date": "2026-02-19",
-      "index": 629,
+      "index": 443,
       "strength": 1,
-      "candleIndex": 629,
+      "candleIndex": 443,
       "direction": "HL"
     },
     {
@@ -3995,9 +2875,9 @@
       "time": 1771517700,
       "formattedTime": "2026-02-19 16:15:00",
       "date": "2026-02-19",
-      "index": 630,
+      "index": 444,
       "strength": 1,
-      "candleIndex": 630,
+      "candleIndex": 444,
       "direction": "LH"
     },
     {
@@ -4011,9 +2891,9 @@
       "time": 1771518600,
       "formattedTime": "2026-02-19 16:30:00",
       "date": "2026-02-19",
-      "index": 635,
+      "index": 449,
       "strength": 1,
-      "candleIndex": 635,
+      "candleIndex": 449,
       "direction": "LL"
     },
     {
@@ -4027,9 +2907,9 @@
       "time": 1771519140,
       "formattedTime": "2026-02-19 16:39:00",
       "date": "2026-02-19",
-      "index": 638,
+      "index": 452,
       "strength": 1,
-      "candleIndex": 638,
+      "candleIndex": 452,
       "direction": "LH"
     },
     {
@@ -4043,9 +2923,9 @@
       "time": 1771519140,
       "formattedTime": "2026-02-19 16:39:00",
       "date": "2026-02-19",
-      "index": 638,
+      "index": 452,
       "strength": 1,
-      "candleIndex": 638,
+      "candleIndex": 452,
       "direction": "HL"
     },
     {
@@ -4059,9 +2939,9 @@
       "time": 1771519860,
       "formattedTime": "2026-02-19 16:51:00",
       "date": "2026-02-19",
-      "index": 642,
+      "index": 456,
       "strength": 1,
-      "candleIndex": 642,
+      "candleIndex": 456,
       "direction": "LH"
     },
     {
@@ -4075,9 +2955,9 @@
       "time": 1771520220,
       "formattedTime": "2026-02-19 16:57:00",
       "date": "2026-02-19",
-      "index": 644,
+      "index": 458,
       "strength": 1,
-      "candleIndex": 644,
+      "candleIndex": 458,
       "direction": "LL"
     },
     {
@@ -4091,9 +2971,9 @@
       "time": 1771520580,
       "formattedTime": "2026-02-19 17:03:00",
       "date": "2026-02-19",
-      "index": 646,
+      "index": 460,
       "strength": 1,
-      "candleIndex": 646,
+      "candleIndex": 460,
       "direction": "HH"
     },
     {
@@ -4107,9 +2987,9 @@
       "time": 1771520760,
       "formattedTime": "2026-02-19 17:06:00",
       "date": "2026-02-19",
-      "index": 647,
+      "index": 461,
       "strength": 1,
-      "candleIndex": 647,
+      "candleIndex": 461,
       "direction": "HL"
     },
     {
@@ -4123,9 +3003,9 @@
       "time": 1771521840,
       "formattedTime": "2026-02-19 17:24:00",
       "date": "2026-02-19",
-      "index": 653,
+      "index": 467,
       "strength": 1,
-      "candleIndex": 653,
+      "candleIndex": 467,
       "direction": "HH"
     },
     {
@@ -4139,9 +3019,9 @@
       "time": 1771522020,
       "formattedTime": "2026-02-19 17:27:00",
       "date": "2026-02-19",
-      "index": 654,
+      "index": 468,
       "strength": 1,
-      "candleIndex": 654,
+      "candleIndex": 468,
       "direction": "HL"
     },
     {
@@ -4155,9 +3035,9 @@
       "time": 1771522200,
       "formattedTime": "2026-02-19 17:30:00",
       "date": "2026-02-19",
-      "index": 655,
+      "index": 469,
       "strength": 1,
-      "candleIndex": 655,
+      "candleIndex": 469,
       "direction": "LH"
     },
     {
@@ -4171,9 +3051,9 @@
       "time": 1771522740,
       "formattedTime": "2026-02-19 17:39:00",
       "date": "2026-02-19",
-      "index": 658,
+      "index": 472,
       "strength": 1,
-      "candleIndex": 658,
+      "candleIndex": 472,
       "direction": "LL"
     },
     {
@@ -4187,9 +3067,9 @@
       "time": 1771523820,
       "formattedTime": "2026-02-19 17:57:00",
       "date": "2026-02-19",
-      "index": 664,
+      "index": 478,
       "strength": 1,
-      "candleIndex": 664,
+      "candleIndex": 478,
       "direction": "HH"
     },
     {
@@ -4203,9 +3083,9 @@
       "time": 1771524180,
       "formattedTime": "2026-02-19 18:03:00",
       "date": "2026-02-19",
-      "index": 666,
+      "index": 480,
       "strength": 1,
-      "candleIndex": 666,
+      "candleIndex": 480,
       "direction": "HL"
     },
     {
@@ -4219,9 +3099,9 @@
       "time": 1771524540,
       "formattedTime": "2026-02-19 18:09:00",
       "date": "2026-02-19",
-      "index": 668,
+      "index": 482,
       "strength": 1,
-      "candleIndex": 668,
+      "candleIndex": 482,
       "direction": "HH"
     },
     {
@@ -4235,9 +3115,9 @@
       "time": 1771524900,
       "formattedTime": "2026-02-19 18:15:00",
       "date": "2026-02-19",
-      "index": 670,
+      "index": 484,
       "strength": 1,
-      "candleIndex": 670,
+      "candleIndex": 484,
       "direction": "HL"
     },
     {
@@ -4251,9 +3131,9 @@
       "time": 1771525080,
       "formattedTime": "2026-02-19 18:18:00",
       "date": "2026-02-19",
-      "index": 671,
+      "index": 485,
       "strength": 1,
-      "candleIndex": 671,
+      "candleIndex": 485,
       "direction": "LH"
     },
     {
@@ -4267,9 +3147,9 @@
       "time": 1771525260,
       "formattedTime": "2026-02-19 18:21:00",
       "date": "2026-02-19",
-      "index": 672,
+      "index": 486,
       "strength": 1,
-      "candleIndex": 672,
+      "candleIndex": 486,
       "direction": "LL"
     },
     {
@@ -4283,9 +3163,9 @@
       "time": 1771525800,
       "formattedTime": "2026-02-19 18:30:00",
       "date": "2026-02-19",
-      "index": 675,
+      "index": 489,
       "strength": 1,
-      "candleIndex": 675,
+      "candleIndex": 489,
       "direction": "HH"
     },
     {
@@ -4299,9 +3179,9 @@
       "time": 1771526340,
       "formattedTime": "2026-02-19 18:39:00",
       "date": "2026-02-19",
-      "index": 678,
+      "index": 492,
       "strength": 1,
-      "candleIndex": 678,
+      "candleIndex": 492,
       "direction": "HL"
     },
     {
@@ -4315,9 +3195,9 @@
       "time": 1771526700,
       "formattedTime": "2026-02-19 18:45:00",
       "date": "2026-02-19",
-      "index": 680,
+      "index": 494,
       "strength": 1,
-      "candleIndex": 680,
+      "candleIndex": 494,
       "direction": "LL"
     },
     {
@@ -4331,9 +3211,9 @@
       "time": 1771527060,
       "formattedTime": "2026-02-19 18:51:00",
       "date": "2026-02-19",
-      "index": 682,
+      "index": 496,
       "strength": 1,
-      "candleIndex": 682,
+      "candleIndex": 496,
       "direction": "LH"
     },
     {
@@ -4347,9 +3227,9 @@
       "time": 1771527240,
       "formattedTime": "2026-02-19 18:54:00",
       "date": "2026-02-19",
-      "index": 683,
+      "index": 497,
       "strength": 1,
-      "candleIndex": 683,
+      "candleIndex": 497,
       "direction": "LL"
     },
     {
@@ -4363,9 +3243,9 @@
       "time": 1771527600,
       "formattedTime": "2026-02-19 19:00:00",
       "date": "2026-02-19",
-      "index": 685,
+      "index": 499,
       "strength": 1,
-      "candleIndex": 685,
+      "candleIndex": 499,
       "direction": "LL"
     },
     {
@@ -4379,9 +3259,9 @@
       "time": 1771528320,
       "formattedTime": "2026-02-19 19:12:00",
       "date": "2026-02-19",
-      "index": 689,
+      "index": 503,
       "strength": 1,
-      "candleIndex": 689,
+      "candleIndex": 503,
       "direction": "HH"
     },
     {
@@ -4395,9 +3275,9 @@
       "time": 1771528860,
       "formattedTime": "2026-02-19 19:21:00",
       "date": "2026-02-19",
-      "index": 692,
+      "index": 506,
       "strength": 1,
-      "candleIndex": 692,
+      "candleIndex": 506,
       "direction": "HL"
     },
     {
@@ -4411,9 +3291,9 @@
       "time": 1771529580,
       "formattedTime": "2026-02-19 19:33:00",
       "date": "2026-02-19",
-      "index": 696,
+      "index": 510,
       "strength": 1,
-      "candleIndex": 696,
+      "candleIndex": 510,
       "direction": "HH"
     },
     {
@@ -4427,9 +3307,9 @@
       "time": 1771529940,
       "formattedTime": "2026-02-19 19:39:00",
       "date": "2026-02-19",
-      "index": 698,
+      "index": 512,
       "strength": 1,
-      "candleIndex": 698,
+      "candleIndex": 512,
       "direction": "HL"
     },
     {
@@ -4443,9 +3323,9 @@
       "time": 1771530840,
       "formattedTime": "2026-02-19 19:54:00",
       "date": "2026-02-19",
-      "index": 703,
+      "index": 517,
       "strength": 1,
-      "candleIndex": 703,
+      "candleIndex": 517,
       "direction": "HH"
     },
     {
@@ -4459,9 +3339,9 @@
       "time": 1771531020,
       "formattedTime": "2026-02-19 19:57:00",
       "date": "2026-02-19",
-      "index": 704,
+      "index": 518,
       "strength": 1,
-      "candleIndex": 704,
+      "candleIndex": 518,
       "direction": "HL"
     },
     {
@@ -4475,9 +3355,9 @@
       "time": 1771531200,
       "formattedTime": "2026-02-19 20:00:00",
       "date": "2026-02-19",
-      "index": 705,
+      "index": 519,
       "strength": 1,
-      "candleIndex": 705,
+      "candleIndex": 519,
       "direction": "HH"
     },
     {
@@ -4491,9 +3371,9 @@
       "time": 1771531920,
       "formattedTime": "2026-02-19 20:12:00",
       "date": "2026-02-19",
-      "index": 709,
+      "index": 523,
       "strength": 1,
-      "candleIndex": 709,
+      "candleIndex": 523,
       "direction": "HH"
     },
     {
@@ -4507,9 +3387,9 @@
       "time": 1771532640,
       "formattedTime": "2026-02-19 20:24:00",
       "date": "2026-02-19",
-      "index": 713,
+      "index": 527,
       "strength": 1,
-      "candleIndex": 713,
+      "candleIndex": 527,
       "direction": "HL"
     },
     {
@@ -4523,9 +3403,9 @@
       "time": 1771533000,
       "formattedTime": "2026-02-19 20:30:00",
       "date": "2026-02-19",
-      "index": 715,
+      "index": 529,
       "strength": 1,
-      "candleIndex": 715,
+      "candleIndex": 529,
       "direction": "HL"
     },
     {
@@ -4539,9 +3419,9 @@
       "time": 1771533360,
       "formattedTime": "2026-02-19 20:36:00",
       "date": "2026-02-19",
-      "index": 717,
+      "index": 531,
       "strength": 1,
-      "candleIndex": 717,
+      "candleIndex": 531,
       "direction": "HH"
     },
     {
@@ -4555,9 +3435,9 @@
       "time": 1771534080,
       "formattedTime": "2026-02-19 20:48:00",
       "date": "2026-02-19",
-      "index": 721,
+      "index": 535,
       "strength": 1,
-      "candleIndex": 721,
+      "candleIndex": 535,
       "direction": "HH"
     },
     {
@@ -4571,9 +3451,9 @@
       "time": 1771534260,
       "formattedTime": "2026-02-19 20:51:00",
       "date": "2026-02-19",
-      "index": 722,
+      "index": 536,
       "strength": 1,
-      "candleIndex": 722,
+      "candleIndex": 536,
       "direction": "HL"
     },
     {
@@ -4587,9 +3467,9 @@
       "time": 1771534440,
       "formattedTime": "2026-02-19 20:54:00",
       "date": "2026-02-19",
-      "index": 723,
+      "index": 537,
       "strength": 1,
-      "candleIndex": 723,
+      "candleIndex": 537,
       "direction": "HH"
     },
     {
@@ -4603,9 +3483,9 @@
       "time": 1771534980,
       "formattedTime": "2026-02-19 21:03:00",
       "date": "2026-02-19",
-      "index": 726,
+      "index": 540,
       "strength": 1,
-      "candleIndex": 726,
+      "candleIndex": 540,
       "direction": "HH"
     },
     {
@@ -4619,9 +3499,9 @@
       "time": 1771536060,
       "formattedTime": "2026-02-19 21:21:00",
       "date": "2026-02-19",
-      "index": 732,
+      "index": 546,
       "strength": 1,
-      "candleIndex": 732,
+      "candleIndex": 546,
       "direction": "HH"
     },
     {
@@ -4635,9 +3515,9 @@
       "time": 1771536240,
       "formattedTime": "2026-02-19 21:24:00",
       "date": "2026-02-19",
-      "index": 733,
+      "index": 547,
       "strength": 1,
-      "candleIndex": 733,
+      "candleIndex": 547,
       "direction": "HL"
     },
     {
@@ -4651,9 +3531,9 @@
       "time": 1771536960,
       "formattedTime": "2026-02-19 21:36:00",
       "date": "2026-02-19",
-      "index": 737,
+      "index": 551,
       "strength": 1,
-      "candleIndex": 737,
+      "candleIndex": 551,
       "direction": "HH"
     },
     {
@@ -4667,9 +3547,9 @@
       "time": 1771537860,
       "formattedTime": "2026-02-19 21:51:00",
       "date": "2026-02-19",
-      "index": 742,
+      "index": 556,
       "strength": 1,
-      "candleIndex": 742,
+      "candleIndex": 556,
       "direction": "LH"
     },
     {
@@ -4683,9 +3563,9 @@
       "time": 1771538400,
       "formattedTime": "2026-02-19 22:00:00",
       "date": "2026-02-19",
-      "index": 745,
+      "index": 559,
       "strength": 1,
-      "candleIndex": 745,
+      "candleIndex": 559,
       "direction": "LL"
     },
     {
@@ -4699,9 +3579,9 @@
       "time": 1771538940,
       "formattedTime": "2026-02-19 22:09:00",
       "date": "2026-02-19",
-      "index": 748,
+      "index": 562,
       "strength": 1,
-      "candleIndex": 748,
+      "candleIndex": 562,
       "direction": "HH"
     },
     {
@@ -4715,9 +3595,9 @@
       "time": 1771539660,
       "formattedTime": "2026-02-19 22:21:00",
       "date": "2026-02-19",
-      "index": 752,
+      "index": 566,
       "strength": 1,
-      "candleIndex": 752,
+      "candleIndex": 566,
       "direction": "LL"
     },
     {
@@ -4731,9 +3611,9 @@
       "time": 1771539840,
       "formattedTime": "2026-02-19 22:24:00",
       "date": "2026-02-19",
-      "index": 753,
+      "index": 567,
       "strength": 1,
-      "candleIndex": 753,
+      "candleIndex": 567,
       "direction": "LH"
     },
     {
@@ -4747,9 +3627,9 @@
       "time": 1771540560,
       "formattedTime": "2026-02-19 22:36:00",
       "date": "2026-02-19",
-      "index": 757,
+      "index": 571,
       "strength": 1,
-      "candleIndex": 757,
+      "candleIndex": 571,
       "direction": "LH"
     },
     {
@@ -4763,9 +3643,9 @@
       "time": 1771540920,
       "formattedTime": "2026-02-19 22:42:00",
       "date": "2026-02-19",
-      "index": 759,
+      "index": 573,
       "strength": 1,
-      "candleIndex": 759,
+      "candleIndex": 573,
       "direction": "LL"
     },
     {
@@ -4779,9 +3659,9 @@
       "time": 1771541100,
       "formattedTime": "2026-02-19 22:45:00",
       "date": "2026-02-19",
-      "index": 760,
+      "index": 574,
       "strength": 1,
-      "candleIndex": 760,
+      "candleIndex": 574,
       "direction": "HH"
     },
     {
@@ -4795,9 +3675,9 @@
       "time": 1771542000,
       "formattedTime": "2026-02-19 23:00:00",
       "date": "2026-02-19",
-      "index": 765,
+      "index": 579,
       "strength": 1,
-      "candleIndex": 765,
+      "candleIndex": 579,
       "direction": "HL"
     },
     {
@@ -4811,9 +3691,9 @@
       "time": 1771542540,
       "formattedTime": "2026-02-19 23:09:00",
       "date": "2026-02-19",
-      "index": 768,
+      "index": 582,
       "strength": 1,
-      "candleIndex": 768,
+      "candleIndex": 582,
       "direction": "HH"
     },
     {
@@ -4827,9 +3707,9 @@
       "time": 1771542720,
       "formattedTime": "2026-02-19 23:12:00",
       "date": "2026-02-19",
-      "index": 769,
+      "index": 583,
       "strength": 1,
-      "candleIndex": 769,
+      "candleIndex": 583,
       "direction": "HL"
     },
     {
@@ -4843,9 +3723,9 @@
       "time": 1771543080,
       "formattedTime": "2026-02-19 23:18:00",
       "date": "2026-02-19",
-      "index": 771,
+      "index": 585,
       "strength": 1,
-      "candleIndex": 771,
+      "candleIndex": 585,
       "direction": "HH"
     },
     {
@@ -4859,9 +3739,9 @@
       "time": 1771543440,
       "formattedTime": "2026-02-19 23:24:00",
       "date": "2026-02-19",
-      "index": 773,
+      "index": 587,
       "strength": 1,
-      "candleIndex": 773,
+      "candleIndex": 587,
       "direction": "HL"
     },
     {
@@ -4875,9 +3755,9 @@
       "time": 1771543800,
       "formattedTime": "2026-02-19 23:30:00",
       "date": "2026-02-19",
-      "index": 775,
+      "index": 589,
       "strength": 1,
-      "candleIndex": 775,
+      "candleIndex": 589,
       "direction": "LH"
     },
     {
@@ -4891,9 +3771,9 @@
       "time": 1771544520,
       "formattedTime": "2026-02-19 23:42:00",
       "date": "2026-02-19",
-      "index": 779,
+      "index": 593,
       "strength": 1,
-      "candleIndex": 779,
+      "candleIndex": 593,
       "direction": "LL"
     },
     {
@@ -4907,9 +3787,9 @@
       "time": 1771545060,
       "formattedTime": "2026-02-19 23:51:00",
       "date": "2026-02-19",
-      "index": 782,
+      "index": 596,
       "strength": 1,
-      "candleIndex": 782,
+      "candleIndex": 596,
       "direction": "LH"
     },
     {
@@ -4923,9 +3803,9 @@
       "time": 1771545420,
       "formattedTime": "2026-02-19 23:57:00",
       "date": "2026-02-19",
-      "index": 784,
+      "index": 598,
       "strength": 1,
-      "candleIndex": 784,
+      "candleIndex": 598,
       "direction": "HL"
     },
     {
@@ -4939,9 +3819,9 @@
       "time": 1771545600,
       "formattedTime": "2026-02-20 00:00:00",
       "date": "2026-02-20",
-      "index": 785,
+      "index": 599,
       "strength": 1,
-      "candleIndex": 785,
+      "candleIndex": 599,
       "direction": "LH"
     },
     {
@@ -4955,9 +3835,9 @@
       "time": 1771546140,
       "formattedTime": "2026-02-20 00:09:00",
       "date": "2026-02-20",
-      "index": 788,
+      "index": 602,
       "strength": 1,
-      "candleIndex": 788,
+      "candleIndex": 602,
       "direction": "HH"
     },
     {
@@ -4971,9 +3851,9 @@
       "time": 1771546500,
       "formattedTime": "2026-02-20 00:15:00",
       "date": "2026-02-20",
-      "index": 790,
+      "index": 604,
       "strength": 1,
-      "candleIndex": 790,
+      "candleIndex": 604,
       "direction": "LL"
     },
     {
@@ -4987,9 +3867,9 @@
       "time": 1771546860,
       "formattedTime": "2026-02-20 00:21:00",
       "date": "2026-02-20",
-      "index": 792,
+      "index": 606,
       "strength": 1,
-      "candleIndex": 792,
+      "candleIndex": 606,
       "direction": "LH"
     },
     {
@@ -5003,9 +3883,9 @@
       "time": 1771547760,
       "formattedTime": "2026-02-20 00:36:00",
       "date": "2026-02-20",
-      "index": 797,
+      "index": 611,
       "strength": 1,
-      "candleIndex": 797,
+      "candleIndex": 611,
       "direction": "LH"
     },
     {
@@ -5019,9 +3899,9 @@
       "time": 1771548120,
       "formattedTime": "2026-02-20 00:42:00",
       "date": "2026-02-20",
-      "index": 799,
+      "index": 613,
       "strength": 1,
-      "candleIndex": 799,
+      "candleIndex": 613,
       "direction": "LL"
     },
     {
@@ -5035,9 +3915,9 @@
       "time": 1771548480,
       "formattedTime": "2026-02-20 00:48:00",
       "date": "2026-02-20",
-      "index": 801,
+      "index": 615,
       "strength": 1,
-      "candleIndex": 801,
+      "candleIndex": 615,
       "direction": "LL"
     },
     {
@@ -5051,9 +3931,9 @@
       "time": 1771548660,
       "formattedTime": "2026-02-20 00:51:00",
       "date": "2026-02-20",
-      "index": 802,
+      "index": 616,
       "strength": 1,
-      "candleIndex": 802,
+      "candleIndex": 616,
       "direction": "LH"
     },
     {
@@ -5067,9 +3947,9 @@
       "time": 1771549020,
       "formattedTime": "2026-02-20 00:57:00",
       "date": "2026-02-20",
-      "index": 804,
+      "index": 618,
       "strength": 1,
-      "candleIndex": 804,
+      "candleIndex": 618,
       "direction": "HL"
     },
     {
@@ -5083,9 +3963,9 @@
       "time": 1771549200,
       "formattedTime": "2026-02-20 01:00:00",
       "date": "2026-02-20",
-      "index": 805,
+      "index": 619,
       "strength": 1,
-      "candleIndex": 805,
+      "candleIndex": 619,
       "direction": "LH"
     },
     {
@@ -5099,9 +3979,9 @@
       "time": 1771549560,
       "formattedTime": "2026-02-20 01:06:00",
       "date": "2026-02-20",
-      "index": 807,
+      "index": 621,
       "strength": 1,
-      "candleIndex": 807,
+      "candleIndex": 621,
       "direction": "LL"
     },
     {
@@ -5115,9 +3995,9 @@
       "time": 1771550100,
       "formattedTime": "2026-02-20 01:15:00",
       "date": "2026-02-20",
-      "index": 810,
+      "index": 624,
       "strength": 1,
-      "candleIndex": 810,
+      "candleIndex": 624,
       "direction": "LL"
     },
     {
@@ -5131,9 +4011,9 @@
       "time": 1771550640,
       "formattedTime": "2026-02-20 01:24:00",
       "date": "2026-02-20",
-      "index": 813,
+      "index": 627,
       "strength": 1,
-      "candleIndex": 813,
+      "candleIndex": 627,
       "direction": "LH"
     },
     {
@@ -5147,9 +4027,9 @@
       "time": 1771550820,
       "formattedTime": "2026-02-20 01:27:00",
       "date": "2026-02-20",
-      "index": 814,
+      "index": 628,
       "strength": 1,
-      "candleIndex": 814,
+      "candleIndex": 628,
       "direction": "HL"
     },
     {
@@ -5163,9 +4043,9 @@
       "time": 1771551180,
       "formattedTime": "2026-02-20 01:33:00",
       "date": "2026-02-20",
-      "index": 816,
+      "index": 630,
       "strength": 1,
-      "candleIndex": 816,
+      "candleIndex": 630,
       "direction": "HH"
     },
     {
@@ -5179,9 +4059,9 @@
       "time": 1771551360,
       "formattedTime": "2026-02-20 01:36:00",
       "date": "2026-02-20",
-      "index": 817,
+      "index": 631,
       "strength": 1,
-      "candleIndex": 817,
+      "candleIndex": 631,
       "direction": "HL"
     },
     {
@@ -5195,9 +4075,9 @@
       "time": 1771551540,
       "formattedTime": "2026-02-20 01:39:00",
       "date": "2026-02-20",
-      "index": 818,
+      "index": 632,
       "strength": 1,
-      "candleIndex": 818,
+      "candleIndex": 632,
       "direction": "LH"
     },
     {
@@ -5211,9 +4091,9 @@
       "time": 1771551720,
       "formattedTime": "2026-02-20 01:42:00",
       "date": "2026-02-20",
-      "index": 819,
+      "index": 633,
       "strength": 1,
-      "candleIndex": 819,
+      "candleIndex": 633,
       "direction": "LL"
     },
     {
@@ -5227,9 +4107,9 @@
       "time": 1771552080,
       "formattedTime": "2026-02-20 01:48:00",
       "date": "2026-02-20",
-      "index": 821,
+      "index": 635,
       "strength": 1,
-      "candleIndex": 821,
+      "candleIndex": 635,
       "direction": "LH"
     },
     {
@@ -5243,9 +4123,9 @@
       "time": 1771552440,
       "formattedTime": "2026-02-20 01:54:00",
       "date": "2026-02-20",
-      "index": 823,
+      "index": 637,
       "strength": 1,
-      "candleIndex": 823,
+      "candleIndex": 637,
       "direction": "LL"
     },
     {
@@ -5259,9 +4139,9 @@
       "time": 1771552980,
       "formattedTime": "2026-02-20 02:03:00",
       "date": "2026-02-20",
-      "index": 826,
+      "index": 640,
       "strength": 1,
-      "candleIndex": 826,
+      "candleIndex": 640,
       "direction": "HH"
     },
     {
@@ -5275,9 +4155,9 @@
       "time": 1771553340,
       "formattedTime": "2026-02-20 02:09:00",
       "date": "2026-02-20",
-      "index": 828,
+      "index": 642,
       "strength": 1,
-      "candleIndex": 828,
+      "candleIndex": 642,
       "direction": "HL"
     },
     {
@@ -5291,9 +4171,9 @@
       "time": 1771554060,
       "formattedTime": "2026-02-20 02:21:00",
       "date": "2026-02-20",
-      "index": 832,
+      "index": 646,
       "strength": 1,
-      "candleIndex": 832,
+      "candleIndex": 646,
       "direction": "HH"
     },
     {
@@ -5307,9 +4187,9 @@
       "time": 1771554420,
       "formattedTime": "2026-02-20 02:27:00",
       "date": "2026-02-20",
-      "index": 834,
+      "index": 648,
       "strength": 1,
-      "candleIndex": 834,
+      "candleIndex": 648,
       "direction": "HL"
     },
     {
@@ -5323,9 +4203,9 @@
       "time": 1771554600,
       "formattedTime": "2026-02-20 02:30:00",
       "date": "2026-02-20",
-      "index": 835,
+      "index": 649,
       "strength": 1,
-      "candleIndex": 835,
+      "candleIndex": 649,
       "direction": "LH"
     },
     {
@@ -5339,9 +4219,9 @@
       "time": 1771554960,
       "formattedTime": "2026-02-20 02:36:00",
       "date": "2026-02-20",
-      "index": 837,
+      "index": 651,
       "strength": 1,
-      "candleIndex": 837,
+      "candleIndex": 651,
       "direction": "LL"
     },
     {
@@ -5355,9 +4235,9 @@
       "time": 1771555320,
       "formattedTime": "2026-02-20 02:42:00",
       "date": "2026-02-20",
-      "index": 839,
+      "index": 653,
       "strength": 1,
-      "candleIndex": 839,
+      "candleIndex": 653,
       "direction": "HL"
     },
     {
@@ -5371,9 +4251,9 @@
       "time": 1771555860,
       "formattedTime": "2026-02-20 02:51:00",
       "date": "2026-02-20",
-      "index": 842,
+      "index": 656,
       "strength": 1,
-      "candleIndex": 842,
+      "candleIndex": 656,
       "direction": "HH"
     },
     {
@@ -5387,9 +4267,9 @@
       "time": 1771556400,
       "formattedTime": "2026-02-20 03:00:00",
       "date": "2026-02-20",
-      "index": 845,
+      "index": 659,
       "strength": 1,
-      "candleIndex": 845,
+      "candleIndex": 659,
       "direction": "LL"
     },
     {
@@ -5403,9 +4283,9 @@
       "time": 1771556580,
       "formattedTime": "2026-02-20 03:03:00",
       "date": "2026-02-20",
-      "index": 846,
+      "index": 660,
       "strength": 1,
-      "candleIndex": 846,
+      "candleIndex": 660,
       "direction": "LH"
     },
     {
@@ -5419,9 +4299,9 @@
       "time": 1771556940,
       "formattedTime": "2026-02-20 03:09:00",
       "date": "2026-02-20",
-      "index": 848,
+      "index": 662,
       "strength": 1,
-      "candleIndex": 848,
+      "candleIndex": 662,
       "direction": "LL"
     },
     {
@@ -5435,9 +4315,9 @@
       "time": 1771557120,
       "formattedTime": "2026-02-20 03:12:00",
       "date": "2026-02-20",
-      "index": 849,
+      "index": 663,
       "strength": 1,
-      "candleIndex": 849,
+      "candleIndex": 663,
       "direction": "HH"
     },
     {
@@ -5451,9 +4331,9 @@
       "time": 1771557480,
       "formattedTime": "2026-02-20 03:18:00",
       "date": "2026-02-20",
-      "index": 851,
+      "index": 665,
       "strength": 1,
-      "candleIndex": 851,
+      "candleIndex": 665,
       "direction": "HL"
     },
     {
@@ -5467,9 +4347,9 @@
       "time": 1771557660,
       "formattedTime": "2026-02-20 03:21:00",
       "date": "2026-02-20",
-      "index": 852,
+      "index": 666,
       "strength": 1,
-      "candleIndex": 852,
+      "candleIndex": 666,
       "direction": "HH"
     },
     {
@@ -5483,9 +4363,9 @@
       "time": 1771557840,
       "formattedTime": "2026-02-20 03:24:00",
       "date": "2026-02-20",
-      "index": 853,
+      "index": 667,
       "strength": 1,
-      "candleIndex": 853,
+      "candleIndex": 667,
       "direction": "HL"
     },
     {
@@ -5499,9 +4379,9 @@
       "time": 1771558920,
       "formattedTime": "2026-02-20 03:42:00",
       "date": "2026-02-20",
-      "index": 859,
+      "index": 673,
       "strength": 1,
-      "candleIndex": 859,
+      "candleIndex": 673,
       "direction": "LL"
     },
     {
@@ -5515,9 +4395,9 @@
       "time": 1771559280,
       "formattedTime": "2026-02-20 03:48:00",
       "date": "2026-02-20",
-      "index": 861,
+      "index": 675,
       "strength": 1,
-      "candleIndex": 861,
+      "candleIndex": 675,
       "direction": "LH"
     },
     {
@@ -5531,9 +4411,9 @@
       "time": 1771559640,
       "formattedTime": "2026-02-20 03:54:00",
       "date": "2026-02-20",
-      "index": 863,
+      "index": 677,
       "strength": 1,
-      "candleIndex": 863,
+      "candleIndex": 677,
       "direction": "HL"
     },
     {
@@ -5547,9 +4427,9 @@
       "time": 1771559820,
       "formattedTime": "2026-02-20 03:57:00",
       "date": "2026-02-20",
-      "index": 864,
+      "index": 678,
       "strength": 1,
-      "candleIndex": 864,
+      "candleIndex": 678,
       "direction": "HH"
     },
     {
@@ -5563,9 +4443,9 @@
       "time": 1771560540,
       "formattedTime": "2026-02-20 04:09:00",
       "date": "2026-02-20",
-      "index": 868,
+      "index": 682,
       "strength": 1,
-      "candleIndex": 868,
+      "candleIndex": 682,
       "direction": "LL"
     },
     {
@@ -5579,9 +4459,9 @@
       "time": 1771561080,
       "formattedTime": "2026-02-20 04:18:00",
       "date": "2026-02-20",
-      "index": 871,
+      "index": 685,
       "strength": 1,
-      "candleIndex": 871,
+      "candleIndex": 685,
       "direction": "LH"
     },
     {
@@ -5595,9 +4475,9 @@
       "time": 1771561800,
       "formattedTime": "2026-02-20 04:30:00",
       "date": "2026-02-20",
-      "index": 875,
+      "index": 689,
       "strength": 1,
-      "candleIndex": 875,
+      "candleIndex": 689,
       "direction": "HL"
     },
     {
@@ -5611,9 +4491,9 @@
       "time": 1771562340,
       "formattedTime": "2026-02-20 04:39:00",
       "date": "2026-02-20",
-      "index": 878,
+      "index": 692,
       "strength": 1,
-      "candleIndex": 878,
+      "candleIndex": 692,
       "direction": "HH"
     },
     {
@@ -5627,9 +4507,9 @@
       "time": 1771562700,
       "formattedTime": "2026-02-20 04:45:00",
       "date": "2026-02-20",
-      "index": 880,
+      "index": 694,
       "strength": 1,
-      "candleIndex": 880,
+      "candleIndex": 694,
       "direction": "HL"
     },
     {
@@ -5643,9 +4523,9 @@
       "time": 1771563240,
       "formattedTime": "2026-02-20 04:54:00",
       "date": "2026-02-20",
-      "index": 883,
+      "index": 697,
       "strength": 1,
-      "candleIndex": 883,
+      "candleIndex": 697,
       "direction": "HH"
     },
     {
@@ -5659,9 +4539,9 @@
       "time": 1771563600,
       "formattedTime": "2026-02-20 05:00:00",
       "date": "2026-02-20",
-      "index": 885,
+      "index": 699,
       "strength": 1,
-      "candleIndex": 885,
+      "candleIndex": 699,
       "direction": "HL"
     },
     {
@@ -5675,9 +4555,9 @@
       "time": 1771563780,
       "formattedTime": "2026-02-20 05:03:00",
       "date": "2026-02-20",
-      "index": 886,
+      "index": 700,
       "strength": 1,
-      "candleIndex": 886,
+      "candleIndex": 700,
       "direction": "LH"
     },
     {
@@ -5691,9 +4571,9 @@
       "time": 1771564500,
       "formattedTime": "2026-02-20 05:15:00",
       "date": "2026-02-20",
-      "index": 890,
+      "index": 704,
       "strength": 1,
-      "candleIndex": 890,
+      "candleIndex": 704,
       "direction": "HH"
     },
     {
@@ -5707,9 +4587,9 @@
       "time": 1771564860,
       "formattedTime": "2026-02-20 05:21:00",
       "date": "2026-02-20",
-      "index": 892,
+      "index": 706,
       "strength": 1,
-      "candleIndex": 892,
+      "candleIndex": 706,
       "direction": "HL"
     },
     {
@@ -5723,9 +4603,9 @@
       "time": 1771565040,
       "formattedTime": "2026-02-20 05:24:00",
       "date": "2026-02-20",
-      "index": 893,
+      "index": 707,
       "strength": 1,
-      "candleIndex": 893,
+      "candleIndex": 707,
       "direction": "LH"
     },
     {
@@ -5739,9 +4619,9 @@
       "time": 1771565580,
       "formattedTime": "2026-02-20 05:33:00",
       "date": "2026-02-20",
-      "index": 896,
+      "index": 710,
       "strength": 1,
-      "candleIndex": 896,
+      "candleIndex": 710,
       "direction": "LL"
     },
     {
@@ -5755,9 +4635,9 @@
       "time": 1771565940,
       "formattedTime": "2026-02-20 05:39:00",
       "date": "2026-02-20",
-      "index": 898,
+      "index": 712,
       "strength": 1,
-      "candleIndex": 898,
+      "candleIndex": 712,
       "direction": "LH"
     },
     {
@@ -5771,9 +4651,9 @@
       "time": 1771566120,
       "formattedTime": "2026-02-20 05:42:00",
       "date": "2026-02-20",
-      "index": 899,
+      "index": 713,
       "strength": 1,
-      "candleIndex": 899,
+      "candleIndex": 713,
       "direction": "HL"
     },
     {
@@ -5787,9 +4667,9 @@
       "time": 1771566300,
       "formattedTime": "2026-02-20 05:45:00",
       "date": "2026-02-20",
-      "index": 900,
+      "index": 714,
       "strength": 1,
-      "candleIndex": 900,
+      "candleIndex": 714,
       "direction": "LH"
     },
     {
@@ -5803,9 +4683,9 @@
       "time": 1771566480,
       "formattedTime": "2026-02-20 05:48:00",
       "date": "2026-02-20",
-      "index": 901,
+      "index": 715,
       "strength": 1,
-      "candleIndex": 901,
+      "candleIndex": 715,
       "direction": "LL"
     },
     {
@@ -5819,9 +4699,9 @@
       "time": 1771567020,
       "formattedTime": "2026-02-20 05:57:00",
       "date": "2026-02-20",
-      "index": 904,
+      "index": 718,
       "strength": 1,
-      "candleIndex": 904,
+      "candleIndex": 718,
       "direction": "HH"
     },
     {
@@ -5835,9 +4715,9 @@
       "time": 1771567200,
       "formattedTime": "2026-02-20 06:00:00",
       "date": "2026-02-20",
-      "index": 905,
+      "index": 719,
       "strength": 1,
-      "candleIndex": 905,
+      "candleIndex": 719,
       "direction": "HL"
     },
     {
@@ -5851,9 +4731,9 @@
       "time": 1771567380,
       "formattedTime": "2026-02-20 06:03:00",
       "date": "2026-02-20",
-      "index": 906,
+      "index": 720,
       "strength": 1,
-      "candleIndex": 906,
+      "candleIndex": 720,
       "direction": "LH"
     },
     {
@@ -5867,9 +4747,9 @@
       "time": 1771567740,
       "formattedTime": "2026-02-20 06:09:00",
       "date": "2026-02-20",
-      "index": 908,
+      "index": 722,
       "strength": 1,
-      "candleIndex": 908,
+      "candleIndex": 722,
       "direction": "HL"
     },
     {
@@ -5883,9 +4763,9 @@
       "time": 1771568460,
       "formattedTime": "2026-02-20 06:21:00",
       "date": "2026-02-20",
-      "index": 912,
+      "index": 726,
       "strength": 1,
-      "candleIndex": 912,
+      "candleIndex": 726,
       "direction": "HH"
     },
     {
@@ -5899,9 +4779,9 @@
       "time": 1771568820,
       "formattedTime": "2026-02-20 06:27:00",
       "date": "2026-02-20",
-      "index": 914,
+      "index": 728,
       "strength": 1,
-      "candleIndex": 914,
+      "candleIndex": 728,
       "direction": "LL"
     },
     {
@@ -5915,9 +4795,9 @@
       "time": 1771569000,
       "formattedTime": "2026-02-20 06:30:00",
       "date": "2026-02-20",
-      "index": 915,
+      "index": 729,
       "strength": 1,
-      "candleIndex": 915,
+      "candleIndex": 729,
       "direction": "LH"
     },
     {
@@ -5931,9 +4811,9 @@
       "time": 1771569180,
       "formattedTime": "2026-02-20 06:33:00",
       "date": "2026-02-20",
-      "index": 916,
+      "index": 730,
       "strength": 1,
-      "candleIndex": 916,
+      "candleIndex": 730,
       "direction": "LL"
     },
     {
@@ -5947,9 +4827,9 @@
       "time": 1771569900,
       "formattedTime": "2026-02-20 06:45:00",
       "date": "2026-02-20",
-      "index": 920,
+      "index": 734,
       "strength": 1,
-      "candleIndex": 920,
+      "candleIndex": 734,
       "direction": "HH"
     },
     {
@@ -5963,9 +4843,9 @@
       "time": 1771570080,
       "formattedTime": "2026-02-20 06:48:00",
       "date": "2026-02-20",
-      "index": 921,
+      "index": 735,
       "strength": 1,
-      "candleIndex": 921,
+      "candleIndex": 735,
       "direction": "HL"
     },
     {
@@ -5979,9 +4859,9 @@
       "time": 1771570260,
       "formattedTime": "2026-02-20 06:51:00",
       "date": "2026-02-20",
-      "index": 922,
+      "index": 736,
       "strength": 1,
-      "candleIndex": 922,
+      "candleIndex": 736,
       "direction": "HH"
     },
     {
@@ -5995,9 +4875,9 @@
       "time": 1771570440,
       "formattedTime": "2026-02-20 06:54:00",
       "date": "2026-02-20",
-      "index": 923,
+      "index": 737,
       "strength": 1,
-      "candleIndex": 923,
+      "candleIndex": 737,
       "direction": "HL"
     },
     {
@@ -6011,9 +4891,9 @@
       "time": 1771570800,
       "formattedTime": "2026-02-20 07:00:00",
       "date": "2026-02-20",
-      "index": 925,
+      "index": 739,
       "strength": 1,
-      "candleIndex": 925,
+      "candleIndex": 739,
       "direction": "HL"
     },
     {
@@ -6027,9 +4907,9 @@
       "time": 1771570980,
       "formattedTime": "2026-02-20 07:03:00",
       "date": "2026-02-20",
-      "index": 926,
+      "index": 740,
       "strength": 1,
-      "candleIndex": 926,
+      "candleIndex": 740,
       "direction": "HH"
     },
     {
@@ -6043,9 +4923,9 @@
       "time": 1771571340,
       "formattedTime": "2026-02-20 07:09:00",
       "date": "2026-02-20",
-      "index": 928,
+      "index": 742,
       "strength": 1,
-      "candleIndex": 928,
+      "candleIndex": 742,
       "direction": "HH"
     },
     {
@@ -6059,9 +4939,9 @@
       "time": 1771571880,
       "formattedTime": "2026-02-20 07:18:00",
       "date": "2026-02-20",
-      "index": 931,
+      "index": 745,
       "strength": 1,
-      "candleIndex": 931,
+      "candleIndex": 745,
       "direction": "LL"
     },
     {
@@ -6075,9 +4955,9 @@
       "time": 1771572060,
       "formattedTime": "2026-02-20 07:21:00",
       "date": "2026-02-20",
-      "index": 932,
+      "index": 746,
       "strength": 1,
-      "candleIndex": 932,
+      "candleIndex": 746,
       "direction": "LH"
     },
     {
@@ -6091,9 +4971,9 @@
       "time": 1771572420,
       "formattedTime": "2026-02-20 07:27:00",
       "date": "2026-02-20",
-      "index": 934,
+      "index": 748,
       "strength": 1,
-      "candleIndex": 934,
+      "candleIndex": 748,
       "direction": "HH"
     },
     {
@@ -6107,9 +4987,9 @@
       "time": 1771572960,
       "formattedTime": "2026-02-20 07:36:00",
       "date": "2026-02-20",
-      "index": 937,
+      "index": 751,
       "strength": 1,
-      "candleIndex": 937,
+      "candleIndex": 751,
       "direction": "HL"
     },
     {
@@ -6123,9 +5003,9 @@
       "time": 1771573680,
       "formattedTime": "2026-02-20 07:48:00",
       "date": "2026-02-20",
-      "index": 941,
+      "index": 755,
       "strength": 1,
-      "candleIndex": 941,
+      "candleIndex": 755,
       "direction": "LH"
     },
     {
@@ -6139,9 +5019,9 @@
       "time": 1771573680,
       "formattedTime": "2026-02-20 07:48:00",
       "date": "2026-02-20",
-      "index": 941,
+      "index": 755,
       "strength": 1,
-      "candleIndex": 941,
+      "candleIndex": 755,
       "direction": "HL"
     },
     {
@@ -6155,9 +5035,9 @@
       "time": 1771574040,
       "formattedTime": "2026-02-20 07:54:00",
       "date": "2026-02-20",
-      "index": 943,
+      "index": 757,
       "strength": 1,
-      "candleIndex": 943,
+      "candleIndex": 757,
       "direction": "HH"
     },
     {
@@ -6171,9 +5051,9 @@
       "time": 1771574220,
       "formattedTime": "2026-02-20 07:57:00",
       "date": "2026-02-20",
-      "index": 944,
+      "index": 758,
       "strength": 1,
-      "candleIndex": 944,
+      "candleIndex": 758,
       "direction": "HL"
     },
     {
@@ -6187,9 +5067,9 @@
       "time": 1771574940,
       "formattedTime": "2026-02-20 08:09:00",
       "date": "2026-02-20",
-      "index": 948,
+      "index": 762,
       "strength": 1,
-      "candleIndex": 948,
+      "candleIndex": 762,
       "direction": "HH"
     },
     {
@@ -6203,9 +5083,9 @@
       "time": 1771575300,
       "formattedTime": "2026-02-20 08:15:00",
       "date": "2026-02-20",
-      "index": 950,
+      "index": 764,
       "strength": 1,
-      "candleIndex": 950,
+      "candleIndex": 764,
       "direction": "HL"
     },
     {
@@ -6219,9 +5099,9 @@
       "time": 1771575660,
       "formattedTime": "2026-02-20 08:21:00",
       "date": "2026-02-20",
-      "index": 952,
+      "index": 766,
       "strength": 1,
-      "candleIndex": 952,
+      "candleIndex": 766,
       "direction": "LH"
     },
     {
@@ -6235,9 +5115,9 @@
       "time": 1771575840,
       "formattedTime": "2026-02-20 08:24:00",
       "date": "2026-02-20",
-      "index": 953,
+      "index": 767,
       "strength": 1,
-      "candleIndex": 953,
+      "candleIndex": 767,
       "direction": "HL"
     },
     {
@@ -6251,9 +5131,9 @@
       "time": 1771576200,
       "formattedTime": "2026-02-20 08:30:00",
       "date": "2026-02-20",
-      "index": 955,
+      "index": 769,
       "strength": 1,
-      "candleIndex": 955,
+      "candleIndex": 769,
       "direction": "HH"
     },
     {
@@ -6267,9 +5147,9 @@
       "time": 1771576200,
       "formattedTime": "2026-02-20 08:30:00",
       "date": "2026-02-20",
-      "index": 955,
+      "index": 769,
       "strength": 1,
-      "candleIndex": 955,
+      "candleIndex": 769,
       "direction": "LL"
     },
     {
@@ -6283,9 +5163,9 @@
       "time": 1771576560,
       "formattedTime": "2026-02-20 08:36:00",
       "date": "2026-02-20",
-      "index": 957,
+      "index": 771,
       "strength": 1,
-      "candleIndex": 957,
+      "candleIndex": 771,
       "direction": "HH"
     },
     {
@@ -6299,9 +5179,9 @@
       "time": 1771577100,
       "formattedTime": "2026-02-20 08:45:00",
       "date": "2026-02-20",
-      "index": 960,
+      "index": 774,
       "strength": 1,
-      "candleIndex": 960,
+      "candleIndex": 774,
       "direction": "LH"
     },
     {
@@ -6315,9 +5195,9 @@
       "time": 1771577280,
       "formattedTime": "2026-02-20 08:48:00",
       "date": "2026-02-20",
-      "index": 961,
+      "index": 775,
       "strength": 1,
-      "candleIndex": 961,
+      "candleIndex": 775,
       "direction": "HL"
     },
     {
@@ -6331,9 +5211,9 @@
       "time": 1771578000,
       "formattedTime": "2026-02-20 09:00:00",
       "date": "2026-02-20",
-      "index": 965,
+      "index": 779,
       "strength": 1,
-      "candleIndex": 965,
+      "candleIndex": 779,
       "direction": "HH"
     },
     {
@@ -6347,9 +5227,9 @@
       "time": 1771578540,
       "formattedTime": "2026-02-20 09:09:00",
       "date": "2026-02-20",
-      "index": 968,
+      "index": 782,
       "strength": 1,
-      "candleIndex": 968,
+      "candleIndex": 782,
       "direction": "HL"
     },
     {
@@ -6363,9 +5243,9 @@
       "time": 1771578900,
       "formattedTime": "2026-02-20 09:15:00",
       "date": "2026-02-20",
-      "index": 970,
+      "index": 784,
       "strength": 1,
-      "candleIndex": 970,
+      "candleIndex": 784,
       "direction": "HH"
     },
     {
@@ -6379,9 +5259,9 @@
       "time": 1771579080,
       "formattedTime": "2026-02-20 09:18:00",
       "date": "2026-02-20",
-      "index": 971,
+      "index": 785,
       "strength": 1,
-      "candleIndex": 971,
+      "candleIndex": 785,
       "direction": "HL"
     },
     {
@@ -6395,9 +5275,9 @@
       "time": 1771579440,
       "formattedTime": "2026-02-20 09:24:00",
       "date": "2026-02-20",
-      "index": 973,
+      "index": 787,
       "strength": 1,
-      "candleIndex": 973,
+      "candleIndex": 787,
       "direction": "LL"
     },
     {
@@ -6411,9 +5291,9 @@
       "time": 1771580340,
       "formattedTime": "2026-02-20 09:39:00",
       "date": "2026-02-20",
-      "index": 978,
+      "index": 792,
       "strength": 1,
-      "candleIndex": 978,
+      "candleIndex": 792,
       "direction": "LL"
     },
     {
@@ -6427,9 +5307,9 @@
       "time": 1771580880,
       "formattedTime": "2026-02-20 09:48:00",
       "date": "2026-02-20",
-      "index": 981,
+      "index": 795,
       "strength": 1,
-      "candleIndex": 981,
+      "candleIndex": 795,
       "direction": "LH"
     },
     {
@@ -6443,9 +5323,9 @@
       "time": 1771581240,
       "formattedTime": "2026-02-20 09:54:00",
       "date": "2026-02-20",
-      "index": 983,
+      "index": 797,
       "strength": 1,
-      "candleIndex": 983,
+      "candleIndex": 797,
       "direction": "HL"
     },
     {
@@ -6459,9 +5339,9 @@
       "time": 1771581600,
       "formattedTime": "2026-02-20 10:00:00",
       "date": "2026-02-20",
-      "index": 985,
+      "index": 799,
       "strength": 1,
-      "candleIndex": 985,
+      "candleIndex": 799,
       "direction": "HH"
     },
     {
@@ -6475,9 +5355,9 @@
       "time": 1771582140,
       "formattedTime": "2026-02-20 10:09:00",
       "date": "2026-02-20",
-      "index": 988,
+      "index": 802,
       "strength": 1,
-      "candleIndex": 988,
+      "candleIndex": 802,
       "direction": "HL"
     },
     {
@@ -6491,10 +5371,1258 @@
       "time": 1771583940,
       "formattedTime": "2026-02-20 10:39:00",
       "date": "2026-02-20",
+      "index": 812,
+      "strength": 1,
+      "candleIndex": 812,
+      "direction": "HH"
+    },
+    {
+      "type": "high",
+      "price": 2926.444,
+      "keyPrice": 2925.062,
+      "open": 2924.627,
+      "high": 2926.444,
+      "low": 2924.088,
+      "close": 2925.062,
+      "time": 1771584480,
+      "formattedTime": "2026-02-20 10:48:00",
+      "date": "2026-02-20",
+      "index": 815,
+      "strength": 1,
+      "candleIndex": 815,
+      "direction": "HH"
+    },
+    {
+      "type": "low",
+      "price": 2922.541,
+      "keyPrice": 2923.987,
+      "open": 2923.987,
+      "high": 2925.276,
+      "low": 2922.541,
+      "close": 2925.135,
+      "time": 1771585020,
+      "formattedTime": "2026-02-20 10:57:00",
+      "date": "2026-02-20",
+      "index": 818,
+      "strength": 1,
+      "candleIndex": 818,
+      "direction": "HL"
+    },
+    {
+      "type": "high",
+      "price": 2926.541,
+      "keyPrice": 2925.066,
+      "open": 2925.066,
+      "high": 2926.541,
+      "low": 2924.013,
+      "close": 2924.527,
+      "time": 1771585380,
+      "formattedTime": "2026-02-20 11:03:00",
+      "date": "2026-02-20",
+      "index": 820,
+      "strength": 1,
+      "candleIndex": 820,
+      "direction": "HH"
+    },
+    {
+      "type": "low",
+      "price": 2918.667,
+      "keyPrice": 2919.825,
+      "open": 2919.825,
+      "high": 2923.837,
+      "low": 2918.667,
+      "close": 2923.324,
+      "time": 1771585920,
+      "formattedTime": "2026-02-20 11:12:00",
+      "date": "2026-02-20",
+      "index": 823,
+      "strength": 1,
+      "candleIndex": 823,
+      "direction": "LL"
+    },
+    {
+      "type": "high",
+      "price": 2929.11,
+      "keyPrice": 2927.782,
+      "open": 2927.311,
+      "high": 2929.11,
+      "low": 2927.168,
+      "close": 2927.782,
+      "time": 1771586820,
+      "formattedTime": "2026-02-20 11:27:00",
+      "date": "2026-02-20",
+      "index": 828,
+      "strength": 1,
+      "candleIndex": 828,
+      "direction": "HH"
+    },
+    {
+      "type": "low",
+      "price": 2926.563,
+      "keyPrice": 2927.782,
+      "open": 2927.782,
+      "high": 2928.362,
+      "low": 2926.563,
+      "close": 2928.251,
+      "time": 1771587000,
+      "formattedTime": "2026-02-20 11:30:00",
+      "date": "2026-02-20",
+      "index": 829,
+      "strength": 1,
+      "candleIndex": 829,
+      "direction": "HL"
+    },
+    {
+      "type": "high",
+      "price": 2929.66,
+      "keyPrice": 2928.396,
+      "open": 2928.396,
+      "high": 2929.66,
+      "low": 2926.969,
+      "close": 2927.275,
+      "time": 1771587180,
+      "formattedTime": "2026-02-20 11:33:00",
+      "date": "2026-02-20",
+      "index": 830,
+      "strength": 1,
+      "candleIndex": 830,
+      "direction": "HH"
+    },
+    {
+      "type": "low",
+      "price": 2921.968,
+      "keyPrice": 2922.327,
+      "open": 2922.731,
+      "high": 2923.559,
+      "low": 2921.968,
+      "close": 2922.327,
+      "time": 1771587900,
+      "formattedTime": "2026-02-20 11:45:00",
+      "date": "2026-02-20",
+      "index": 834,
+      "strength": 1,
+      "candleIndex": 834,
+      "direction": "LL"
+    },
+    {
+      "type": "high",
+      "price": 2929.6,
+      "keyPrice": 2928.404,
+      "open": 2928.404,
+      "high": 2929.6,
+      "low": 2926.816,
+      "close": 2926.976,
+      "time": 1771588440,
+      "formattedTime": "2026-02-20 11:54:00",
+      "date": "2026-02-20",
+      "index": 837,
+      "strength": 1,
+      "candleIndex": 837,
+      "direction": "LH"
+    },
+    {
+      "type": "low",
+      "price": 2926.599,
+      "keyPrice": 2926.85,
+      "open": 2926.85,
+      "high": 2928.059,
+      "low": 2926.599,
+      "close": 2927.347,
+      "time": 1771588620,
+      "formattedTime": "2026-02-20 11:57:00",
+      "date": "2026-02-20",
+      "index": 838,
+      "strength": 1,
+      "candleIndex": 838,
+      "direction": "HL"
+    },
+    {
+      "type": "low",
+      "price": 2926.839,
+      "keyPrice": 2928.192,
+      "open": 2928.192,
+      "high": 2930.788,
+      "low": 2926.839,
+      "close": 2930.734,
+      "time": 1771588980,
+      "formattedTime": "2026-02-20 12:03:00",
+      "date": "2026-02-20",
+      "index": 840,
+      "strength": 1,
+      "candleIndex": 840,
+      "direction": "HL"
+    },
+    {
+      "type": "high",
+      "price": 2932.014,
+      "keyPrice": 2931.523,
+      "open": 2931.523,
+      "high": 2932.014,
+      "low": 2929.559,
+      "close": 2929.731,
+      "time": 1771589340,
+      "formattedTime": "2026-02-20 12:09:00",
+      "date": "2026-02-20",
+      "index": 842,
+      "strength": 1,
+      "candleIndex": 842,
+      "direction": "HH"
+    },
+    {
+      "type": "low",
+      "price": 2924.877,
+      "keyPrice": 2925.545,
+      "open": 2929.25,
+      "high": 2929.255,
+      "low": 2924.877,
+      "close": 2925.545,
+      "time": 1771589700,
+      "formattedTime": "2026-02-20 12:15:00",
+      "date": "2026-02-20",
+      "index": 844,
+      "strength": 1,
+      "candleIndex": 844,
+      "direction": "LL"
+    },
+    {
+      "type": "high",
+      "price": 2929.098,
+      "keyPrice": 2928.875,
+      "open": 2928.875,
+      "high": 2929.098,
+      "low": 2927.097,
+      "close": 2927.478,
+      "time": 1771590240,
+      "formattedTime": "2026-02-20 12:24:00",
+      "date": "2026-02-20",
+      "index": 847,
+      "strength": 1,
+      "candleIndex": 847,
+      "direction": "LH"
+    },
+    {
+      "type": "low",
+      "price": 2919.641,
+      "keyPrice": 2919.641,
+      "open": 2921.835,
+      "high": 2922.242,
+      "low": 2919.641,
+      "close": 2919.641,
+      "time": 1771591140,
+      "formattedTime": "2026-02-20 12:39:00",
+      "date": "2026-02-20",
+      "index": 852,
+      "strength": 1,
+      "candleIndex": 852,
+      "direction": "LL"
+    },
+    {
+      "type": "high",
+      "price": 2921.927,
+      "keyPrice": 2921.278,
+      "open": 2921.254,
+      "high": 2921.927,
+      "low": 2920.103,
+      "close": 2921.278,
+      "time": 1771591500,
+      "formattedTime": "2026-02-20 12:45:00",
+      "date": "2026-02-20",
+      "index": 854,
+      "strength": 1,
+      "candleIndex": 854,
+      "direction": "LH"
+    },
+    {
+      "type": "low",
+      "price": 2917.358,
+      "keyPrice": 2917.446,
+      "open": 2917.446,
+      "high": 2920.888,
+      "low": 2917.358,
+      "close": 2919.529,
+      "time": 1771592040,
+      "formattedTime": "2026-02-20 12:54:00",
+      "date": "2026-02-20",
+      "index": 857,
+      "strength": 1,
+      "candleIndex": 857,
+      "direction": "LL"
+    },
+    {
+      "type": "high",
+      "price": 2923.426,
+      "keyPrice": 2923.162,
+      "open": 2920.299,
+      "high": 2923.426,
+      "low": 2919.773,
+      "close": 2923.162,
+      "time": 1771592400,
+      "formattedTime": "2026-02-20 13:00:00",
+      "date": "2026-02-20",
+      "index": 859,
+      "strength": 1,
+      "candleIndex": 859,
+      "direction": "HH"
+    },
+    {
+      "type": "low",
+      "price": 2919.377,
+      "keyPrice": 2921.19,
+      "open": 2922.987,
+      "high": 2923.146,
+      "low": 2919.377,
+      "close": 2921.19,
+      "time": 1771592580,
+      "formattedTime": "2026-02-20 13:03:00",
+      "date": "2026-02-20",
+      "index": 860,
+      "strength": 1,
+      "candleIndex": 860,
+      "direction": "HL"
+    },
+    {
+      "type": "high",
+      "price": 2923.854,
+      "keyPrice": 2923.854,
+      "open": 2921.289,
+      "high": 2923.854,
+      "low": 2920.146,
+      "close": 2923.854,
+      "time": 1771592760,
+      "formattedTime": "2026-02-20 13:06:00",
+      "date": "2026-02-20",
+      "index": 861,
+      "strength": 1,
+      "candleIndex": 861,
+      "direction": "HH"
+    },
+    {
+      "type": "high",
+      "price": 2923.398,
+      "keyPrice": 2921.983,
+      "open": 2921.983,
+      "high": 2923.398,
+      "low": 2920.893,
+      "close": 2921.583,
+      "time": 1771593300,
+      "formattedTime": "2026-02-20 13:15:00",
+      "date": "2026-02-20",
+      "index": 864,
+      "strength": 1,
+      "candleIndex": 864,
+      "direction": "LH"
+    },
+    {
+      "type": "high",
+      "price": 2921.979,
+      "keyPrice": 2921.548,
+      "open": 2919.594,
+      "high": 2921.979,
+      "low": 2919.086,
+      "close": 2921.548,
+      "time": 1771593660,
+      "formattedTime": "2026-02-20 13:21:00",
+      "date": "2026-02-20",
+      "index": 866,
+      "strength": 1,
+      "candleIndex": 866,
+      "direction": "LH"
+    },
+    {
+      "type": "low",
+      "price": 2911.911,
+      "keyPrice": 2913.477,
+      "open": 2915.932,
+      "high": 2915.932,
+      "low": 2911.911,
+      "close": 2913.477,
+      "time": 1771594200,
+      "formattedTime": "2026-02-20 13:30:00",
+      "date": "2026-02-20",
+      "index": 869,
+      "strength": 1,
+      "candleIndex": 869,
+      "direction": "LL"
+    },
+    {
+      "type": "low",
+      "price": 2911.423,
+      "keyPrice": 2911.631,
+      "open": 2913.99,
+      "high": 2914.36,
+      "low": 2911.423,
+      "close": 2911.631,
+      "time": 1771594560,
+      "formattedTime": "2026-02-20 13:36:00",
+      "date": "2026-02-20",
+      "index": 871,
+      "strength": 1,
+      "candleIndex": 871,
+      "direction": "LL"
+    },
+    {
+      "type": "high",
+      "price": 2921.921,
+      "keyPrice": 2921.469,
+      "open": 2921.469,
+      "high": 2921.921,
+      "low": 2918.973,
+      "close": 2919.463,
+      "time": 1771595820,
+      "formattedTime": "2026-02-20 13:57:00",
+      "date": "2026-02-20",
+      "index": 878,
+      "strength": 1,
+      "candleIndex": 878,
+      "direction": "LH"
+    },
+    {
+      "type": "low",
+      "price": 2911.043,
+      "keyPrice": 2911.875,
+      "open": 2913.493,
+      "high": 2913.493,
+      "low": 2911.043,
+      "close": 2911.875,
+      "time": 1771596540,
+      "formattedTime": "2026-02-20 14:09:00",
+      "date": "2026-02-20",
+      "index": 882,
+      "strength": 1,
+      "candleIndex": 882,
+      "direction": "LL"
+    },
+    {
+      "type": "low",
+      "price": 2911.163,
+      "keyPrice": 2913.217,
+      "open": 2913.217,
+      "high": 2914.452,
+      "low": 2911.163,
+      "close": 2914.1,
+      "time": 1771597080,
+      "formattedTime": "2026-02-20 14:18:00",
+      "date": "2026-02-20",
+      "index": 885,
+      "strength": 1,
+      "candleIndex": 885,
+      "direction": "HL"
+    },
+    {
+      "type": "high",
+      "price": 2914.955,
+      "keyPrice": 2913.944,
+      "open": 2913.944,
+      "high": 2914.955,
+      "low": 2913.11,
+      "close": 2913.387,
+      "time": 1771597260,
+      "formattedTime": "2026-02-20 14:21:00",
+      "date": "2026-02-20",
+      "index": 886,
+      "strength": 1,
+      "candleIndex": 886,
+      "direction": "LH"
+    },
+    {
+      "type": "low",
+      "price": 2905.699,
+      "keyPrice": 2907.711,
+      "open": 2907.771,
+      "high": 2907.991,
+      "low": 2905.699,
+      "close": 2907.711,
+      "time": 1771598520,
+      "formattedTime": "2026-02-20 14:42:00",
+      "date": "2026-02-20",
+      "index": 893,
+      "strength": 1,
+      "candleIndex": 893,
+      "direction": "LL"
+    },
+    {
+      "type": "high",
+      "price": 2908.31,
+      "keyPrice": 2907.807,
+      "open": 2907.807,
+      "high": 2908.31,
+      "low": 2906.615,
+      "close": 2907.409,
+      "time": 1771598700,
+      "formattedTime": "2026-02-20 14:45:00",
+      "date": "2026-02-20",
+      "index": 894,
+      "strength": 1,
+      "candleIndex": 894,
+      "direction": "LH"
+    },
+    {
+      "type": "low",
+      "price": 2904.631,
+      "keyPrice": 2905.547,
+      "open": 2905.976,
+      "high": 2906.412,
+      "low": 2904.631,
+      "close": 2905.547,
+      "time": 1771599060,
+      "formattedTime": "2026-02-20 14:51:00",
+      "date": "2026-02-20",
+      "index": 896,
+      "strength": 1,
+      "candleIndex": 896,
+      "direction": "LL"
+    },
+    {
+      "type": "high",
+      "price": 2909.531,
+      "keyPrice": 2907.761,
+      "open": 2905.705,
+      "high": 2909.531,
+      "low": 2905.58,
+      "close": 2907.761,
+      "time": 1771599240,
+      "formattedTime": "2026-02-20 14:54:00",
+      "date": "2026-02-20",
+      "index": 897,
+      "strength": 1,
+      "candleIndex": 897,
+      "direction": "HH"
+    },
+    {
+      "type": "high",
+      "price": 2913.404,
+      "keyPrice": 2913.181,
+      "open": 2913.181,
+      "high": 2913.404,
+      "low": 2911.924,
+      "close": 2912.17,
+      "time": 1771599960,
+      "formattedTime": "2026-02-20 15:06:00",
+      "date": "2026-02-20",
+      "index": 901,
+      "strength": 1,
+      "candleIndex": 901,
+      "direction": "HH"
+    },
+    {
+      "type": "low",
+      "price": 2908.443,
+      "keyPrice": 2909.556,
+      "open": 2910.617,
+      "high": 2910.702,
+      "low": 2908.443,
+      "close": 2909.556,
+      "time": 1771600320,
+      "formattedTime": "2026-02-20 15:12:00",
+      "date": "2026-02-20",
+      "index": 903,
+      "strength": 1,
+      "candleIndex": 903,
+      "direction": "HL"
+    },
+    {
+      "type": "high",
+      "price": 2910.869,
+      "keyPrice": 2909.86,
+      "open": 2909.689,
+      "high": 2910.869,
+      "low": 2909.026,
+      "close": 2909.86,
+      "time": 1771600500,
+      "formattedTime": "2026-02-20 15:15:00",
+      "date": "2026-02-20",
+      "index": 904,
+      "strength": 1,
+      "candleIndex": 904,
+      "direction": "LH"
+    },
+    {
+      "type": "low",
+      "price": 2908.039,
+      "keyPrice": 2908.101,
+      "open": 2909.671,
+      "high": 2910.41,
+      "low": 2908.039,
+      "close": 2908.101,
+      "time": 1771600680,
+      "formattedTime": "2026-02-20 15:18:00",
+      "date": "2026-02-20",
+      "index": 905,
+      "strength": 1,
+      "candleIndex": 905,
+      "direction": "LL"
+    },
+    {
+      "type": "high",
+      "price": 2913.068,
+      "keyPrice": 2912.513,
+      "open": 2910.213,
+      "high": 2913.068,
+      "low": 2909.788,
+      "close": 2912.513,
+      "time": 1771601040,
+      "formattedTime": "2026-02-20 15:24:00",
+      "date": "2026-02-20",
+      "index": 907,
+      "strength": 1,
+      "candleIndex": 907,
+      "direction": "HH"
+    },
+    {
+      "type": "low",
+      "price": 2908.939,
+      "keyPrice": 2912.288,
+      "open": 2912.667,
+      "high": 2912.692,
+      "low": 2908.939,
+      "close": 2912.288,
+      "time": 1771601220,
+      "formattedTime": "2026-02-20 15:27:00",
+      "date": "2026-02-20",
+      "index": 908,
+      "strength": 1,
+      "candleIndex": 908,
+      "direction": "HL"
+    },
+    {
+      "type": "high",
+      "price": 2913.29,
+      "keyPrice": 2912.861,
+      "open": 2912.861,
+      "high": 2913.29,
+      "low": 2910.889,
+      "close": 2911.394,
+      "time": 1771601400,
+      "formattedTime": "2026-02-20 15:30:00",
+      "date": "2026-02-20",
+      "index": 909,
+      "strength": 1,
+      "candleIndex": 909,
+      "direction": "HH"
+    },
+    {
+      "type": "low",
+      "price": 2903.572,
+      "keyPrice": 2904.247,
+      "open": 2905.293,
+      "high": 2905.293,
+      "low": 2903.572,
+      "close": 2904.247,
+      "time": 1771602120,
+      "formattedTime": "2026-02-20 15:42:00",
+      "date": "2026-02-20",
+      "index": 913,
+      "strength": 1,
+      "candleIndex": 913,
+      "direction": "LL"
+    },
+    {
+      "type": "high",
+      "price": 2910.83,
+      "keyPrice": 2909.012,
+      "open": 2907.459,
+      "high": 2910.83,
+      "low": 2907.459,
+      "close": 2909.012,
+      "time": 1771602480,
+      "formattedTime": "2026-02-20 15:48:00",
+      "date": "2026-02-20",
+      "index": 915,
+      "strength": 1,
+      "candleIndex": 915,
+      "direction": "LH"
+    },
+    {
+      "type": "low",
+      "price": 2901.922,
+      "keyPrice": 2902.519,
+      "open": 2902.519,
+      "high": 2904.467,
+      "low": 2901.922,
+      "close": 2904.294,
+      "time": 1771603560,
+      "formattedTime": "2026-02-20 16:06:00",
+      "date": "2026-02-20",
+      "index": 921,
+      "strength": 1,
+      "candleIndex": 921,
+      "direction": "LL"
+    },
+    {
+      "type": "high",
+      "price": 2908.621,
+      "keyPrice": 2907.48,
+      "open": 2907.48,
+      "high": 2908.621,
+      "low": 2903.937,
+      "close": 2903.937,
+      "time": 1771603920,
+      "formattedTime": "2026-02-20 16:12:00",
+      "date": "2026-02-20",
+      "index": 923,
+      "strength": 1,
+      "candleIndex": 923,
+      "direction": "LH"
+    },
+    {
+      "type": "low",
+      "price": 2903.564,
+      "keyPrice": 2903.845,
+      "open": 2903.845,
+      "high": 2905.874,
+      "low": 2903.564,
+      "close": 2905.742,
+      "time": 1771604100,
+      "formattedTime": "2026-02-20 16:15:00",
+      "date": "2026-02-20",
+      "index": 924,
+      "strength": 1,
+      "candleIndex": 924,
+      "direction": "HL"
+    },
+    {
+      "type": "low",
+      "price": 2903.643,
+      "keyPrice": 2904.27,
+      "open": 2904.27,
+      "high": 2905.543,
+      "low": 2903.643,
+      "close": 2904.759,
+      "time": 1771604460,
+      "formattedTime": "2026-02-20 16:21:00",
+      "date": "2026-02-20",
+      "index": 926,
+      "strength": 1,
+      "candleIndex": 926,
+      "direction": "HL"
+    },
+    {
+      "type": "high",
+      "price": 2907.92,
+      "keyPrice": 2906.441,
+      "open": 2905.712,
+      "high": 2907.92,
+      "low": 2905.274,
+      "close": 2906.441,
+      "time": 1771605180,
+      "formattedTime": "2026-02-20 16:33:00",
+      "date": "2026-02-20",
+      "index": 930,
+      "strength": 1,
+      "candleIndex": 930,
+      "direction": "LH"
+    },
+    {
+      "type": "low",
+      "price": 2903.863,
+      "keyPrice": 2904.914,
+      "open": 2906.313,
+      "high": 2906.551,
+      "low": 2903.863,
+      "close": 2904.914,
+      "time": 1771605360,
+      "formattedTime": "2026-02-20 16:36:00",
+      "date": "2026-02-20",
+      "index": 931,
+      "strength": 1,
+      "candleIndex": 931,
+      "direction": "HL"
+    },
+    {
+      "type": "high",
+      "price": 2908.325,
+      "keyPrice": 2907.558,
+      "open": 2907.558,
+      "high": 2908.325,
+      "low": 2904.53,
+      "close": 2904.631,
+      "time": 1771606080,
+      "formattedTime": "2026-02-20 16:48:00",
+      "date": "2026-02-20",
+      "index": 935,
+      "strength": 1,
+      "candleIndex": 935,
+      "direction": "HH"
+    },
+    {
+      "type": "low",
+      "price": 2904.53,
+      "keyPrice": 2904.631,
+      "open": 2907.558,
+      "high": 2908.325,
+      "low": 2904.53,
+      "close": 2904.631,
+      "time": 1771606080,
+      "formattedTime": "2026-02-20 16:48:00",
+      "date": "2026-02-20",
+      "index": 935,
+      "strength": 1,
+      "candleIndex": 935,
+      "direction": "HL"
+    },
+    {
+      "type": "low",
+      "price": 2902.925,
+      "keyPrice": 2904.682,
+      "open": 2904.819,
+      "high": 2906.041,
+      "low": 2902.925,
+      "close": 2904.682,
+      "time": 1771606620,
+      "formattedTime": "2026-02-20 16:57:00",
+      "date": "2026-02-20",
+      "index": 938,
+      "strength": 1,
+      "candleIndex": 938,
+      "direction": "LL"
+    },
+    {
+      "type": "low",
+      "price": 2899.328,
+      "keyPrice": 2899.75,
+      "open": 2899.75,
+      "high": 2902.583,
+      "low": 2899.328,
+      "close": 2902.547,
+      "time": 1771607340,
+      "formattedTime": "2026-02-20 17:09:00",
+      "date": "2026-02-20",
+      "index": 942,
+      "strength": 1,
+      "candleIndex": 942,
+      "direction": "LL"
+    },
+    {
+      "type": "high",
+      "price": 2910.534,
+      "keyPrice": 2909.91,
+      "open": 2909.91,
+      "high": 2910.534,
+      "low": 2908.413,
+      "close": 2909.138,
+      "time": 1771608240,
+      "formattedTime": "2026-02-20 17:24:00",
+      "date": "2026-02-20",
+      "index": 947,
+      "strength": 1,
+      "candleIndex": 947,
+      "direction": "HH"
+    },
+    {
+      "type": "low",
+      "price": 2904.939,
+      "keyPrice": 2904.939,
+      "open": 2904.939,
+      "high": 2909.466,
+      "low": 2904.939,
+      "close": 2909.395,
+      "time": 1771608780,
+      "formattedTime": "2026-02-20 17:33:00",
+      "date": "2026-02-20",
+      "index": 950,
+      "strength": 1,
+      "candleIndex": 950,
+      "direction": "HL"
+    },
+    {
+      "type": "low",
+      "price": 2908.155,
+      "keyPrice": 2909.764,
+      "open": 2909.764,
+      "high": 2910.988,
+      "low": 2908.155,
+      "close": 2910.4,
+      "time": 1771609140,
+      "formattedTime": "2026-02-20 17:39:00",
+      "date": "2026-02-20",
+      "index": 952,
+      "strength": 1,
+      "candleIndex": 952,
+      "direction": "HL"
+    },
+    {
+      "type": "high",
+      "price": 2912.527,
+      "keyPrice": 2911.8,
+      "open": 2911.8,
+      "high": 2912.527,
+      "low": 2910.814,
+      "close": 2911.34,
+      "time": 1771609500,
+      "formattedTime": "2026-02-20 17:45:00",
+      "date": "2026-02-20",
+      "index": 954,
+      "strength": 1,
+      "candleIndex": 954,
+      "direction": "HH"
+    },
+    {
+      "type": "high",
+      "price": 2910.612,
+      "keyPrice": 2909.972,
+      "open": 2907.711,
+      "high": 2910.612,
+      "low": 2907.567,
+      "close": 2909.972,
+      "time": 1771610040,
+      "formattedTime": "2026-02-20 17:54:00",
+      "date": "2026-02-20",
+      "index": 957,
+      "strength": 1,
+      "candleIndex": 957,
+      "direction": "LH"
+    },
+    {
+      "type": "low",
+      "price": 2907.567,
+      "keyPrice": 2907.711,
+      "open": 2907.711,
+      "high": 2910.612,
+      "low": 2907.567,
+      "close": 2909.972,
+      "time": 1771610040,
+      "formattedTime": "2026-02-20 17:54:00",
+      "date": "2026-02-20",
+      "index": 957,
+      "strength": 1,
+      "candleIndex": 957,
+      "direction": "LL"
+    },
+    {
+      "type": "high",
+      "price": 2911.929,
+      "keyPrice": 2911.341,
+      "open": 2911.341,
+      "high": 2911.929,
+      "low": 2908.681,
+      "close": 2910.191,
+      "time": 1771610580,
+      "formattedTime": "2026-02-20 18:03:00",
+      "date": "2026-02-20",
+      "index": 960,
+      "strength": 1,
+      "candleIndex": 960,
+      "direction": "HH"
+    },
+    {
+      "type": "low",
+      "price": 2907.483,
+      "keyPrice": 2908.62,
+      "open": 2909.89,
+      "high": 2910.133,
+      "low": 2907.483,
+      "close": 2908.62,
+      "time": 1771610760,
+      "formattedTime": "2026-02-20 18:06:00",
+      "date": "2026-02-20",
+      "index": 961,
+      "strength": 1,
+      "candleIndex": 961,
+      "direction": "LL"
+    },
+    {
+      "type": "high",
+      "price": 2911.877,
+      "keyPrice": 2909.524,
+      "open": 2909.524,
+      "high": 2911.877,
+      "low": 2909.345,
+      "close": 2909.345,
+      "time": 1771611120,
+      "formattedTime": "2026-02-20 18:12:00",
+      "date": "2026-02-20",
+      "index": 963,
+      "strength": 1,
+      "candleIndex": 963,
+      "direction": "LH"
+    },
+    {
+      "type": "low",
+      "price": 2908.306,
+      "keyPrice": 2909.352,
+      "open": 2909.352,
+      "high": 2911.71,
+      "low": 2908.306,
+      "close": 2910.228,
+      "time": 1771611300,
+      "formattedTime": "2026-02-20 18:15:00",
+      "date": "2026-02-20",
+      "index": 964,
+      "strength": 1,
+      "candleIndex": 964,
+      "direction": "HL"
+    },
+    {
+      "type": "high",
+      "price": 2915.252,
+      "keyPrice": 2914.253,
+      "open": 2914.253,
+      "high": 2915.252,
+      "low": 2913.081,
+      "close": 2913.846,
+      "time": 1771611840,
+      "formattedTime": "2026-02-20 18:24:00",
+      "date": "2026-02-20",
+      "index": 967,
+      "strength": 1,
+      "candleIndex": 967,
+      "direction": "HH"
+    },
+    {
+      "type": "high",
+      "price": 2912.17,
+      "keyPrice": 2911.349,
+      "open": 2911.349,
+      "high": 2912.17,
+      "low": 2910.219,
+      "close": 2910.716,
+      "time": 1771612560,
+      "formattedTime": "2026-02-20 18:36:00",
+      "date": "2026-02-20",
+      "index": 971,
+      "strength": 1,
+      "candleIndex": 971,
+      "direction": "LH"
+    },
+    {
+      "type": "low",
+      "price": 2910.219,
+      "keyPrice": 2910.716,
+      "open": 2911.349,
+      "high": 2912.17,
+      "low": 2910.219,
+      "close": 2910.716,
+      "time": 1771612560,
+      "formattedTime": "2026-02-20 18:36:00",
+      "date": "2026-02-20",
+      "index": 971,
+      "strength": 1,
+      "candleIndex": 971,
+      "direction": "HL"
+    },
+    {
+      "type": "low",
+      "price": 2909.89,
+      "keyPrice": 2911.301,
+      "open": 2911.301,
+      "high": 2912.585,
+      "low": 2909.89,
+      "close": 2911.387,
+      "time": 1771612920,
+      "formattedTime": "2026-02-20 18:42:00",
+      "date": "2026-02-20",
+      "index": 973,
+      "strength": 1,
+      "candleIndex": 973,
+      "direction": "LL"
+    },
+    {
+      "type": "high",
+      "price": 2913.366,
+      "keyPrice": 2911.899,
+      "open": 2911.348,
+      "high": 2913.366,
+      "low": 2910.448,
+      "close": 2911.899,
+      "time": 1771613100,
+      "formattedTime": "2026-02-20 18:45:00",
+      "date": "2026-02-20",
+      "index": 974,
+      "strength": 1,
+      "candleIndex": 974,
+      "direction": "HH"
+    },
+    {
+      "type": "low",
+      "price": 2909.492,
+      "keyPrice": 2910.111,
+      "open": 2910.111,
+      "high": 2912.311,
+      "low": 2909.492,
+      "close": 2911.551,
+      "time": 1771613460,
+      "formattedTime": "2026-02-20 18:51:00",
+      "date": "2026-02-20",
+      "index": 976,
+      "strength": 1,
+      "candleIndex": 976,
+      "direction": "LL"
+    },
+    {
+      "type": "high",
+      "price": 2912.407,
+      "keyPrice": 2911.348,
+      "open": 2911.348,
+      "high": 2912.407,
+      "low": 2909.904,
+      "close": 2909.904,
+      "time": 1771613640,
+      "formattedTime": "2026-02-20 18:54:00",
+      "date": "2026-02-20",
+      "index": 977,
+      "strength": 1,
+      "candleIndex": 977,
+      "direction": "LH"
+    },
+    {
+      "type": "low",
+      "price": 2909.193,
+      "keyPrice": 2909.985,
+      "open": 2909.985,
+      "high": 2911.338,
+      "low": 2909.193,
+      "close": 2910.776,
+      "time": 1771613820,
+      "formattedTime": "2026-02-20 18:57:00",
+      "date": "2026-02-20",
+      "index": 978,
+      "strength": 1,
+      "candleIndex": 978,
+      "direction": "LL"
+    },
+    {
+      "type": "high",
+      "price": 2919.88,
+      "keyPrice": 2918.394,
+      "open": 2918.394,
+      "high": 2919.88,
+      "low": 2917.147,
+      "close": 2917.365,
+      "time": 1771614900,
+      "formattedTime": "2026-02-20 19:15:00",
+      "date": "2026-02-20",
+      "index": 984,
+      "strength": 1,
+      "candleIndex": 984,
+      "direction": "HH"
+    },
+    {
+      "type": "low",
+      "price": 2914.909,
+      "keyPrice": 2915.823,
+      "open": 2917.611,
+      "high": 2918.018,
+      "low": 2914.909,
+      "close": 2915.823,
+      "time": 1771615080,
+      "formattedTime": "2026-02-20 19:18:00",
+      "date": "2026-02-20",
+      "index": 985,
+      "strength": 1,
+      "candleIndex": 985,
+      "direction": "HL"
+    },
+    {
+      "type": "high",
+      "price": 2918.281,
+      "keyPrice": 2915.946,
+      "open": 2915.946,
+      "high": 2918.281,
+      "low": 2915.397,
+      "close": 2915.397,
+      "time": 1771615260,
+      "formattedTime": "2026-02-20 19:21:00",
+      "date": "2026-02-20",
+      "index": 986,
+      "strength": 1,
+      "candleIndex": 986,
+      "direction": "LH"
+    },
+    {
+      "type": "low",
+      "price": 2914.69,
+      "keyPrice": 2915.621,
+      "open": 2915.621,
+      "high": 2918.617,
+      "low": 2914.69,
+      "close": 2918.276,
+      "time": 1771615620,
+      "formattedTime": "2026-02-20 19:27:00",
+      "date": "2026-02-20",
+      "index": 988,
+      "strength": 1,
+      "candleIndex": 988,
+      "direction": "LL"
+    },
+    {
+      "type": "high",
+      "price": 2921.268,
+      "keyPrice": 2919.575,
+      "open": 2918.579,
+      "high": 2921.268,
+      "low": 2917.838,
+      "close": 2919.575,
+      "time": 1771615980,
+      "formattedTime": "2026-02-20 19:33:00",
+      "date": "2026-02-20",
+      "index": 990,
+      "strength": 1,
+      "candleIndex": 990,
+      "direction": "HH"
+    },
+    {
+      "type": "high",
+      "price": 2920.728,
+      "keyPrice": 2919.946,
+      "open": 2919.946,
+      "high": 2920.728,
+      "low": 2918.061,
+      "close": 2918.603,
+      "time": 1771616520,
+      "formattedTime": "2026-02-20 19:42:00",
+      "date": "2026-02-20",
+      "index": 993,
+      "strength": 1,
+      "candleIndex": 993,
+      "direction": "LH"
+    },
+    {
+      "type": "high",
+      "price": 2920.828,
+      "keyPrice": 2920.207,
+      "open": 2920.207,
+      "high": 2920.828,
+      "low": 2916.743,
+      "close": 2917.21,
+      "time": 1771616880,
+      "formattedTime": "2026-02-20 19:48:00",
+      "date": "2026-02-20",
+      "index": 995,
+      "strength": 1,
+      "candleIndex": 995,
+      "direction": "HH"
+    },
+    {
+      "type": "low",
+      "price": 2915.897,
+      "keyPrice": 2917.115,
+      "open": 2917.115,
+      "high": 2917.914,
+      "low": 2915.897,
+      "close": 2917.406,
+      "time": 1771617060,
+      "formattedTime": "2026-02-20 19:51:00",
+      "date": "2026-02-20",
+      "index": 996,
+      "strength": 1,
+      "candleIndex": 996,
+      "direction": "HL"
+    },
+    {
+      "type": "low",
+      "price": 2915.883,
+      "keyPrice": 2916.804,
+      "open": 2916.804,
+      "high": 2918.141,
+      "low": 2915.883,
+      "close": 2917.628,
+      "time": 1771617420,
+      "formattedTime": "2026-02-20 19:57:00",
+      "date": "2026-02-20",
       "index": 998,
       "strength": 1,
       "candleIndex": 998,
-      "direction": "HH"
+      "direction": "LL"
     }
   ]
 }
