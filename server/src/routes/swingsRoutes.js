@@ -17,7 +17,7 @@ const {
 
 
 // ── GET /api/swings/:symbol/:granularity ──
-router.get('/:symbol/:granularity', (req, res) => {
+router.get('/:symbol/:granularity', async (req, res) => {
   logRequest(req)
 
   try {
@@ -52,7 +52,7 @@ router.get('/:symbol/:granularity', (req, res) => {
     // Exclude forming candle — only run on confirmed closed candles
     const confirmed = candles.slice(0, -1)
 
-    const swings  = swingEngine.detectAll(symbol, granularity, confirmed, strength)
+    const swings  = await swingEngine.detectAll(symbol, granularity, confirmed, strength)
     const summary = swingEngine.getSummary(symbol, granularity)
 
     return sendSuccess(res, {
@@ -131,6 +131,36 @@ router.get('/:symbol/:granularity/latest', (req, res) => {
 
   } catch (err) {
     console.error('[SwingsRoute] Latest error:', err)
+    return sendError(res, 500, 'Internal server error', { message: err.message })
+  }
+})
+
+// ── GET /api/swings/:symbol/:granularity/debug ──
+// Returns swings with their source candle attached for verification
+router.get('/:symbol/:granularity/debug', async (req, res) => {
+  logRequest(req)
+
+  try {
+    const symbol = resolveSymbol(req.params.symbol)
+    if (!symbol) return sendError(res, 400, `Invalid symbol "${req.params.symbol}"`, { validSymbols: getValidSymbols() })
+
+    const granularity = resolveGranularity(req.params.granularity)
+    if (!granularity) return sendError(res, 400, `Invalid granularity "${req.params.granularity}"`, { validGranularities: getValidGranularities() })
+
+    const candles = signalEngine.getCandles(symbol, granularity, true)
+    if (!candles.length) return sendSuccess(res, { message: 'No candles loaded yet', symbol, granularity, swings: [] })
+
+    const confirmed = candles.slice(0, -1)
+    const swings = await swingEngine.detectAll(symbol, granularity, confirmed)
+
+    const swingsWithSource = swings.map(s => ({
+      ...s,
+      sourceCandle: confirmed[s.candleIndex] || null,
+    }))
+
+    return sendSuccess(res, { symbol, granularity, swingCount: swings.length, swings: swingsWithSource })
+  } catch (err) {
+    console.error('[SwingsRoute debug] Error:', err)
     return sendError(res, 500, 'Internal server error', { message: err.message })
   }
 })

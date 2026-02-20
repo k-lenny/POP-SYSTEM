@@ -8,7 +8,7 @@ const swingsRoutes   = require('./routes/swingsRoutes')
 const breakoutRoutes = require('./routes/breakoutRoutes')
 const eqhEqlRoutes   = require('./routes/eqhEqlRoutes')
 
-const { startSignalEngine, isFullyLoaded, getCandles, volatilitySymbols, timeframes } = require('./signals/signalEngine')
+const { startSignalEngine, isFullyLoaded, getCandles, volatilitySymbols, timeframes, subscribeToAllSymbols } = require('./signals/signalEngine')
 
 // Import engines for loading
 const swingEngine    = require('./signals/dataProcessor/swings')
@@ -91,6 +91,13 @@ async function runInitialFullDetections() {
 loadAllData().then(() => {
   // Start the live signal engine (receives real‑time candles)
   startSignalEngine()
+
+  // Automatically subscribe to all symbols/timeframes so historical candles are loaded
+  try {
+    if (typeof subscribeToAllSymbols === 'function') subscribeToAllSymbols()
+  } catch (err) {
+    console.error('Failed to auto-subscribe to all symbols:', err)
+  }
 
   // Optionally run full detections after history is loaded
   runInitialFullDetections().catch(err => console.error('Initial detection error:', err))

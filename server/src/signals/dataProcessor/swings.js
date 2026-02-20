@@ -6,6 +6,8 @@ const Logger = require('../../utils/logger');
 const metrics = require('../../utils/metrics');
 const { getConfig } = require('../../config');
 
+
+
 // ── Key price calculation ──
 const calculateKeyPrice = (type, candle) => {
   if (type === 'high') return Math.max(candle.open, candle.close);

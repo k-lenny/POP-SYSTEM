@@ -357,6 +357,7 @@ module.exports = {
   getLatestCandle,
   getAvailableSymbols,
   subscribeSymbol,
+  subscribeToAllSymbols,
   setCandleClosedHandler,
   isReady,
   isFullyLoaded,

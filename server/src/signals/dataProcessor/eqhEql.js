@@ -34,7 +34,8 @@ class EqhEqlEngine extends EventEmitter {
 
     this.logger      = options.logger      || new Logger('EqhEqlEngine');
     this.emitEvents  = options.emitEvents  ?? getConfig().ENABLE_EVENTS;
-    this.dataDir     = options.dataDir     || path.join(__dirname, '../../data/eqhEql');
+    // Disable disk persistence by default — set options.dataDir to enable
+    this.dataDir     = options.dataDir ?? null;
   }
 
   // ─────────────────────────────────────────────
@@ -70,8 +71,26 @@ class EqhEqlEngine extends EventEmitter {
     return Math.min(statusConf + bosBoost, 1.0);
   }
 
+  // ── Validate preBreakoutVDepth constraint ──
+  // For EQH: preBreakoutVDepth must NOT be below vShapeDepth (lower = worse for EQH)
+  // For EQL: preBreakoutVDepth must NOT be above vShapeDepth (higher = worse for EQL)
+  // Allow Infinity/-Infinity (not yet updated) and null values (valid edge cases)
+  _isValidPreBreakoutV(level) {
+    if (level.vShapeDepth === null || level.preBreakoutVDepth === null) return true;
+    // Allow Infinity/-Infinity (not yet updated from initial state)
+    if (!isFinite(level.preBreakoutVDepth)) return true;
+    if (level.type === 'EQH') {
+      // For EQH, preBreakoutVDepth should be >= vShapeDepth (not lower/worse)
+      return level.preBreakoutVDepth >= level.vShapeDepth;
+    } else { // EQL
+      // For EQL, preBreakoutVDepth should be <= vShapeDepth (not higher/worse)
+      return level.preBreakoutVDepth <= level.vShapeDepth;
+    }
+  }
+
   // ── Persistence ──
   async _saveToDisk(symbol, granularity) {
+    if (!this.dataDir) return;
     const filePath = path.join(this.dataDir, `${symbol}_${granularity}.json`);
     const data = {
       store: this.store[symbol]?.[granularity] || [],
@@ -83,6 +102,7 @@ class EqhEqlEngine extends EventEmitter {
   }
 
   async _loadFromDisk(symbol, granularity) {
+    if (!this.dataDir) return;
     const filePath = path.join(this.dataDir, `${symbol}_${granularity}.json`);
     try {
       const data = JSON.parse(await fs.readFile(filePath, 'utf8'));
@@ -232,10 +252,20 @@ class EqhEqlEngine extends EventEmitter {
     const zoneTop    = firstSwing.price;
     const zoneBottom = firstSwing.keyPrice;
 
-    const startIdx = nextArrayIdx(candleIndexMap, candles, firstSwing.index);
-    if (startIdx === undefined) return null;
+    // Determine exact array positions for candles strictly BETWEEN the two swings
+    let firstPos = candleIndexMap.get(firstSwing.index);
+    let secondPos = candleIndexMap.get(secondSwing.index);
+    // Fallback: if mapping by index fails, try to locate by timestamp/formattedTime
+    if (firstPos === undefined) firstPos = candles.findIndex(c => c.time === firstSwing.time || c.formattedTime === firstSwing.formattedTime);
+    if (secondPos === undefined) secondPos = candles.findIndex(c => c.time === secondSwing.time || c.formattedTime === secondSwing.formattedTime);
+    if (firstPos === -1 || secondPos === -1 || firstPos === undefined || secondPos === undefined) return null;
+    const startIdx = firstPos + 1;
+    const endIdxExclusive = secondPos; // stop before this position
+    if (startIdx >= endIdxExclusive) return null;
 
     const { map: swingMap, indices: swingIndices } = swingIndexMap;
+    const zoneLow = Math.min(zoneTop, zoneBottom);
+    const zoneHigh = Math.max(zoneTop, zoneBottom);
     const vTargetType = type === 'EQH' ? 'low' : 'high';
 
     let hasCandles     = false;
@@ -244,15 +274,14 @@ class EqhEqlEngine extends EventEmitter {
     let vExtremeCandle = null;
     let candleCount    = 0;
 
-    for (let i = startIdx; i < candles.length; i++) {
+    for (let i = startIdx; i < endIdxExclusive; i++) {
       const c = candles[i];
-      if (c.index >= secondSwing.index) break;
-
       hasCandles = true;
       candleCount++;
 
-      if (type === 'EQH' && c.high >= zoneBottom) return null;
-      if (type === 'EQL' && c.low  <= zoneTop)    return null;
+      // Reject if this candle's wick/body intersects the zone area
+      // (i.e. any part of the candle lies between zoneLow and zoneHigh)
+      if (c.high >= zoneLow && c.low <= zoneHigh) return null;
 
       if (type === 'EQH' && c.low  < vExtreme) { vExtreme = c.low;  vExtremeCandle = c; }
       if (type === 'EQL' && c.high > vExtreme) { vExtreme = c.high; vExtremeCandle = c; }
@@ -266,7 +295,35 @@ class EqhEqlEngine extends EventEmitter {
       if (swingMap.get(idx).type === vTargetType) { hasVShape = true; break; }
     }
 
-    if (!hasVShape) return null;
+    // Prepare references to the boundary candles (array positions)
+    const firstCandle = candles[firstPos];
+    const secondCandle = candles[secondPos];
+
+    // If no swing-based V-shape was found, accept candle-based extremes as valid V-shapes
+    // as long as a qualifying extreme candle exists strictly between the swings.
+    if (!hasVShape) {
+      if (!vExtremeCandle) return null;
+      // Resolve extreme candle's array position (prefer map, fallback to findIndex by time)
+      let vPos = candleIndexMap.get(vExtremeCandle.index);
+      if (vPos === undefined) vPos = candles.findIndex(c => c.time === vExtremeCandle.time || c.formattedTime === vExtremeCandle.formattedTime);
+      if (vPos === -1 || vPos === undefined) return null;
+      if (vPos <= firstPos || vPos >= secondPos) return null;
+      // Validate TIME strictly between swing times (not candle times)
+      if (!(vExtremeCandle.time > firstSwing.time && vExtremeCandle.time < secondSwing.time)) return null;
+      // mark hasVShape true to proceed
+      hasVShape = true;
+    }
+
+    // Ensure the computed vExtremeCandle is strictly BETWEEN the swings (by array position and TIME)
+    if (!vExtremeCandle) return null;
+    let vPosCheck = candleIndexMap.get(vExtremeCandle.index);
+    if (vPosCheck === undefined) vPosCheck = candles.findIndex(c => c.time === vExtremeCandle.time || c.formattedTime === vExtremeCandle.formattedTime);
+    if (vPosCheck === -1 || vPosCheck === undefined) return null;
+    if (vPosCheck <= firstPos || vPosCheck >= secondPos) return null;
+    // Use SWING times (source of truth), not candle times at positions
+    const minT = Math.min(firstSwing.time, secondSwing.time);
+    const maxT = Math.max(firstSwing.time, secondSwing.time);
+    if (!(vExtremeCandle.time > minT && vExtremeCandle.time < maxT)) return null;
 
     const level = {
       type,
@@ -317,9 +374,9 @@ class EqhEqlEngine extends EventEmitter {
       lastCheckedIndex: null,
 
       bias:          null,
-      formattedTime: secondSwing.formattedTime,
-      time:          secondSwing.time,
-      date:          secondSwing.date,
+      formattedTime: secondCandle?.formattedTime ?? secondSwing.formattedTime,
+      time:          secondCandle?.time ?? secondSwing.time,
+      date:          secondCandle?.date ?? secondSwing.date,
     };
     level.confidence = this._calculateConfidence(level);
     return level;
@@ -793,7 +850,8 @@ class EqhEqlEngine extends EventEmitter {
 
   get(symbol, granularity) {
     const arr = this.store[symbol]?.[granularity];
-    return arr ? [...arr] : [];
+    // Filter to exclude levels with invalid preBreakoutVDepth
+    return arr ? arr.filter(level => this._isValidPreBreakoutV(level)) : [];
   }
 
   /**

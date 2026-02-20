@@ -1,0 +1,4935 @@
+{
+  "store": [
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": false,
+      "strength": 3,
+      "swingType": "high",
+      "swingIndex": 4,
+      "swingPrice": 2123.771,
+      "swingKeyPrice": 2109.026,
+      "swingDirection": "FIRST",
+      "swingTime": 1740355200,
+      "swingFormattedTime": "2025-02-24 00:00:00",
+      "breakingCandleIndex": 12,
+      "breakingCandleTime": 1741046400,
+      "breakingCandleHigh": 2144.568,
+      "breakingCandleLow": 2100.494,
+      "breakingCandleClose": 2137.914,
+      "breakingCandleFormattedTime": "2025-03-04 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 12,
+          "time": 1741046400,
+          "close": 2137.914,
+          "formattedTime": "2025-03-04 00:00:00"
+        },
+        {
+          "index": 14,
+          "time": 1741219200,
+          "close": 2203.826,
+          "formattedTime": "2025-03-06 00:00:00"
+        }
+      ],
+      "breakDirection": "bullish",
+      "formattedTime": "2025-03-04 00:00:00",
+      "time": 1741046400,
+      "date": "2025-03-04",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": false,
+      "strength": 3,
+      "swingType": "high",
+      "swingIndex": 8,
+      "swingPrice": 2123.89,
+      "swingKeyPrice": 2110.152,
+      "swingDirection": "HH",
+      "swingTime": 1740700800,
+      "swingFormattedTime": "2025-02-28 00:00:00",
+      "breakingCandleIndex": 12,
+      "breakingCandleTime": 1741046400,
+      "breakingCandleHigh": 2144.568,
+      "breakingCandleLow": 2100.494,
+      "breakingCandleClose": 2137.914,
+      "breakingCandleFormattedTime": "2025-03-04 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 12,
+          "time": 1741046400,
+          "close": 2137.914,
+          "formattedTime": "2025-03-04 00:00:00"
+        },
+        {
+          "index": 14,
+          "time": 1741219200,
+          "close": 2203.826,
+          "formattedTime": "2025-03-06 00:00:00"
+        }
+      ],
+      "breakDirection": "bullish",
+      "formattedTime": "2025-03-04 00:00:00",
+      "time": 1741046400,
+      "date": "2025-03-04",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_WICK",
+      "isCHoCH": true,
+      "strength": 1,
+      "swingType": "low",
+      "swingIndex": 8,
+      "swingPrice": 2070.566,
+      "swingKeyPrice": 2086.347,
+      "swingDirection": "HL",
+      "swingTime": 1740700800,
+      "swingFormattedTime": "2025-02-28 00:00:00",
+      "breakingCandleIndex": 11,
+      "breakingCandleTime": 1740960000,
+      "breakingCandleHigh": 2119.937,
+      "breakingCandleLow": 2065.774,
+      "breakingCandleClose": 2106.391,
+      "breakingCandleFormattedTime": "2025-03-03 00:00:00",
+      "confirmingCandles": [],
+      "breakDirection": "bearish",
+      "formattedTime": "2025-03-03 00:00:00",
+      "time": 1740960000,
+      "date": "2025-03-03",
+      "confidence": 0.5333333333333333
+    },
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": true,
+      "strength": 3,
+      "swingType": "high",
+      "swingIndex": 10,
+      "swingPrice": 2121.953,
+      "swingKeyPrice": 2087.037,
+      "swingDirection": "LH",
+      "swingTime": 1740873600,
+      "swingFormattedTime": "2025-03-02 00:00:00",
+      "breakingCandleIndex": 12,
+      "breakingCandleTime": 1741046400,
+      "breakingCandleHigh": 2144.568,
+      "breakingCandleLow": 2100.494,
+      "breakingCandleClose": 2137.914,
+      "breakingCandleFormattedTime": "2025-03-04 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 12,
+          "time": 1741046400,
+          "close": 2137.914,
+          "formattedTime": "2025-03-04 00:00:00"
+        },
+        {
+          "index": 14,
+          "time": 1741219200,
+          "close": 2203.826,
+          "formattedTime": "2025-03-06 00:00:00"
+        }
+      ],
+      "breakDirection": "bullish",
+      "formattedTime": "2025-03-04 00:00:00",
+      "time": 1741046400,
+      "date": "2025-03-04",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_CLOSE",
+      "isCHoCH": true,
+      "strength": 2,
+      "swingType": "low",
+      "swingIndex": 16,
+      "swingPrice": 2168.353,
+      "swingKeyPrice": 2170.325,
+      "swingDirection": "HL",
+      "swingTime": 1741392000,
+      "swingFormattedTime": "2025-03-08 00:00:00",
+      "breakingCandleIndex": 26,
+      "breakingCandleTime": 1742256000,
+      "breakingCandleHigh": 2207.652,
+      "breakingCandleLow": 2130.124,
+      "breakingCandleClose": 2132.873,
+      "breakingCandleFormattedTime": "2025-03-18 00:00:00",
+      "confirmingCandles": [],
+      "breakDirection": "bearish",
+      "formattedTime": "2025-03-18 00:00:00",
+      "time": 1742256000,
+      "date": "2025-03-18",
+      "confidence": 0.8666666666666667
+    },
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": false,
+      "strength": 3,
+      "swingType": "high",
+      "swingIndex": 18,
+      "swingPrice": 2314.917,
+      "swingKeyPrice": 2306.822,
+      "swingDirection": "HH",
+      "swingTime": 1741564800,
+      "swingFormattedTime": "2025-03-10 00:00:00",
+      "breakingCandleIndex": 31,
+      "breakingCandleTime": 1742688000,
+      "breakingCandleHigh": 2361.97,
+      "breakingCandleLow": 2287.322,
+      "breakingCandleClose": 2360.106,
+      "breakingCandleFormattedTime": "2025-03-23 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 31,
+          "time": 1742688000,
+          "close": 2360.106,
+          "formattedTime": "2025-03-23 00:00:00"
+        },
+        {
+          "index": 32,
+          "time": 1742774400,
+          "close": 2397.136,
+          "formattedTime": "2025-03-24 00:00:00"
+        }
+      ],
+      "breakDirection": "bullish",
+      "formattedTime": "2025-03-23 00:00:00",
+      "time": 1742688000,
+      "date": "2025-03-23",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": true,
+      "strength": 3,
+      "swingType": "high",
+      "swingIndex": 21,
+      "swingPrice": 2287.444,
+      "swingKeyPrice": 2265.201,
+      "swingDirection": "LH",
+      "swingTime": 1741824000,
+      "swingFormattedTime": "2025-03-13 00:00:00",
+      "breakingCandleIndex": 30,
+      "breakingCandleTime": 1742601600,
+      "breakingCandleHigh": 2313.858,
+      "breakingCandleLow": 2242.439,
+      "breakingCandleClose": 2304.157,
+      "breakingCandleFormattedTime": "2025-03-22 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 30,
+          "time": 1742601600,
+          "close": 2304.157,
+          "formattedTime": "2025-03-22 00:00:00"
+        },
+        {
+          "index": 31,
+          "time": 1742688000,
+          "close": 2360.106,
+          "formattedTime": "2025-03-23 00:00:00"
+        }
+      ],
+      "breakDirection": "bullish",
+      "formattedTime": "2025-03-22 00:00:00",
+      "time": 1742601600,
+      "date": "2025-03-22",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_CLOSE",
+      "isCHoCH": false,
+      "strength": 2,
+      "swingType": "low",
+      "swingIndex": 23,
+      "swingPrice": 2149.581,
+      "swingKeyPrice": 2183.43,
+      "swingDirection": "LL",
+      "swingTime": 1741996800,
+      "swingFormattedTime": "2025-03-15 00:00:00",
+      "breakingCandleIndex": 26,
+      "breakingCandleTime": 1742256000,
+      "breakingCandleHigh": 2207.652,
+      "breakingCandleLow": 2130.124,
+      "breakingCandleClose": 2132.873,
+      "breakingCandleFormattedTime": "2025-03-18 00:00:00",
+      "confirmingCandles": [],
+      "breakDirection": "bearish",
+      "formattedTime": "2025-03-18 00:00:00",
+      "time": 1742256000,
+      "date": "2025-03-18",
+      "confidence": 0.6666666666666666
+    },
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": true,
+      "strength": 3,
+      "swingType": "high",
+      "swingIndex": 25,
+      "swingPrice": 2255.95,
+      "swingKeyPrice": 2242.97,
+      "swingDirection": "LH",
+      "swingTime": 1742169600,
+      "swingFormattedTime": "2025-03-17 00:00:00",
+      "breakingCandleIndex": 29,
+      "breakingCandleTime": 1742515200,
+      "breakingCandleHigh": 2264.52,
+      "breakingCandleLow": 2217.863,
+      "breakingCandleClose": 2261.276,
+      "breakingCandleFormattedTime": "2025-03-21 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 29,
+          "time": 1742515200,
+          "close": 2261.276,
+          "formattedTime": "2025-03-21 00:00:00"
+        },
+        {
+          "index": 30,
+          "time": 1742601600,
+          "close": 2304.157,
+          "formattedTime": "2025-03-22 00:00:00"
+        }
+      ],
+      "breakDirection": "bullish",
+      "formattedTime": "2025-03-21 00:00:00",
+      "time": 1742515200,
+      "date": "2025-03-21",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": false,
+      "strength": 3,
+      "swingType": "high",
+      "swingIndex": 32,
+      "swingPrice": 2400.009,
+      "swingKeyPrice": 2397.136,
+      "swingDirection": "HH",
+      "swingTime": 1742774400,
+      "swingFormattedTime": "2025-03-24 00:00:00",
+      "breakingCandleIndex": 61,
+      "breakingCandleTime": 1745280000,
+      "breakingCandleHigh": 2404.682,
+      "breakingCandleLow": 2362.678,
+      "breakingCandleClose": 2404.426,
+      "breakingCandleFormattedTime": "2025-04-22 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 61,
+          "time": 1745280000,
+          "close": 2404.426,
+          "formattedTime": "2025-04-22 00:00:00"
+        },
+        {
+          "index": 62,
+          "time": 1745366400,
+          "close": 2428.939,
+          "formattedTime": "2025-04-23 00:00:00"
+        }
+      ],
+      "breakDirection": "bullish",
+      "formattedTime": "2025-04-22 00:00:00",
+      "time": 1745280000,
+      "date": "2025-04-22",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": false,
+      "strength": 3,
+      "swingType": "high",
+      "swingIndex": 34,
+      "swingPrice": 2433.209,
+      "swingKeyPrice": 2392.316,
+      "swingDirection": "HH",
+      "swingTime": 1742947200,
+      "swingFormattedTime": "2025-03-26 00:00:00",
+      "breakingCandleIndex": 65,
+      "breakingCandleTime": 1745625600,
+      "breakingCandleHigh": 2460.203,
+      "breakingCandleLow": 2422.16,
+      "breakingCandleClose": 2455.529,
+      "breakingCandleFormattedTime": "2025-04-26 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 65,
+          "time": 1745625600,
+          "close": 2455.529,
+          "formattedTime": "2025-04-26 00:00:00"
+        },
+        {
+          "index": 68,
+          "time": 1745884800,
+          "close": 2467.069,
+          "formattedTime": "2025-04-29 00:00:00"
+        }
+      ],
+      "breakDirection": "bullish",
+      "formattedTime": "2025-04-26 00:00:00",
+      "time": 1745625600,
+      "date": "2025-04-26",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": true,
+      "strength": 3,
+      "swingType": "low",
+      "swingIndex": 36,
+      "swingPrice": 2279.502,
+      "swingKeyPrice": 2301.141,
+      "swingDirection": "HL",
+      "swingTime": 1743120000,
+      "swingFormattedTime": "2025-03-28 00:00:00",
+      "breakingCandleIndex": 42,
+      "breakingCandleTime": 1743638400,
+      "breakingCandleHigh": 2335.397,
+      "breakingCandleLow": 2267.1,
+      "breakingCandleClose": 2267.787,
+      "breakingCandleFormattedTime": "2025-04-03 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 42,
+          "time": 1743638400,
+          "close": 2267.787,
+          "formattedTime": "2025-04-03 00:00:00"
+        },
+        {
+          "index": 43,
+          "time": 1743724800,
+          "close": 2242.824,
+          "formattedTime": "2025-04-04 00:00:00"
+        }
+      ],
+      "breakDirection": "bearish",
+      "formattedTime": "2025-04-03 00:00:00",
+      "time": 1743638400,
+      "date": "2025-04-03",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": true,
+      "strength": 3,
+      "swingType": "high",
+      "swingIndex": 38,
+      "swingPrice": 2333.419,
+      "swingKeyPrice": 2290.548,
+      "swingDirection": "LH",
+      "swingTime": 1743292800,
+      "swingFormattedTime": "2025-03-30 00:00:00",
+      "breakingCandleIndex": 49,
+      "breakingCandleTime": 1744243200,
+      "breakingCandleHigh": 2345.777,
+      "breakingCandleLow": 2275.359,
+      "breakingCandleClose": 2341.128,
+      "breakingCandleFormattedTime": "2025-04-10 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 49,
+          "time": 1744243200,
+          "close": 2341.128,
+          "formattedTime": "2025-04-10 00:00:00"
+        },
+        {
+          "index": 50,
+          "time": 1744329600,
+          "close": 2393.986,
+          "formattedTime": "2025-04-11 00:00:00"
+        }
+      ],
+      "breakDirection": "bullish",
+      "formattedTime": "2025-04-10 00:00:00",
+      "time": 1744243200,
+      "date": "2025-04-10",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": false,
+      "strength": 3,
+      "swingType": "low",
+      "swingIndex": 38,
+      "swingPrice": 2278.619,
+      "swingKeyPrice": 2285.649,
+      "swingDirection": "LL",
+      "swingTime": 1743292800,
+      "swingFormattedTime": "2025-03-30 00:00:00",
+      "breakingCandleIndex": 42,
+      "breakingCandleTime": 1743638400,
+      "breakingCandleHigh": 2335.397,
+      "breakingCandleLow": 2267.1,
+      "breakingCandleClose": 2267.787,
+      "breakingCandleFormattedTime": "2025-04-03 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 42,
+          "time": 1743638400,
+          "close": 2267.787,
+          "formattedTime": "2025-04-03 00:00:00"
+        },
+        {
+          "index": 43,
+          "time": 1743724800,
+          "close": 2242.824,
+          "formattedTime": "2025-04-04 00:00:00"
+        }
+      ],
+      "breakDirection": "bearish",
+      "formattedTime": "2025-04-03 00:00:00",
+      "time": 1743638400,
+      "date": "2025-04-03",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": false,
+      "strength": 3,
+      "swingType": "high",
+      "swingIndex": 42,
+      "swingPrice": 2335.397,
+      "swingKeyPrice": 2300.038,
+      "swingDirection": "HH",
+      "swingTime": 1743638400,
+      "swingFormattedTime": "2025-04-03 00:00:00",
+      "breakingCandleIndex": 49,
+      "breakingCandleTime": 1744243200,
+      "breakingCandleHigh": 2345.777,
+      "breakingCandleLow": 2275.359,
+      "breakingCandleClose": 2341.128,
+      "breakingCandleFormattedTime": "2025-04-10 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 49,
+          "time": 1744243200,
+          "close": 2341.128,
+          "formattedTime": "2025-04-10 00:00:00"
+        },
+        {
+          "index": 50,
+          "time": 1744329600,
+          "close": 2393.986,
+          "formattedTime": "2025-04-11 00:00:00"
+        }
+      ],
+      "breakDirection": "bullish",
+      "formattedTime": "2025-04-10 00:00:00",
+      "time": 1744243200,
+      "date": "2025-04-10",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_WICK",
+      "isCHoCH": false,
+      "strength": 1,
+      "swingType": "low",
+      "swingIndex": 43,
+      "swingPrice": 2237.918,
+      "swingKeyPrice": 2242.824,
+      "swingDirection": "LL",
+      "swingTime": 1743724800,
+      "swingFormattedTime": "2025-04-04 00:00:00",
+      "breakingCandleIndex": 45,
+      "breakingCandleTime": 1743897600,
+      "breakingCandleHigh": 2266.26,
+      "breakingCandleLow": 2234.873,
+      "breakingCandleClose": 2247.799,
+      "breakingCandleFormattedTime": "2025-04-06 00:00:00",
+      "confirmingCandles": [],
+      "breakDirection": "bearish",
+      "formattedTime": "2025-04-06 00:00:00",
+      "time": 1743897600,
+      "date": "2025-04-06",
+      "confidence": 0.3333333333333333
+    },
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": true,
+      "strength": 3,
+      "swingType": "high",
+      "swingIndex": 44,
+      "swingPrice": 2284.358,
+      "swingKeyPrice": 2266.24,
+      "swingDirection": "LH",
+      "swingTime": 1743811200,
+      "swingFormattedTime": "2025-04-05 00:00:00",
+      "breakingCandleIndex": 49,
+      "breakingCandleTime": 1744243200,
+      "breakingCandleHigh": 2345.777,
+      "breakingCandleLow": 2275.359,
+      "breakingCandleClose": 2341.128,
+      "breakingCandleFormattedTime": "2025-04-10 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 49,
+          "time": 1744243200,
+          "close": 2341.128,
+          "formattedTime": "2025-04-10 00:00:00"
+        },
+        {
+          "index": 50,
+          "time": 1744329600,
+          "close": 2393.986,
+          "formattedTime": "2025-04-11 00:00:00"
+        }
+      ],
+      "breakDirection": "bullish",
+      "formattedTime": "2025-04-10 00:00:00",
+      "time": 1744243200,
+      "date": "2025-04-10",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": false,
+      "strength": 3,
+      "swingType": "high",
+      "swingIndex": 47,
+      "swingPrice": 2288.37,
+      "swingKeyPrice": 2257.762,
+      "swingDirection": "HH",
+      "swingTime": 1744070400,
+      "swingFormattedTime": "2025-04-08 00:00:00",
+      "breakingCandleIndex": 49,
+      "breakingCandleTime": 1744243200,
+      "breakingCandleHigh": 2345.777,
+      "breakingCandleLow": 2275.359,
+      "breakingCandleClose": 2341.128,
+      "breakingCandleFormattedTime": "2025-04-10 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 49,
+          "time": 1744243200,
+          "close": 2341.128,
+          "formattedTime": "2025-04-10 00:00:00"
+        },
+        {
+          "index": 50,
+          "time": 1744329600,
+          "close": 2393.986,
+          "formattedTime": "2025-04-11 00:00:00"
+        }
+      ],
+      "breakDirection": "bullish",
+      "formattedTime": "2025-04-10 00:00:00",
+      "time": 1744243200,
+      "date": "2025-04-10",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": false,
+      "strength": 3,
+      "swingType": "high",
+      "swingIndex": 50,
+      "swingPrice": 2419.559,
+      "swingKeyPrice": 2393.986,
+      "swingDirection": "HH",
+      "swingTime": 1744329600,
+      "swingFormattedTime": "2025-04-11 00:00:00",
+      "breakingCandleIndex": 62,
+      "breakingCandleTime": 1745366400,
+      "breakingCandleHigh": 2442.126,
+      "breakingCandleLow": 2397.822,
+      "breakingCandleClose": 2428.939,
+      "breakingCandleFormattedTime": "2025-04-23 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 62,
+          "time": 1745366400,
+          "close": 2428.939,
+          "formattedTime": "2025-04-23 00:00:00"
+        },
+        {
+          "index": 65,
+          "time": 1745625600,
+          "close": 2455.529,
+          "formattedTime": "2025-04-26 00:00:00"
+        }
+      ],
+      "breakDirection": "bullish",
+      "formattedTime": "2025-04-23 00:00:00",
+      "time": 1745366400,
+      "date": "2025-04-23",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": true,
+      "strength": 3,
+      "swingType": "high",
+      "swingIndex": 55,
+      "swingPrice": 2365.024,
+      "swingKeyPrice": 2349.3,
+      "swingDirection": "LH",
+      "swingTime": 1744761600,
+      "swingFormattedTime": "2025-04-16 00:00:00",
+      "breakingCandleIndex": 57,
+      "breakingCandleTime": 1744934400,
+      "breakingCandleHigh": 2374.115,
+      "breakingCandleLow": 2324.782,
+      "breakingCandleClose": 2368.389,
+      "breakingCandleFormattedTime": "2025-04-18 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 57,
+          "time": 1744934400,
+          "close": 2368.389,
+          "formattedTime": "2025-04-18 00:00:00"
+        },
+        {
+          "index": 60,
+          "time": 1745193600,
+          "close": 2369.897,
+          "formattedTime": "2025-04-21 00:00:00"
+        }
+      ],
+      "breakDirection": "bullish",
+      "formattedTime": "2025-04-18 00:00:00",
+      "time": 1744934400,
+      "date": "2025-04-18",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": false,
+      "strength": 3,
+      "swingType": "high",
+      "swingIndex": 58,
+      "swingPrice": 2374.669,
+      "swingKeyPrice": 2368.343,
+      "swingDirection": "HH",
+      "swingTime": 1745020800,
+      "swingFormattedTime": "2025-04-19 00:00:00",
+      "breakingCandleIndex": 61,
+      "breakingCandleTime": 1745280000,
+      "breakingCandleHigh": 2404.682,
+      "breakingCandleLow": 2362.678,
+      "breakingCandleClose": 2404.426,
+      "breakingCandleFormattedTime": "2025-04-22 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 61,
+          "time": 1745280000,
+          "close": 2404.426,
+          "formattedTime": "2025-04-22 00:00:00"
+        },
+        {
+          "index": 62,
+          "time": 1745366400,
+          "close": 2428.939,
+          "formattedTime": "2025-04-23 00:00:00"
+        }
+      ],
+      "breakDirection": "bullish",
+      "formattedTime": "2025-04-22 00:00:00",
+      "time": 1745280000,
+      "date": "2025-04-22",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_WICK",
+      "isCHoCH": true,
+      "strength": 1,
+      "swingType": "low",
+      "swingIndex": 60,
+      "swingPrice": 2338.92,
+      "swingKeyPrice": 2350.726,
+      "swingDirection": "HL",
+      "swingTime": 1745193600,
+      "swingFormattedTime": "2025-04-21 00:00:00",
+      "breakingCandleIndex": 290,
+      "breakingCandleTime": 1765065600,
+      "breakingCandleHigh": 2362.72,
+      "breakingCandleLow": 2328.374,
+      "breakingCandleClose": 2356.352,
+      "breakingCandleFormattedTime": "2025-12-07 00:00:00",
+      "confirmingCandles": [],
+      "breakDirection": "bearish",
+      "formattedTime": "2025-12-07 00:00:00",
+      "time": 1765065600,
+      "date": "2025-12-07",
+      "confidence": 0.5333333333333333
+    },
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": false,
+      "strength": 3,
+      "swingType": "high",
+      "swingIndex": 64,
+      "swingPrice": 2478.239,
+      "swingKeyPrice": 2427.456,
+      "swingDirection": "HH",
+      "swingTime": 1745539200,
+      "swingFormattedTime": "2025-04-25 00:00:00",
+      "breakingCandleIndex": 69,
+      "breakingCandleTime": 1745971200,
+      "breakingCandleHigh": 2504.296,
+      "breakingCandleLow": 2459.681,
+      "breakingCandleClose": 2486.613,
+      "breakingCandleFormattedTime": "2025-04-30 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 69,
+          "time": 1745971200,
+          "close": 2486.613,
+          "formattedTime": "2025-04-30 00:00:00"
+        },
+        {
+          "index": 70,
+          "time": 1746057600,
+          "close": 2500.145,
+          "formattedTime": "2025-05-01 00:00:00"
+        }
+      ],
+      "breakDirection": "bullish",
+      "formattedTime": "2025-04-30 00:00:00",
+      "time": 1745971200,
+      "date": "2025-04-30",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": true,
+      "strength": 3,
+      "swingType": "low",
+      "swingIndex": 66,
+      "swingPrice": 2421.277,
+      "swingKeyPrice": 2445.571,
+      "swingDirection": "HL",
+      "swingTime": 1745712000,
+      "swingFormattedTime": "2025-04-27 00:00:00",
+      "breakingCandleIndex": 251,
+      "breakingCandleTime": 1761696000,
+      "breakingCandleHigh": 2460.723,
+      "breakingCandleLow": 2392.267,
+      "breakingCandleClose": 2400.656,
+      "breakingCandleFormattedTime": "2025-10-29 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 251,
+          "time": 1761696000,
+          "close": 2400.656,
+          "formattedTime": "2025-10-29 00:00:00"
+        },
+        {
+          "index": 252,
+          "time": 1761782400,
+          "close": 2367.972,
+          "formattedTime": "2025-10-30 00:00:00"
+        }
+      ],
+      "breakDirection": "bearish",
+      "formattedTime": "2025-10-29 00:00:00",
+      "time": 1761696000,
+      "date": "2025-10-29",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": false,
+      "strength": 3,
+      "swingType": "high",
+      "swingIndex": 70,
+      "swingPrice": 2532.774,
+      "swingKeyPrice": 2500.145,
+      "swingDirection": "HH",
+      "swingTime": 1746057600,
+      "swingFormattedTime": "2025-05-01 00:00:00",
+      "breakingCandleIndex": 73,
+      "breakingCandleTime": 1746316800,
+      "breakingCandleHigh": 2571.904,
+      "breakingCandleLow": 2494.898,
+      "breakingCandleClose": 2558.114,
+      "breakingCandleFormattedTime": "2025-05-04 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 73,
+          "time": 1746316800,
+          "close": 2558.114,
+          "formattedTime": "2025-05-04 00:00:00"
+        },
+        {
+          "index": 74,
+          "time": 1746403200,
+          "close": 2593.195,
+          "formattedTime": "2025-05-05 00:00:00"
+        }
+      ],
+      "breakDirection": "bullish",
+      "formattedTime": "2025-05-04 00:00:00",
+      "time": 1746316800,
+      "date": "2025-05-04",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": true,
+      "strength": 3,
+      "swingType": "low",
+      "swingIndex": 71,
+      "swingPrice": 2468.71,
+      "swingKeyPrice": 2500.151,
+      "swingDirection": "HL",
+      "swingTime": 1746144000,
+      "swingFormattedTime": "2025-05-02 00:00:00",
+      "breakingCandleIndex": 240,
+      "breakingCandleTime": 1760745600,
+      "breakingCandleHigh": 2490.791,
+      "breakingCandleLow": 2431.772,
+      "breakingCandleClose": 2438.685,
+      "breakingCandleFormattedTime": "2025-10-18 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 240,
+          "time": 1760745600,
+          "close": 2438.685,
+          "formattedTime": "2025-10-18 00:00:00"
+        },
+        {
+          "index": 246,
+          "time": 1761264000,
+          "close": 2426.193,
+          "formattedTime": "2025-10-24 00:00:00"
+        }
+      ],
+      "breakDirection": "bearish",
+      "formattedTime": "2025-10-18 00:00:00",
+      "time": 1760745600,
+      "date": "2025-10-18",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": false,
+      "strength": 3,
+      "swingType": "high",
+      "swingIndex": 75,
+      "swingPrice": 2609.884,
+      "swingKeyPrice": 2593.41,
+      "swingDirection": "HH",
+      "swingTime": 1746489600,
+      "swingFormattedTime": "2025-05-06 00:00:00",
+      "breakingCandleIndex": 77,
+      "breakingCandleTime": 1746662400,
+      "breakingCandleHigh": 2642.824,
+      "breakingCandleLow": 2585.06,
+      "breakingCandleClose": 2613.222,
+      "breakingCandleFormattedTime": "2025-05-08 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 77,
+          "time": 1746662400,
+          "close": 2613.222,
+          "formattedTime": "2025-05-08 00:00:00"
+        },
+        {
+          "index": 79,
+          "time": 1746835200,
+          "close": 2643.392,
+          "formattedTime": "2025-05-10 00:00:00"
+        }
+      ],
+      "breakDirection": "bullish",
+      "formattedTime": "2025-05-08 00:00:00",
+      "time": 1746662400,
+      "date": "2025-05-08",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": false,
+      "strength": 3,
+      "swingType": "high",
+      "swingIndex": 77,
+      "swingPrice": 2642.824,
+      "swingKeyPrice": 2613.222,
+      "swingDirection": "HH",
+      "swingTime": 1746662400,
+      "swingFormattedTime": "2025-05-08 00:00:00",
+      "breakingCandleIndex": 79,
+      "breakingCandleTime": 1746835200,
+      "breakingCandleHigh": 2669.742,
+      "breakingCandleLow": 2601.874,
+      "breakingCandleClose": 2643.392,
+      "breakingCandleFormattedTime": "2025-05-10 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 79,
+          "time": 1746835200,
+          "close": 2643.392,
+          "formattedTime": "2025-05-10 00:00:00"
+        },
+        {
+          "index": 80,
+          "time": 1746921600,
+          "close": 2662.183,
+          "formattedTime": "2025-05-11 00:00:00"
+        }
+      ],
+      "breakDirection": "bullish",
+      "formattedTime": "2025-05-10 00:00:00",
+      "time": 1746835200,
+      "date": "2025-05-10",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": true,
+      "strength": 3,
+      "swingType": "low",
+      "swingIndex": 78,
+      "swingPrice": 2581.139,
+      "swingKeyPrice": 2602.339,
+      "swingDirection": "HL",
+      "swingTime": 1746748800,
+      "swingFormattedTime": "2025-05-09 00:00:00",
+      "breakingCandleIndex": 227,
+      "breakingCandleTime": 1759622400,
+      "breakingCandleHigh": 2603.149,
+      "breakingCandleLow": 2558.78,
+      "breakingCandleClose": 2575.93,
+      "breakingCandleFormattedTime": "2025-10-05 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 227,
+          "time": 1759622400,
+          "close": 2575.93,
+          "formattedTime": "2025-10-05 00:00:00"
+        },
+        {
+          "index": 228,
+          "time": 1759708800,
+          "close": 2552.227,
+          "formattedTime": "2025-10-06 00:00:00"
+        }
+      ],
+      "breakDirection": "bearish",
+      "formattedTime": "2025-10-05 00:00:00",
+      "time": 1759622400,
+      "date": "2025-10-05",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": false,
+      "strength": 3,
+      "swingType": "high",
+      "swingIndex": 80,
+      "swingPrice": 2673.212,
+      "swingKeyPrice": 2662.183,
+      "swingDirection": "HH",
+      "swingTime": 1746921600,
+      "swingFormattedTime": "2025-05-11 00:00:00",
+      "breakingCandleIndex": 83,
+      "breakingCandleTime": 1747180800,
+      "breakingCandleHigh": 2709.994,
+      "breakingCandleLow": 2637.17,
+      "breakingCandleClose": 2689.353,
+      "breakingCandleFormattedTime": "2025-05-14 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 83,
+          "time": 1747180800,
+          "close": 2689.353,
+          "formattedTime": "2025-05-14 00:00:00"
+        },
+        {
+          "index": 86,
+          "time": 1747440000,
+          "close": 2762.921,
+          "formattedTime": "2025-05-17 00:00:00"
+        }
+      ],
+      "breakDirection": "bullish",
+      "formattedTime": "2025-05-14 00:00:00",
+      "time": 1747180800,
+      "date": "2025-05-14",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": true,
+      "strength": 3,
+      "swingType": "low",
+      "swingIndex": 81,
+      "swingPrice": 2624.054,
+      "swingKeyPrice": 2625.664,
+      "swingDirection": "HL",
+      "swingTime": 1747008000,
+      "swingFormattedTime": "2025-05-12 00:00:00",
+      "breakingCandleIndex": 223,
+      "breakingCandleTime": 1759276800,
+      "breakingCandleHigh": 2693.945,
+      "breakingCandleLow": 2604.211,
+      "breakingCandleClose": 2606.898,
+      "breakingCandleFormattedTime": "2025-10-01 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 223,
+          "time": 1759276800,
+          "close": 2606.898,
+          "formattedTime": "2025-10-01 00:00:00"
+        },
+        {
+          "index": 224,
+          "time": 1759363200,
+          "close": 2601.863,
+          "formattedTime": "2025-10-02 00:00:00"
+        }
+      ],
+      "breakDirection": "bearish",
+      "formattedTime": "2025-10-01 00:00:00",
+      "time": 1759276800,
+      "date": "2025-10-01",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": false,
+      "strength": 3,
+      "swingType": "high",
+      "swingIndex": 84,
+      "swingPrice": 2714.579,
+      "swingKeyPrice": 2689.394,
+      "swingDirection": "HH",
+      "swingTime": 1747267200,
+      "swingFormattedTime": "2025-05-15 00:00:00",
+      "breakingCandleIndex": 86,
+      "breakingCandleTime": 1747440000,
+      "breakingCandleHigh": 2773.141,
+      "breakingCandleLow": 2645.84,
+      "breakingCandleClose": 2762.921,
+      "breakingCandleFormattedTime": "2025-05-17 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 86,
+          "time": 1747440000,
+          "close": 2762.921,
+          "formattedTime": "2025-05-17 00:00:00"
+        },
+        {
+          "index": 88,
+          "time": 1747612800,
+          "close": 2796.635,
+          "formattedTime": "2025-05-19 00:00:00"
+        }
+      ],
+      "breakDirection": "bullish",
+      "formattedTime": "2025-05-17 00:00:00",
+      "time": 1747440000,
+      "date": "2025-05-17",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": true,
+      "strength": 3,
+      "swingType": "low",
+      "swingIndex": 86,
+      "swingPrice": 2645.84,
+      "swingKeyPrice": 2659.83,
+      "swingDirection": "HL",
+      "swingTime": 1747440000,
+      "swingFormattedTime": "2025-05-17 00:00:00",
+      "breakingCandleIndex": 223,
+      "breakingCandleTime": 1759276800,
+      "breakingCandleHigh": 2693.945,
+      "breakingCandleLow": 2604.211,
+      "breakingCandleClose": 2606.898,
+      "breakingCandleFormattedTime": "2025-10-01 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 223,
+          "time": 1759276800,
+          "close": 2606.898,
+          "formattedTime": "2025-10-01 00:00:00"
+        },
+        {
+          "index": 224,
+          "time": 1759363200,
+          "close": 2601.863,
+          "formattedTime": "2025-10-02 00:00:00"
+        }
+      ],
+      "breakDirection": "bearish",
+      "formattedTime": "2025-10-01 00:00:00",
+      "time": 1759276800,
+      "date": "2025-10-01",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": false,
+      "strength": 3,
+      "swingType": "high",
+      "swingIndex": 89,
+      "swingPrice": 2816.157,
+      "swingKeyPrice": 2796.986,
+      "swingDirection": "HH",
+      "swingTime": 1747699200,
+      "swingFormattedTime": "2025-05-20 00:00:00",
+      "breakingCandleIndex": 96,
+      "breakingCandleTime": 1748304000,
+      "breakingCandleHigh": 2848.07,
+      "breakingCandleLow": 2773.047,
+      "breakingCandleClose": 2825.324,
+      "breakingCandleFormattedTime": "2025-05-27 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 96,
+          "time": 1748304000,
+          "close": 2825.324,
+          "formattedTime": "2025-05-27 00:00:00"
+        },
+        {
+          "index": 97,
+          "time": 1748390400,
+          "close": 2866.079,
+          "formattedTime": "2025-05-28 00:00:00"
+        }
+      ],
+      "breakDirection": "bullish",
+      "formattedTime": "2025-05-27 00:00:00",
+      "time": 1748304000,
+      "date": "2025-05-27",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": true,
+      "strength": 3,
+      "swingType": "high",
+      "swingIndex": 92,
+      "swingPrice": 2799.391,
+      "swingKeyPrice": 2791.35,
+      "swingDirection": "LH",
+      "swingTime": 1747958400,
+      "swingFormattedTime": "2025-05-23 00:00:00",
+      "breakingCandleIndex": 96,
+      "breakingCandleTime": 1748304000,
+      "breakingCandleHigh": 2848.07,
+      "breakingCandleLow": 2773.047,
+      "breakingCandleClose": 2825.324,
+      "breakingCandleFormattedTime": "2025-05-27 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 96,
+          "time": 1748304000,
+          "close": 2825.324,
+          "formattedTime": "2025-05-27 00:00:00"
+        },
+        {
+          "index": 97,
+          "time": 1748390400,
+          "close": 2866.079,
+          "formattedTime": "2025-05-28 00:00:00"
+        }
+      ],
+      "breakDirection": "bullish",
+      "formattedTime": "2025-05-27 00:00:00",
+      "time": 1748304000,
+      "date": "2025-05-27",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": true,
+      "strength": 3,
+      "swingType": "low",
+      "swingIndex": 92,
+      "swingPrice": 2737.693,
+      "swingKeyPrice": 2753.937,
+      "swingDirection": "HL",
+      "swingTime": 1747958400,
+      "swingFormattedTime": "2025-05-23 00:00:00",
+      "breakingCandleIndex": 124,
+      "breakingCandleTime": 1750723200,
+      "breakingCandleHigh": 2776.548,
+      "breakingCandleLow": 2718.933,
+      "breakingCandleClose": 2720.793,
+      "breakingCandleFormattedTime": "2025-06-24 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 124,
+          "time": 1750723200,
+          "close": 2720.793,
+          "formattedTime": "2025-06-24 00:00:00"
+        },
+        {
+          "index": 125,
+          "time": 1750809600,
+          "close": 2719.728,
+          "formattedTime": "2025-06-25 00:00:00"
+        }
+      ],
+      "breakDirection": "bearish",
+      "formattedTime": "2025-06-24 00:00:00",
+      "time": 1750723200,
+      "date": "2025-06-24",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": true,
+      "strength": 3,
+      "swingType": "low",
+      "swingIndex": 94,
+      "swingPrice": 2759.599,
+      "swingKeyPrice": 2770.784,
+      "swingDirection": "HL",
+      "swingTime": 1748131200,
+      "swingFormattedTime": "2025-05-25 00:00:00",
+      "breakingCandleIndex": 124,
+      "breakingCandleTime": 1750723200,
+      "breakingCandleHigh": 2776.548,
+      "breakingCandleLow": 2718.933,
+      "breakingCandleClose": 2720.793,
+      "breakingCandleFormattedTime": "2025-06-24 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 124,
+          "time": 1750723200,
+          "close": 2720.793,
+          "formattedTime": "2025-06-24 00:00:00"
+        },
+        {
+          "index": 125,
+          "time": 1750809600,
+          "close": 2719.728,
+          "formattedTime": "2025-06-25 00:00:00"
+        }
+      ],
+      "breakDirection": "bearish",
+      "formattedTime": "2025-06-24 00:00:00",
+      "time": 1750723200,
+      "date": "2025-06-24",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": false,
+      "strength": 3,
+      "swingType": "high",
+      "swingIndex": 100,
+      "swingPrice": 2926.929,
+      "swingKeyPrice": 2889.564,
+      "swingDirection": "HH",
+      "swingTime": 1748649600,
+      "swingFormattedTime": "2025-05-31 00:00:00",
+      "breakingCandleIndex": 108,
+      "breakingCandleTime": 1749340800,
+      "breakingCandleHigh": 2950.647,
+      "breakingCandleLow": 2888.034,
+      "breakingCandleClose": 2928.467,
+      "breakingCandleFormattedTime": "2025-06-08 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 108,
+          "time": 1749340800,
+          "close": 2928.467,
+          "formattedTime": "2025-06-08 00:00:00"
+        },
+        {
+          "index": 109,
+          "time": 1749427200,
+          "close": 2936.35,
+          "formattedTime": "2025-06-09 00:00:00"
+        }
+      ],
+      "breakDirection": "bullish",
+      "formattedTime": "2025-06-08 00:00:00",
+      "time": 1749340800,
+      "date": "2025-06-08",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": true,
+      "strength": 3,
+      "swingType": "high",
+      "swingIndex": 102,
+      "swingPrice": 2911.678,
+      "swingKeyPrice": 2901.905,
+      "swingDirection": "LH",
+      "swingTime": 1748822400,
+      "swingFormattedTime": "2025-06-02 00:00:00",
+      "breakingCandleIndex": 106,
+      "breakingCandleTime": 1749168000,
+      "breakingCandleHigh": 2951.449,
+      "breakingCandleLow": 2875.465,
+      "breakingCandleClose": 2912.444,
+      "breakingCandleFormattedTime": "2025-06-06 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 106,
+          "time": 1749168000,
+          "close": 2912.444,
+          "formattedTime": "2025-06-06 00:00:00"
+        },
+        {
+          "index": 107,
+          "time": 1749254400,
+          "close": 2921.449,
+          "formattedTime": "2025-06-07 00:00:00"
+        }
+      ],
+      "breakDirection": "bullish",
+      "formattedTime": "2025-06-06 00:00:00",
+      "time": 1749168000,
+      "date": "2025-06-06",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": true,
+      "strength": 3,
+      "swingType": "low",
+      "swingIndex": 104,
+      "swingPrice": 2811.238,
+      "swingKeyPrice": 2844.321,
+      "swingDirection": "HL",
+      "swingTime": 1748995200,
+      "swingFormattedTime": "2025-06-04 00:00:00",
+      "breakingCandleIndex": 117,
+      "breakingCandleTime": 1750118400,
+      "breakingCandleHigh": 2854.73,
+      "breakingCandleLow": 2793.468,
+      "breakingCandleClose": 2805.658,
+      "breakingCandleFormattedTime": "2025-06-17 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 117,
+          "time": 1750118400,
+          "close": 2805.658,
+          "formattedTime": "2025-06-17 00:00:00"
+        },
+        {
+          "index": 118,
+          "time": 1750204800,
+          "close": 2766.021,
+          "formattedTime": "2025-06-18 00:00:00"
+        }
+      ],
+      "breakDirection": "bearish",
+      "formattedTime": "2025-06-17 00:00:00",
+      "time": 1750118400,
+      "date": "2025-06-17",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": false,
+      "strength": 3,
+      "swingType": "high",
+      "swingIndex": 106,
+      "swingPrice": 2951.449,
+      "swingKeyPrice": 2912.444,
+      "swingDirection": "HH",
+      "swingTime": 1749168000,
+      "swingFormattedTime": "2025-06-06 00:00:00",
+      "breakingCandleIndex": 163,
+      "breakingCandleTime": 1754092800,
+      "breakingCandleHigh": 2982.981,
+      "breakingCandleLow": 2915.281,
+      "breakingCandleClose": 2982.035,
+      "breakingCandleFormattedTime": "2025-08-02 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 163,
+          "time": 1754092800,
+          "close": 2982.035,
+          "formattedTime": "2025-08-02 00:00:00"
+        },
+        {
+          "index": 164,
+          "time": 1754179200,
+          "close": 2993.329,
+          "formattedTime": "2025-08-03 00:00:00"
+        }
+      ],
+      "breakDirection": "bullish",
+      "formattedTime": "2025-08-02 00:00:00",
+      "time": 1754092800,
+      "date": "2025-08-02",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": false,
+      "strength": 3,
+      "swingType": "high",
+      "swingIndex": 109,
+      "swingPrice": 2964.768,
+      "swingKeyPrice": 2936.35,
+      "swingDirection": "HH",
+      "swingTime": 1749427200,
+      "swingFormattedTime": "2025-06-09 00:00:00",
+      "breakingCandleIndex": 163,
+      "breakingCandleTime": 1754092800,
+      "breakingCandleHigh": 2982.981,
+      "breakingCandleLow": 2915.281,
+      "breakingCandleClose": 2982.035,
+      "breakingCandleFormattedTime": "2025-08-02 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 163,
+          "time": 1754092800,
+          "close": 2982.035,
+          "formattedTime": "2025-08-02 00:00:00"
+        },
+        {
+          "index": 164,
+          "time": 1754179200,
+          "close": 2993.329,
+          "formattedTime": "2025-08-03 00:00:00"
+        }
+      ],
+      "breakDirection": "bullish",
+      "formattedTime": "2025-08-02 00:00:00",
+      "time": 1754092800,
+      "date": "2025-08-02",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": true,
+      "strength": 3,
+      "swingType": "low",
+      "swingIndex": 111,
+      "swingPrice": 2869.884,
+      "swingKeyPrice": 2884.835,
+      "swingDirection": "HL",
+      "swingTime": 1749600000,
+      "swingFormattedTime": "2025-06-11 00:00:00",
+      "breakingCandleIndex": 113,
+      "breakingCandleTime": 1749772800,
+      "breakingCandleHigh": 2904.236,
+      "breakingCandleLow": 2836.344,
+      "breakingCandleClose": 2850.132,
+      "breakingCandleFormattedTime": "2025-06-13 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 113,
+          "time": 1749772800,
+          "close": 2850.132,
+          "formattedTime": "2025-06-13 00:00:00"
+        },
+        {
+          "index": 114,
+          "time": 1749859200,
+          "close": 2838.929,
+          "formattedTime": "2025-06-14 00:00:00"
+        }
+      ],
+      "breakDirection": "bearish",
+      "formattedTime": "2025-06-13 00:00:00",
+      "time": 1749772800,
+      "date": "2025-06-13",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": true,
+      "strength": 3,
+      "swingType": "high",
+      "swingIndex": 112,
+      "swingPrice": 2938.884,
+      "swingKeyPrice": 2903.583,
+      "swingDirection": "LH",
+      "swingTime": 1749686400,
+      "swingFormattedTime": "2025-06-12 00:00:00",
+      "breakingCandleIndex": 163,
+      "breakingCandleTime": 1754092800,
+      "breakingCandleHigh": 2982.981,
+      "breakingCandleLow": 2915.281,
+      "breakingCandleClose": 2982.035,
+      "breakingCandleFormattedTime": "2025-08-02 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 163,
+          "time": 1754092800,
+          "close": 2982.035,
+          "formattedTime": "2025-08-02 00:00:00"
+        },
+        {
+          "index": 164,
+          "time": 1754179200,
+          "close": 2993.329,
+          "formattedTime": "2025-08-03 00:00:00"
+        }
+      ],
+      "breakDirection": "bullish",
+      "formattedTime": "2025-08-02 00:00:00",
+      "time": 1754092800,
+      "date": "2025-08-02",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": false,
+      "strength": 3,
+      "swingType": "low",
+      "swingIndex": 118,
+      "swingPrice": 2745.179,
+      "swingKeyPrice": 2766.021,
+      "swingDirection": "LL",
+      "swingTime": 1750204800,
+      "swingFormattedTime": "2025-06-18 00:00:00",
+      "breakingCandleIndex": 124,
+      "breakingCandleTime": 1750723200,
+      "breakingCandleHigh": 2776.548,
+      "breakingCandleLow": 2718.933,
+      "breakingCandleClose": 2720.793,
+      "breakingCandleFormattedTime": "2025-06-24 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 124,
+          "time": 1750723200,
+          "close": 2720.793,
+          "formattedTime": "2025-06-24 00:00:00"
+        },
+        {
+          "index": 125,
+          "time": 1750809600,
+          "close": 2719.728,
+          "formattedTime": "2025-06-25 00:00:00"
+        }
+      ],
+      "breakDirection": "bearish",
+      "formattedTime": "2025-06-24 00:00:00",
+      "time": 1750723200,
+      "date": "2025-06-24",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": true,
+      "strength": 3,
+      "swingType": "high",
+      "swingIndex": 120,
+      "swingPrice": 2838.75,
+      "swingKeyPrice": 2815.413,
+      "swingDirection": "LH",
+      "swingTime": 1750377600,
+      "swingFormattedTime": "2025-06-20 00:00:00",
+      "breakingCandleIndex": 143,
+      "breakingCandleTime": 1752364800,
+      "breakingCandleHigh": 2839.832,
+      "breakingCandleLow": 2778.552,
+      "breakingCandleClose": 2839.04,
+      "breakingCandleFormattedTime": "2025-07-13 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 143,
+          "time": 1752364800,
+          "close": 2839.04,
+          "formattedTime": "2025-07-13 00:00:00"
+        },
+        {
+          "index": 144,
+          "time": 1752451200,
+          "close": 2849.94,
+          "formattedTime": "2025-07-14 00:00:00"
+        }
+      ],
+      "breakDirection": "bullish",
+      "formattedTime": "2025-07-13 00:00:00",
+      "time": 1752364800,
+      "date": "2025-07-13",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": false,
+      "strength": 3,
+      "swingType": "low",
+      "swingIndex": 125,
+      "swingPrice": 2707.893,
+      "swingKeyPrice": 2719.728,
+      "swingDirection": "LL",
+      "swingTime": 1750809600,
+      "swingFormattedTime": "2025-06-25 00:00:00",
+      "breakingCandleIndex": 133,
+      "breakingCandleTime": 1751500800,
+      "breakingCandleHigh": 2756.944,
+      "breakingCandleLow": 2676.559,
+      "breakingCandleClose": 2679.779,
+      "breakingCandleFormattedTime": "2025-07-03 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 133,
+          "time": 1751500800,
+          "close": 2679.779,
+          "formattedTime": "2025-07-03 00:00:00"
+        },
+        {
+          "index": 134,
+          "time": 1751587200,
+          "close": 2674.42,
+          "formattedTime": "2025-07-04 00:00:00"
+        }
+      ],
+      "breakDirection": "bearish",
+      "formattedTime": "2025-07-03 00:00:00",
+      "time": 1751500800,
+      "date": "2025-07-03",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": true,
+      "strength": 3,
+      "swingType": "high",
+      "swingIndex": 127,
+      "swingPrice": 2792.893,
+      "swingKeyPrice": 2770.065,
+      "swingDirection": "LH",
+      "swingTime": 1750982400,
+      "swingFormattedTime": "2025-06-27 00:00:00",
+      "breakingCandleIndex": 141,
+      "breakingCandleTime": 1752192000,
+      "breakingCandleHigh": 2802.87,
+      "breakingCandleLow": 2748.561,
+      "breakingCandleClose": 2795.257,
+      "breakingCandleFormattedTime": "2025-07-11 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 141,
+          "time": 1752192000,
+          "close": 2795.257,
+          "formattedTime": "2025-07-11 00:00:00"
+        },
+        {
+          "index": 143,
+          "time": 1752364800,
+          "close": 2839.04,
+          "formattedTime": "2025-07-13 00:00:00"
+        }
+      ],
+      "breakDirection": "bullish",
+      "formattedTime": "2025-07-11 00:00:00",
+      "time": 1752192000,
+      "date": "2025-07-11",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": false,
+      "strength": 3,
+      "swingType": "high",
+      "swingIndex": 129,
+      "swingPrice": 2807.12,
+      "swingKeyPrice": 2775.783,
+      "swingDirection": "HH",
+      "swingTime": 1751155200,
+      "swingFormattedTime": "2025-06-29 00:00:00",
+      "breakingCandleIndex": 143,
+      "breakingCandleTime": 1752364800,
+      "breakingCandleHigh": 2839.832,
+      "breakingCandleLow": 2778.552,
+      "breakingCandleClose": 2839.04,
+      "breakingCandleFormattedTime": "2025-07-13 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 143,
+          "time": 1752364800,
+          "close": 2839.04,
+          "formattedTime": "2025-07-13 00:00:00"
+        },
+        {
+          "index": 144,
+          "time": 1752451200,
+          "close": 2849.94,
+          "formattedTime": "2025-07-14 00:00:00"
+        }
+      ],
+      "breakDirection": "bullish",
+      "formattedTime": "2025-07-13 00:00:00",
+      "time": 1752364800,
+      "date": "2025-07-13",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": false,
+      "strength": 3,
+      "swingType": "low",
+      "swingIndex": 131,
+      "swingPrice": 2680.12,
+      "swingKeyPrice": 2718.889,
+      "swingDirection": "LL",
+      "swingTime": 1751328000,
+      "swingFormattedTime": "2025-07-01 00:00:00",
+      "breakingCandleIndex": 133,
+      "breakingCandleTime": 1751500800,
+      "breakingCandleHigh": 2756.944,
+      "breakingCandleLow": 2676.559,
+      "breakingCandleClose": 2679.779,
+      "breakingCandleFormattedTime": "2025-07-03 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 133,
+          "time": 1751500800,
+          "close": 2679.779,
+          "formattedTime": "2025-07-03 00:00:00"
+        },
+        {
+          "index": 134,
+          "time": 1751587200,
+          "close": 2674.42,
+          "formattedTime": "2025-07-04 00:00:00"
+        }
+      ],
+      "breakDirection": "bearish",
+      "formattedTime": "2025-07-03 00:00:00",
+      "time": 1751500800,
+      "date": "2025-07-03",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": true,
+      "strength": 3,
+      "swingType": "high",
+      "swingIndex": 132,
+      "swingPrice": 2758.117,
+      "swingKeyPrice": 2744.542,
+      "swingDirection": "LH",
+      "swingTime": 1751414400,
+      "swingFormattedTime": "2025-07-02 00:00:00",
+      "breakingCandleIndex": 139,
+      "breakingCandleTime": 1752019200,
+      "breakingCandleHigh": 2760.716,
+      "breakingCandleLow": 2645.845,
+      "breakingCandleClose": 2758.755,
+      "breakingCandleFormattedTime": "2025-07-09 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 139,
+          "time": 1752019200,
+          "close": 2758.755,
+          "formattedTime": "2025-07-09 00:00:00"
+        },
+        {
+          "index": 140,
+          "time": 1752105600,
+          "close": 2767.397,
+          "formattedTime": "2025-07-10 00:00:00"
+        }
+      ],
+      "breakDirection": "bullish",
+      "formattedTime": "2025-07-09 00:00:00",
+      "time": 1752019200,
+      "date": "2025-07-09",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_CLOSE",
+      "isCHoCH": false,
+      "strength": 2,
+      "swingType": "low",
+      "swingIndex": 134,
+      "swingPrice": 2652.486,
+      "swingKeyPrice": 2674.42,
+      "swingDirection": "LL",
+      "swingTime": 1751587200,
+      "swingFormattedTime": "2025-07-04 00:00:00",
+      "breakingCandleIndex": 138,
+      "breakingCandleTime": 1751932800,
+      "breakingCandleHigh": 2680.45,
+      "breakingCandleLow": 2636.956,
+      "breakingCandleClose": 2649.175,
+      "breakingCandleFormattedTime": "2025-07-08 00:00:00",
+      "confirmingCandles": [],
+      "breakDirection": "bearish",
+      "formattedTime": "2025-07-08 00:00:00",
+      "time": 1751932800,
+      "date": "2025-07-08",
+      "confidence": 0.6666666666666666
+    },
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": true,
+      "strength": 3,
+      "swingType": "high",
+      "swingIndex": 136,
+      "swingPrice": 2739.216,
+      "swingKeyPrice": 2723.704,
+      "swingDirection": "LH",
+      "swingTime": 1751760000,
+      "swingFormattedTime": "2025-07-06 00:00:00",
+      "breakingCandleIndex": 139,
+      "breakingCandleTime": 1752019200,
+      "breakingCandleHigh": 2760.716,
+      "breakingCandleLow": 2645.845,
+      "breakingCandleClose": 2758.755,
+      "breakingCandleFormattedTime": "2025-07-09 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 139,
+          "time": 1752019200,
+          "close": 2758.755,
+          "formattedTime": "2025-07-09 00:00:00"
+        },
+        {
+          "index": 140,
+          "time": 1752105600,
+          "close": 2767.397,
+          "formattedTime": "2025-07-10 00:00:00"
+        }
+      ],
+      "breakDirection": "bullish",
+      "formattedTime": "2025-07-09 00:00:00",
+      "time": 1752019200,
+      "date": "2025-07-09",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": false,
+      "strength": 3,
+      "swingType": "low",
+      "swingIndex": 137,
+      "swingPrice": 2617.773,
+      "swingKeyPrice": 2661.231,
+      "swingDirection": "LL",
+      "swingTime": 1751846400,
+      "swingFormattedTime": "2025-07-07 00:00:00",
+      "breakingCandleIndex": 223,
+      "breakingCandleTime": 1759276800,
+      "breakingCandleHigh": 2693.945,
+      "breakingCandleLow": 2604.211,
+      "breakingCandleClose": 2606.898,
+      "breakingCandleFormattedTime": "2025-10-01 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 223,
+          "time": 1759276800,
+          "close": 2606.898,
+          "formattedTime": "2025-10-01 00:00:00"
+        },
+        {
+          "index": 224,
+          "time": 1759363200,
+          "close": 2601.863,
+          "formattedTime": "2025-10-02 00:00:00"
+        }
+      ],
+      "breakDirection": "bearish",
+      "formattedTime": "2025-10-01 00:00:00",
+      "time": 1759276800,
+      "date": "2025-10-01",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": false,
+      "strength": 3,
+      "swingType": "high",
+      "swingIndex": 144,
+      "swingPrice": 2880.314,
+      "swingKeyPrice": 2849.94,
+      "swingDirection": "HH",
+      "swingTime": 1752451200,
+      "swingFormattedTime": "2025-07-14 00:00:00",
+      "breakingCandleIndex": 150,
+      "breakingCandleTime": 1752969600,
+      "breakingCandleHigh": 2935.74,
+      "breakingCandleLow": 2868.086,
+      "breakingCandleClose": 2920.748,
+      "breakingCandleFormattedTime": "2025-07-20 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 150,
+          "time": 1752969600,
+          "close": 2920.748,
+          "formattedTime": "2025-07-20 00:00:00"
+        },
+        {
+          "index": 151,
+          "time": 1753056000,
+          "close": 2926.409,
+          "formattedTime": "2025-07-21 00:00:00"
+        }
+      ],
+      "breakDirection": "bullish",
+      "formattedTime": "2025-07-20 00:00:00",
+      "time": 1752969600,
+      "date": "2025-07-20",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_CLOSE",
+      "isCHoCH": true,
+      "strength": 2,
+      "swingType": "low",
+      "swingIndex": 146,
+      "swingPrice": 2804.515,
+      "swingKeyPrice": 2838.294,
+      "swingDirection": "HL",
+      "swingTime": 1752624000,
+      "swingFormattedTime": "2025-07-16 00:00:00",
+      "breakingCandleIndex": 154,
+      "breakingCandleTime": 1753315200,
+      "breakingCandleHigh": 2854.551,
+      "breakingCandleLow": 2765.723,
+      "breakingCandleClose": 2769.99,
+      "breakingCandleFormattedTime": "2025-07-24 00:00:00",
+      "confirmingCandles": [],
+      "breakDirection": "bearish",
+      "formattedTime": "2025-07-24 00:00:00",
+      "time": 1753315200,
+      "date": "2025-07-24",
+      "confidence": 0.8666666666666667
+    },
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": false,
+      "strength": 3,
+      "swingType": "high",
+      "swingIndex": 147,
+      "swingPrice": 2898.308,
+      "swingKeyPrice": 2875.69,
+      "swingDirection": "HH",
+      "swingTime": 1752710400,
+      "swingFormattedTime": "2025-07-17 00:00:00",
+      "breakingCandleIndex": 150,
+      "breakingCandleTime": 1752969600,
+      "breakingCandleHigh": 2935.74,
+      "breakingCandleLow": 2868.086,
+      "breakingCandleClose": 2920.748,
+      "breakingCandleFormattedTime": "2025-07-20 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 150,
+          "time": 1752969600,
+          "close": 2920.748,
+          "formattedTime": "2025-07-20 00:00:00"
+        },
+        {
+          "index": 151,
+          "time": 1753056000,
+          "close": 2926.409,
+          "formattedTime": "2025-07-21 00:00:00"
+        }
+      ],
+      "breakDirection": "bullish",
+      "formattedTime": "2025-07-20 00:00:00",
+      "time": 1752969600,
+      "date": "2025-07-20",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_CLOSE",
+      "isCHoCH": true,
+      "strength": 2,
+      "swingType": "low",
+      "swingIndex": 149,
+      "swingPrice": 2828.218,
+      "swingKeyPrice": 2841.168,
+      "swingDirection": "HL",
+      "swingTime": 1752883200,
+      "swingFormattedTime": "2025-07-19 00:00:00",
+      "breakingCandleIndex": 154,
+      "breakingCandleTime": 1753315200,
+      "breakingCandleHigh": 2854.551,
+      "breakingCandleLow": 2765.723,
+      "breakingCandleClose": 2769.99,
+      "breakingCandleFormattedTime": "2025-07-24 00:00:00",
+      "confirmingCandles": [],
+      "breakDirection": "bearish",
+      "formattedTime": "2025-07-24 00:00:00",
+      "time": 1753315200,
+      "date": "2025-07-24",
+      "confidence": 0.8666666666666667
+    },
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": false,
+      "strength": 3,
+      "swingType": "high",
+      "swingIndex": 151,
+      "swingPrice": 2966.404,
+      "swingKeyPrice": 2926.409,
+      "swingDirection": "HH",
+      "swingTime": 1753056000,
+      "swingFormattedTime": "2025-07-21 00:00:00",
+      "breakingCandleIndex": 163,
+      "breakingCandleTime": 1754092800,
+      "breakingCandleHigh": 2982.981,
+      "breakingCandleLow": 2915.281,
+      "breakingCandleClose": 2982.035,
+      "breakingCandleFormattedTime": "2025-08-02 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 163,
+          "time": 1754092800,
+          "close": 2982.035,
+          "formattedTime": "2025-08-02 00:00:00"
+        },
+        {
+          "index": 164,
+          "time": 1754179200,
+          "close": 2993.329,
+          "formattedTime": "2025-08-03 00:00:00"
+        }
+      ],
+      "breakDirection": "bullish",
+      "formattedTime": "2025-08-02 00:00:00",
+      "time": 1754092800,
+      "date": "2025-08-02",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": false,
+      "strength": 3,
+      "swingType": "low",
+      "swingIndex": 154,
+      "swingPrice": 2765.723,
+      "swingKeyPrice": 2769.99,
+      "swingDirection": "LL",
+      "swingTime": 1753315200,
+      "swingFormattedTime": "2025-07-24 00:00:00",
+      "breakingCandleIndex": 173,
+      "breakingCandleTime": 1754956800,
+      "breakingCandleHigh": 2838.106,
+      "breakingCandleLow": 2739.22,
+      "breakingCandleClose": 2743.483,
+      "breakingCandleFormattedTime": "2025-08-12 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 173,
+          "time": 1754956800,
+          "close": 2743.483,
+          "formattedTime": "2025-08-12 00:00:00"
+        },
+        {
+          "index": 174,
+          "time": 1755043200,
+          "close": 2688.302,
+          "formattedTime": "2025-08-13 00:00:00"
+        }
+      ],
+      "breakDirection": "bearish",
+      "formattedTime": "2025-08-12 00:00:00",
+      "time": 1754956800,
+      "date": "2025-08-12",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": true,
+      "strength": 3,
+      "swingType": "high",
+      "swingIndex": 157,
+      "swingPrice": 2896.137,
+      "swingKeyPrice": 2881.857,
+      "swingDirection": "LH",
+      "swingTime": 1753574400,
+      "swingFormattedTime": "2025-07-27 00:00:00",
+      "breakingCandleIndex": 160,
+      "breakingCandleTime": 1753833600,
+      "breakingCandleHigh": 2931.031,
+      "breakingCandleLow": 2847.024,
+      "breakingCandleClose": 2908.61,
+      "breakingCandleFormattedTime": "2025-07-30 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 160,
+          "time": 1753833600,
+          "close": 2908.61,
+          "formattedTime": "2025-07-30 00:00:00"
+        },
+        {
+          "index": 162,
+          "time": 1754006400,
+          "close": 2929.164,
+          "formattedTime": "2025-08-01 00:00:00"
+        }
+      ],
+      "breakDirection": "bullish",
+      "formattedTime": "2025-07-30 00:00:00",
+      "time": 1753833600,
+      "date": "2025-07-30",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": true,
+      "strength": 3,
+      "swingType": "low",
+      "swingIndex": 158,
+      "swingPrice": 2812.409,
+      "swingKeyPrice": 2851.849,
+      "swingDirection": "HL",
+      "swingTime": 1753660800,
+      "swingFormattedTime": "2025-07-28 00:00:00",
+      "breakingCandleIndex": 173,
+      "breakingCandleTime": 1754956800,
+      "breakingCandleHigh": 2838.106,
+      "breakingCandleLow": 2739.22,
+      "breakingCandleClose": 2743.483,
+      "breakingCandleFormattedTime": "2025-08-12 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 173,
+          "time": 1754956800,
+          "close": 2743.483,
+          "formattedTime": "2025-08-12 00:00:00"
+        },
+        {
+          "index": 174,
+          "time": 1755043200,
+          "close": 2688.302,
+          "formattedTime": "2025-08-13 00:00:00"
+        }
+      ],
+      "breakDirection": "bearish",
+      "formattedTime": "2025-08-12 00:00:00",
+      "time": 1754956800,
+      "date": "2025-08-12",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": false,
+      "strength": 3,
+      "swingType": "high",
+      "swingIndex": 160,
+      "swingPrice": 2931.031,
+      "swingKeyPrice": 2908.61,
+      "swingDirection": "HH",
+      "swingTime": 1753833600,
+      "swingFormattedTime": "2025-07-30 00:00:00",
+      "breakingCandleIndex": 163,
+      "breakingCandleTime": 1754092800,
+      "breakingCandleHigh": 2982.981,
+      "breakingCandleLow": 2915.281,
+      "breakingCandleClose": 2982.035,
+      "breakingCandleFormattedTime": "2025-08-02 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 163,
+          "time": 1754092800,
+          "close": 2982.035,
+          "formattedTime": "2025-08-02 00:00:00"
+        },
+        {
+          "index": 164,
+          "time": 1754179200,
+          "close": 2993.329,
+          "formattedTime": "2025-08-03 00:00:00"
+        }
+      ],
+      "breakDirection": "bullish",
+      "formattedTime": "2025-08-02 00:00:00",
+      "time": 1754092800,
+      "date": "2025-08-02",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": true,
+      "strength": 3,
+      "swingType": "low",
+      "swingIndex": 168,
+      "swingPrice": 2890.574,
+      "swingKeyPrice": 2897.376,
+      "swingDirection": "HL",
+      "swingTime": 1754524800,
+      "swingFormattedTime": "2025-08-07 00:00:00",
+      "breakingCandleIndex": 171,
+      "breakingCandleTime": 1754784000,
+      "breakingCandleHigh": 2926.677,
+      "breakingCandleLow": 2846.257,
+      "breakingCandleClose": 2863.967,
+      "breakingCandleFormattedTime": "2025-08-10 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 171,
+          "time": 1754784000,
+          "close": 2863.967,
+          "formattedTime": "2025-08-10 00:00:00"
+        },
+        {
+          "index": 172,
+          "time": 1754870400,
+          "close": 2827.641,
+          "formattedTime": "2025-08-11 00:00:00"
+        }
+      ],
+      "breakDirection": "bearish",
+      "formattedTime": "2025-08-10 00:00:00",
+      "time": 1754784000,
+      "date": "2025-08-10",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_CLOSE",
+      "isCHoCH": true,
+      "strength": 2,
+      "swingType": "high",
+      "swingIndex": 169,
+      "swingPrice": 2979.051,
+      "swingKeyPrice": 2948.09,
+      "swingDirection": "LH",
+      "swingTime": 1754611200,
+      "swingFormattedTime": "2025-08-08 00:00:00",
+      "breakingCandleIndex": 195,
+      "breakingCandleTime": 1756857600,
+      "breakingCandleHigh": 3018.656,
+      "breakingCandleLow": 2917.226,
+      "breakingCandleClose": 2998.703,
+      "breakingCandleFormattedTime": "2025-09-03 00:00:00",
+      "confirmingCandles": [],
+      "breakDirection": "bullish",
+      "formattedTime": "2025-09-03 00:00:00",
+      "time": 1756857600,
+      "date": "2025-09-03",
+      "confidence": 0.8666666666666667
+    },
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": false,
+      "strength": 3,
+      "swingType": "low",
+      "swingIndex": 175,
+      "swingPrice": 2683.211,
+      "swingKeyPrice": 2688.095,
+      "swingDirection": "LL",
+      "swingTime": 1755129600,
+      "swingFormattedTime": "2025-08-14 00:00:00",
+      "breakingCandleIndex": 222,
+      "breakingCandleTime": 1759190400,
+      "breakingCandleHigh": 2707.517,
+      "breakingCandleLow": 2661.088,
+      "breakingCandleClose": 2671.196,
+      "breakingCandleFormattedTime": "2025-09-30 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 222,
+          "time": 1759190400,
+          "close": 2671.196,
+          "formattedTime": "2025-09-30 00:00:00"
+        },
+        {
+          "index": 223,
+          "time": 1759276800,
+          "close": 2606.898,
+          "formattedTime": "2025-10-01 00:00:00"
+        }
+      ],
+      "breakDirection": "bearish",
+      "formattedTime": "2025-09-30 00:00:00",
+      "time": 1759190400,
+      "date": "2025-09-30",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": true,
+      "strength": 3,
+      "swingType": "high",
+      "swingIndex": 178,
+      "swingPrice": 2860.265,
+      "swingKeyPrice": 2838.439,
+      "swingDirection": "LH",
+      "swingTime": 1755388800,
+      "swingFormattedTime": "2025-08-17 00:00:00",
+      "breakingCandleIndex": 194,
+      "breakingCandleTime": 1756771200,
+      "breakingCandleHigh": 2926.06,
+      "breakingCandleLow": 2847.346,
+      "breakingCandleClose": 2923.977,
+      "breakingCandleFormattedTime": "2025-09-02 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 194,
+          "time": 1756771200,
+          "close": 2923.977,
+          "formattedTime": "2025-09-02 00:00:00"
+        },
+        {
+          "index": 195,
+          "time": 1756857600,
+          "close": 2998.703,
+          "formattedTime": "2025-09-03 00:00:00"
+        }
+      ],
+      "breakDirection": "bullish",
+      "formattedTime": "2025-09-02 00:00:00",
+      "time": 1756771200,
+      "date": "2025-09-02",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_CLOSE",
+      "isCHoCH": true,
+      "strength": 2,
+      "swingType": "low",
+      "swingIndex": 180,
+      "swingPrice": 2758.1,
+      "swingKeyPrice": 2786.005,
+      "swingDirection": "HL",
+      "swingTime": 1755561600,
+      "swingFormattedTime": "2025-08-19 00:00:00",
+      "breakingCandleIndex": 186,
+      "breakingCandleTime": 1756080000,
+      "breakingCandleHigh": 2788.342,
+      "breakingCandleLow": 2732.909,
+      "breakingCandleClose": 2753.135,
+      "breakingCandleFormattedTime": "2025-08-25 00:00:00",
+      "confirmingCandles": [],
+      "breakDirection": "bearish",
+      "formattedTime": "2025-08-25 00:00:00",
+      "time": 1756080000,
+      "date": "2025-08-25",
+      "confidence": 0.8666666666666667
+    },
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": true,
+      "strength": 3,
+      "swingType": "high",
+      "swingIndex": 181,
+      "swingPrice": 2832.873,
+      "swingKeyPrice": 2814.049,
+      "swingDirection": "LH",
+      "swingTime": 1755648000,
+      "swingFormattedTime": "2025-08-20 00:00:00",
+      "breakingCandleIndex": 189,
+      "breakingCandleTime": 1756339200,
+      "breakingCandleHigh": 2856.861,
+      "breakingCandleLow": 2810.215,
+      "breakingCandleClose": 2841.009,
+      "breakingCandleFormattedTime": "2025-08-28 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 189,
+          "time": 1756339200,
+          "close": 2841.009,
+          "formattedTime": "2025-08-28 00:00:00"
+        },
+        {
+          "index": 192,
+          "time": 1756598400,
+          "close": 2846.295,
+          "formattedTime": "2025-08-31 00:00:00"
+        }
+      ],
+      "breakDirection": "bullish",
+      "formattedTime": "2025-08-28 00:00:00",
+      "time": 1756339200,
+      "date": "2025-08-28",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_CLOSE",
+      "isCHoCH": false,
+      "strength": 2,
+      "swingType": "low",
+      "swingIndex": 182,
+      "swingPrice": 2757.273,
+      "swingKeyPrice": 2760.802,
+      "swingDirection": "LL",
+      "swingTime": 1755734400,
+      "swingFormattedTime": "2025-08-21 00:00:00",
+      "breakingCandleIndex": 186,
+      "breakingCandleTime": 1756080000,
+      "breakingCandleHigh": 2788.342,
+      "breakingCandleLow": 2732.909,
+      "breakingCandleClose": 2753.135,
+      "breakingCandleFormattedTime": "2025-08-25 00:00:00",
+      "confirmingCandles": [],
+      "breakDirection": "bearish",
+      "formattedTime": "2025-08-25 00:00:00",
+      "time": 1756080000,
+      "date": "2025-08-25",
+      "confidence": 0.6666666666666666
+    },
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": true,
+      "strength": 3,
+      "swingType": "high",
+      "swingIndex": 183,
+      "swingPrice": 2807.212,
+      "swingKeyPrice": 2790.628,
+      "swingDirection": "LH",
+      "swingTime": 1755820800,
+      "swingFormattedTime": "2025-08-22 00:00:00",
+      "breakingCandleIndex": 188,
+      "breakingCandleTime": 1756252800,
+      "breakingCandleHigh": 2827.67,
+      "breakingCandleLow": 2787.864,
+      "breakingCandleClose": 2821.854,
+      "breakingCandleFormattedTime": "2025-08-27 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 188,
+          "time": 1756252800,
+          "close": 2821.854,
+          "formattedTime": "2025-08-27 00:00:00"
+        },
+        {
+          "index": 189,
+          "time": 1756339200,
+          "close": 2841.009,
+          "formattedTime": "2025-08-28 00:00:00"
+        }
+      ],
+      "breakDirection": "bullish",
+      "formattedTime": "2025-08-27 00:00:00",
+      "time": 1756252800,
+      "date": "2025-08-27",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": false,
+      "strength": 3,
+      "swingType": "high",
+      "swingIndex": 185,
+      "swingPrice": 2808.973,
+      "swingKeyPrice": 2782.221,
+      "swingDirection": "HH",
+      "swingTime": 1755993600,
+      "swingFormattedTime": "2025-08-24 00:00:00",
+      "breakingCandleIndex": 188,
+      "breakingCandleTime": 1756252800,
+      "breakingCandleHigh": 2827.67,
+      "breakingCandleLow": 2787.864,
+      "breakingCandleClose": 2821.854,
+      "breakingCandleFormattedTime": "2025-08-27 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 188,
+          "time": 1756252800,
+          "close": 2821.854,
+          "formattedTime": "2025-08-27 00:00:00"
+        },
+        {
+          "index": 189,
+          "time": 1756339200,
+          "close": 2841.009,
+          "formattedTime": "2025-08-28 00:00:00"
+        }
+      ],
+      "breakDirection": "bullish",
+      "formattedTime": "2025-08-27 00:00:00",
+      "time": 1756252800,
+      "date": "2025-08-27",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": false,
+      "strength": 3,
+      "swingType": "low",
+      "swingIndex": 186,
+      "swingPrice": 2732.909,
+      "swingKeyPrice": 2753.135,
+      "swingDirection": "LL",
+      "swingTime": 1756080000,
+      "swingFormattedTime": "2025-08-25 00:00:00",
+      "breakingCandleIndex": 221,
+      "breakingCandleTime": 1759104000,
+      "breakingCandleHigh": 2778.096,
+      "breakingCandleLow": 2687.972,
+      "breakingCandleClose": 2701.134,
+      "breakingCandleFormattedTime": "2025-09-29 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 221,
+          "time": 1759104000,
+          "close": 2701.134,
+          "formattedTime": "2025-09-29 00:00:00"
+        },
+        {
+          "index": 222,
+          "time": 1759190400,
+          "close": 2671.196,
+          "formattedTime": "2025-09-30 00:00:00"
+        }
+      ],
+      "breakDirection": "bearish",
+      "formattedTime": "2025-09-29 00:00:00",
+      "time": 1759104000,
+      "date": "2025-09-29",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": false,
+      "strength": 3,
+      "swingType": "high",
+      "swingIndex": 189,
+      "swingPrice": 2856.861,
+      "swingKeyPrice": 2841.009,
+      "swingDirection": "HH",
+      "swingTime": 1756339200,
+      "swingFormattedTime": "2025-08-28 00:00:00",
+      "breakingCandleIndex": 194,
+      "breakingCandleTime": 1756771200,
+      "breakingCandleHigh": 2926.06,
+      "breakingCandleLow": 2847.346,
+      "breakingCandleClose": 2923.977,
+      "breakingCandleFormattedTime": "2025-09-02 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 194,
+          "time": 1756771200,
+          "close": 2923.977,
+          "formattedTime": "2025-09-02 00:00:00"
+        },
+        {
+          "index": 195,
+          "time": 1756857600,
+          "close": 2998.703,
+          "formattedTime": "2025-09-03 00:00:00"
+        }
+      ],
+      "breakDirection": "bullish",
+      "formattedTime": "2025-09-02 00:00:00",
+      "time": 1756771200,
+      "date": "2025-09-02",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": true,
+      "strength": 3,
+      "swingType": "low",
+      "swingIndex": 192,
+      "swingPrice": 2786.364,
+      "swingKeyPrice": 2795.148,
+      "swingDirection": "HL",
+      "swingTime": 1756598400,
+      "swingFormattedTime": "2025-08-31 00:00:00",
+      "breakingCandleIndex": 220,
+      "breakingCandleTime": 1759017600,
+      "breakingCandleHigh": 2808.039,
+      "breakingCandleLow": 2757.107,
+      "breakingCandleClose": 2773.983,
+      "breakingCandleFormattedTime": "2025-09-28 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 220,
+          "time": 1759017600,
+          "close": 2773.983,
+          "formattedTime": "2025-09-28 00:00:00"
+        },
+        {
+          "index": 221,
+          "time": 1759104000,
+          "close": 2701.134,
+          "formattedTime": "2025-09-29 00:00:00"
+        }
+      ],
+      "breakDirection": "bearish",
+      "formattedTime": "2025-09-28 00:00:00",
+      "time": 1759017600,
+      "date": "2025-09-28",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": true,
+      "strength": 3,
+      "swingType": "low",
+      "swingIndex": 197,
+      "swingPrice": 2931.952,
+      "swingKeyPrice": 2969.847,
+      "swingDirection": "HL",
+      "swingTime": 1757030400,
+      "swingFormattedTime": "2025-09-05 00:00:00",
+      "breakingCandleIndex": 199,
+      "breakingCandleTime": 1757203200,
+      "breakingCandleHigh": 2962.883,
+      "breakingCandleLow": 2857.747,
+      "breakingCandleClose": 2870.898,
+      "breakingCandleFormattedTime": "2025-09-07 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 199,
+          "time": 1757203200,
+          "close": 2870.898,
+          "formattedTime": "2025-09-07 00:00:00"
+        },
+        {
+          "index": 200,
+          "time": 1757289600,
+          "close": 2846.966,
+          "formattedTime": "2025-09-08 00:00:00"
+        }
+      ],
+      "breakDirection": "bearish",
+      "formattedTime": "2025-09-07 00:00:00",
+      "time": 1757203200,
+      "date": "2025-09-07",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": true,
+      "strength": 3,
+      "swingType": "high",
+      "swingIndex": 204,
+      "swingPrice": 2833.96,
+      "swingKeyPrice": 2826.727,
+      "swingDirection": "LH",
+      "swingTime": 1757635200,
+      "swingFormattedTime": "2025-09-12 00:00:00",
+      "breakingCandleIndex": 212,
+      "breakingCandleTime": 1758326400,
+      "breakingCandleHigh": 2853.54,
+      "breakingCandleLow": 2781.205,
+      "breakingCandleClose": 2849.955,
+      "breakingCandleFormattedTime": "2025-09-20 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 212,
+          "time": 1758326400,
+          "close": 2849.955,
+          "formattedTime": "2025-09-20 00:00:00"
+        },
+        {
+          "index": 213,
+          "time": 1758412800,
+          "close": 2884.159,
+          "formattedTime": "2025-09-21 00:00:00"
+        }
+      ],
+      "breakDirection": "bullish",
+      "formattedTime": "2025-09-20 00:00:00",
+      "time": 1758326400,
+      "date": "2025-09-20",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": false,
+      "strength": 3,
+      "swingType": "low",
+      "swingIndex": 205,
+      "swingPrice": 2777.055,
+      "swingKeyPrice": 2802.238,
+      "swingDirection": "LL",
+      "swingTime": 1757721600,
+      "swingFormattedTime": "2025-09-13 00:00:00",
+      "breakingCandleIndex": 220,
+      "breakingCandleTime": 1759017600,
+      "breakingCandleHigh": 2808.039,
+      "breakingCandleLow": 2757.107,
+      "breakingCandleClose": 2773.983,
+      "breakingCandleFormattedTime": "2025-09-28 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 220,
+          "time": 1759017600,
+          "close": 2773.983,
+          "formattedTime": "2025-09-28 00:00:00"
+        },
+        {
+          "index": 221,
+          "time": 1759104000,
+          "close": 2701.134,
+          "formattedTime": "2025-09-29 00:00:00"
+        }
+      ],
+      "breakDirection": "bearish",
+      "formattedTime": "2025-09-28 00:00:00",
+      "time": 1759017600,
+      "date": "2025-09-28",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_CLOSE",
+      "isCHoCH": false,
+      "strength": 2,
+      "swingType": "high",
+      "swingIndex": 207,
+      "swingPrice": 2869.694,
+      "swingKeyPrice": 2827.456,
+      "swingDirection": "HH",
+      "swingTime": 1757894400,
+      "swingFormattedTime": "2025-09-15 00:00:00",
+      "breakingCandleIndex": 213,
+      "breakingCandleTime": 1758412800,
+      "breakingCandleHigh": 2884.607,
+      "breakingCandleLow": 2837.36,
+      "breakingCandleClose": 2884.159,
+      "breakingCandleFormattedTime": "2025-09-21 00:00:00",
+      "confirmingCandles": [],
+      "breakDirection": "bullish",
+      "formattedTime": "2025-09-21 00:00:00",
+      "time": 1758412800,
+      "date": "2025-09-21",
+      "confidence": 0.6666666666666666
+    },
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": false,
+      "strength": 3,
+      "swingType": "low",
+      "swingIndex": 209,
+      "swingPrice": 2772.985,
+      "swingKeyPrice": 2788.575,
+      "swingDirection": "LL",
+      "swingTime": 1758067200,
+      "swingFormattedTime": "2025-09-17 00:00:00",
+      "breakingCandleIndex": 221,
+      "breakingCandleTime": 1759104000,
+      "breakingCandleHigh": 2778.096,
+      "breakingCandleLow": 2687.972,
+      "breakingCandleClose": 2701.134,
+      "breakingCandleFormattedTime": "2025-09-29 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 221,
+          "time": 1759104000,
+          "close": 2701.134,
+          "formattedTime": "2025-09-29 00:00:00"
+        },
+        {
+          "index": 222,
+          "time": 1759190400,
+          "close": 2671.196,
+          "formattedTime": "2025-09-30 00:00:00"
+        }
+      ],
+      "breakDirection": "bearish",
+      "formattedTime": "2025-09-29 00:00:00",
+      "time": 1759104000,
+      "date": "2025-09-29",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_CLOSE",
+      "isCHoCH": true,
+      "strength": 2,
+      "swingType": "high",
+      "swingIndex": 211,
+      "swingPrice": 2855.887,
+      "swingKeyPrice": 2815.11,
+      "swingDirection": "LH",
+      "swingTime": 1758240000,
+      "swingFormattedTime": "2025-09-19 00:00:00",
+      "breakingCandleIndex": 213,
+      "breakingCandleTime": 1758412800,
+      "breakingCandleHigh": 2884.607,
+      "breakingCandleLow": 2837.36,
+      "breakingCandleClose": 2884.159,
+      "breakingCandleFormattedTime": "2025-09-21 00:00:00",
+      "confirmingCandles": [],
+      "breakDirection": "bullish",
+      "formattedTime": "2025-09-21 00:00:00",
+      "time": 1758412800,
+      "date": "2025-09-21",
+      "confidence": 0.8666666666666667
+    },
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": true,
+      "strength": 3,
+      "swingType": "low",
+      "swingIndex": 212,
+      "swingPrice": 2781.205,
+      "swingKeyPrice": 2815.367,
+      "swingDirection": "HL",
+      "swingTime": 1758326400,
+      "swingFormattedTime": "2025-09-20 00:00:00",
+      "breakingCandleIndex": 220,
+      "breakingCandleTime": 1759017600,
+      "breakingCandleHigh": 2808.039,
+      "breakingCandleLow": 2757.107,
+      "breakingCandleClose": 2773.983,
+      "breakingCandleFormattedTime": "2025-09-28 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 220,
+          "time": 1759017600,
+          "close": 2773.983,
+          "formattedTime": "2025-09-28 00:00:00"
+        },
+        {
+          "index": 221,
+          "time": 1759104000,
+          "close": 2701.134,
+          "formattedTime": "2025-09-29 00:00:00"
+        }
+      ],
+      "breakDirection": "bearish",
+      "formattedTime": "2025-09-28 00:00:00",
+      "time": 1759017600,
+      "date": "2025-09-28",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": false,
+      "strength": 3,
+      "swingType": "high",
+      "swingIndex": 214,
+      "swingPrice": 2900.96,
+      "swingKeyPrice": 2883.92,
+      "swingDirection": "HH",
+      "swingTime": 1758499200,
+      "swingFormattedTime": "2025-09-22 00:00:00",
+      "breakingCandleIndex": 364,
+      "breakingCandleTime": 1771459200,
+      "breakingCandleHigh": 2928.988,
+      "breakingCandleLow": 2775.383,
+      "breakingCandleClose": 2915.231,
+      "breakingCandleFormattedTime": "2026-02-19 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 364,
+          "time": 1771459200,
+          "close": 2915.231,
+          "formattedTime": "2026-02-19 00:00:00"
+        },
+        {
+          "index": 365,
+          "time": 1771545600,
+          "close": 2923.761,
+          "formattedTime": "2026-02-20 00:00:00"
+        }
+      ],
+      "breakDirection": "bullish",
+      "formattedTime": "2026-02-19 00:00:00",
+      "time": 1771459200,
+      "date": "2026-02-19",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": true,
+      "strength": 3,
+      "swingType": "low",
+      "swingIndex": 217,
+      "swingPrice": 2798.271,
+      "swingKeyPrice": 2815.918,
+      "swingDirection": "HL",
+      "swingTime": 1758758400,
+      "swingFormattedTime": "2025-09-25 00:00:00",
+      "breakingCandleIndex": 219,
+      "breakingCandleTime": 1758931200,
+      "breakingCandleHigh": 2856.888,
+      "breakingCandleLow": 2785.118,
+      "breakingCandleClose": 2790.944,
+      "breakingCandleFormattedTime": "2025-09-27 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 219,
+          "time": 1758931200,
+          "close": 2790.944,
+          "formattedTime": "2025-09-27 00:00:00"
+        },
+        {
+          "index": 220,
+          "time": 1759017600,
+          "close": 2773.983,
+          "formattedTime": "2025-09-28 00:00:00"
+        }
+      ],
+      "breakDirection": "bearish",
+      "formattedTime": "2025-09-27 00:00:00",
+      "time": 1758931200,
+      "date": "2025-09-27",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": true,
+      "strength": 3,
+      "swingType": "high",
+      "swingIndex": 218,
+      "swingPrice": 2877.739,
+      "swingKeyPrice": 2862.466,
+      "swingDirection": "LH",
+      "swingTime": 1758844800,
+      "swingFormattedTime": "2025-09-26 00:00:00",
+      "breakingCandleIndex": 364,
+      "breakingCandleTime": 1771459200,
+      "breakingCandleHigh": 2928.988,
+      "breakingCandleLow": 2775.383,
+      "breakingCandleClose": 2915.231,
+      "breakingCandleFormattedTime": "2026-02-19 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 364,
+          "time": 1771459200,
+          "close": 2915.231,
+          "formattedTime": "2026-02-19 00:00:00"
+        },
+        {
+          "index": 365,
+          "time": 1771545600,
+          "close": 2923.761,
+          "formattedTime": "2026-02-20 00:00:00"
+        }
+      ],
+      "breakDirection": "bullish",
+      "formattedTime": "2026-02-19 00:00:00",
+      "time": 1771459200,
+      "date": "2026-02-19",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": false,
+      "strength": 3,
+      "swingType": "low",
+      "swingIndex": 224,
+      "swingPrice": 2569.423,
+      "swingKeyPrice": 2601.863,
+      "swingDirection": "LL",
+      "swingTime": 1759363200,
+      "swingFormattedTime": "2025-10-02 00:00:00",
+      "breakingCandleIndex": 228,
+      "breakingCandleTime": 1759708800,
+      "breakingCandleHigh": 2589.502,
+      "breakingCandleLow": 2543.475,
+      "breakingCandleClose": 2552.227,
+      "breakingCandleFormattedTime": "2025-10-06 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 228,
+          "time": 1759708800,
+          "close": 2552.227,
+          "formattedTime": "2025-10-06 00:00:00"
+        },
+        {
+          "index": 233,
+          "time": 1760140800,
+          "close": 2547.664,
+          "formattedTime": "2025-10-11 00:00:00"
+        }
+      ],
+      "breakDirection": "bearish",
+      "formattedTime": "2025-10-06 00:00:00",
+      "time": 1759708800,
+      "date": "2025-10-06",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": true,
+      "strength": 3,
+      "swingType": "high",
+      "swingIndex": 226,
+      "swingPrice": 2627.556,
+      "swingKeyPrice": 2605.683,
+      "swingDirection": "LH",
+      "swingTime": 1759536000,
+      "swingFormattedTime": "2025-10-04 00:00:00",
+      "breakingCandleIndex": 265,
+      "breakingCandleTime": 1762905600,
+      "breakingCandleHigh": 2649.336,
+      "breakingCandleLow": 2607.762,
+      "breakingCandleClose": 2629.007,
+      "breakingCandleFormattedTime": "2025-11-12 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 265,
+          "time": 1762905600,
+          "close": 2629.007,
+          "formattedTime": "2025-11-12 00:00:00"
+        },
+        {
+          "index": 266,
+          "time": 1762992000,
+          "close": 2703.241,
+          "formattedTime": "2025-11-13 00:00:00"
+        }
+      ],
+      "breakDirection": "bullish",
+      "formattedTime": "2025-11-12 00:00:00",
+      "time": 1762905600,
+      "date": "2025-11-12",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": false,
+      "strength": 3,
+      "swingType": "low",
+      "swingIndex": 228,
+      "swingPrice": 2543.475,
+      "swingKeyPrice": 2552.227,
+      "swingDirection": "LL",
+      "swingTime": 1759708800,
+      "swingFormattedTime": "2025-10-06 00:00:00",
+      "breakingCandleIndex": 238,
+      "breakingCandleTime": 1760572800,
+      "breakingCandleHigh": 2565.017,
+      "breakingCandleLow": 2518.173,
+      "breakingCandleClose": 2524.91,
+      "breakingCandleFormattedTime": "2025-10-16 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 238,
+          "time": 1760572800,
+          "close": 2524.91,
+          "formattedTime": "2025-10-16 00:00:00"
+        },
+        {
+          "index": 239,
+          "time": 1760659200,
+          "close": 2477.551,
+          "formattedTime": "2025-10-17 00:00:00"
+        }
+      ],
+      "breakDirection": "bearish",
+      "formattedTime": "2025-10-16 00:00:00",
+      "time": 1760572800,
+      "date": "2025-10-16",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": false,
+      "strength": 3,
+      "swingType": "high",
+      "swingIndex": 229,
+      "swingPrice": 2646.433,
+      "swingKeyPrice": 2622.007,
+      "swingDirection": "HH",
+      "swingTime": 1759795200,
+      "swingFormattedTime": "2025-10-07 00:00:00",
+      "breakingCandleIndex": 266,
+      "breakingCandleTime": 1762992000,
+      "breakingCandleHigh": 2713.958,
+      "breakingCandleLow": 2628.728,
+      "breakingCandleClose": 2703.241,
+      "breakingCandleFormattedTime": "2025-11-13 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 266,
+          "time": 1762992000,
+          "close": 2703.241,
+          "formattedTime": "2025-11-13 00:00:00"
+        },
+        {
+          "index": 267,
+          "time": 1763078400,
+          "close": 2732.024,
+          "formattedTime": "2025-11-14 00:00:00"
+        }
+      ],
+      "breakDirection": "bullish",
+      "formattedTime": "2025-11-13 00:00:00",
+      "time": 1762992000,
+      "date": "2025-11-13",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": false,
+      "strength": 3,
+      "swingType": "low",
+      "swingIndex": 233,
+      "swingPrice": 2525.2,
+      "swingKeyPrice": 2547.664,
+      "swingDirection": "LL",
+      "swingTime": 1760140800,
+      "swingFormattedTime": "2025-10-11 00:00:00",
+      "breakingCandleIndex": 238,
+      "breakingCandleTime": 1760572800,
+      "breakingCandleHigh": 2565.017,
+      "breakingCandleLow": 2518.173,
+      "breakingCandleClose": 2524.91,
+      "breakingCandleFormattedTime": "2025-10-16 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 238,
+          "time": 1760572800,
+          "close": 2524.91,
+          "formattedTime": "2025-10-16 00:00:00"
+        },
+        {
+          "index": 239,
+          "time": 1760659200,
+          "close": 2477.551,
+          "formattedTime": "2025-10-17 00:00:00"
+        }
+      ],
+      "breakDirection": "bearish",
+      "formattedTime": "2025-10-16 00:00:00",
+      "time": 1760572800,
+      "date": "2025-10-16",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": true,
+      "strength": 3,
+      "swingType": "high",
+      "swingIndex": 234,
+      "swingPrice": 2624.247,
+      "swingKeyPrice": 2611.297,
+      "swingDirection": "LH",
+      "swingTime": 1760227200,
+      "swingFormattedTime": "2025-10-12 00:00:00",
+      "breakingCandleIndex": 265,
+      "breakingCandleTime": 1762905600,
+      "breakingCandleHigh": 2649.336,
+      "breakingCandleLow": 2607.762,
+      "breakingCandleClose": 2629.007,
+      "breakingCandleFormattedTime": "2025-11-12 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 265,
+          "time": 1762905600,
+          "close": 2629.007,
+          "formattedTime": "2025-11-12 00:00:00"
+        },
+        {
+          "index": 266,
+          "time": 1762992000,
+          "close": 2703.241,
+          "formattedTime": "2025-11-13 00:00:00"
+        }
+      ],
+      "breakDirection": "bullish",
+      "formattedTime": "2025-11-12 00:00:00",
+      "time": 1762905600,
+      "date": "2025-11-12",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": true,
+      "strength": 3,
+      "swingType": "low",
+      "swingIndex": 236,
+      "swingPrice": 2540.893,
+      "swingKeyPrice": 2568.061,
+      "swingDirection": "HL",
+      "swingTime": 1760400000,
+      "swingFormattedTime": "2025-10-14 00:00:00",
+      "breakingCandleIndex": 238,
+      "breakingCandleTime": 1760572800,
+      "breakingCandleHigh": 2565.017,
+      "breakingCandleLow": 2518.173,
+      "breakingCandleClose": 2524.91,
+      "breakingCandleFormattedTime": "2025-10-16 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 238,
+          "time": 1760572800,
+          "close": 2524.91,
+          "formattedTime": "2025-10-16 00:00:00"
+        },
+        {
+          "index": 239,
+          "time": 1760659200,
+          "close": 2477.551,
+          "formattedTime": "2025-10-17 00:00:00"
+        }
+      ],
+      "breakDirection": "bearish",
+      "formattedTime": "2025-10-16 00:00:00",
+      "time": 1760572800,
+      "date": "2025-10-16",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": false,
+      "strength": 3,
+      "swingType": "low",
+      "swingIndex": 242,
+      "swingPrice": 2420.3,
+      "swingKeyPrice": 2438.677,
+      "swingDirection": "LL",
+      "swingTime": 1760918400,
+      "swingFormattedTime": "2025-10-20 00:00:00",
+      "breakingCandleIndex": 251,
+      "breakingCandleTime": 1761696000,
+      "breakingCandleHigh": 2460.723,
+      "breakingCandleLow": 2392.267,
+      "breakingCandleClose": 2400.656,
+      "breakingCandleFormattedTime": "2025-10-29 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 251,
+          "time": 1761696000,
+          "close": 2400.656,
+          "formattedTime": "2025-10-29 00:00:00"
+        },
+        {
+          "index": 252,
+          "time": 1761782400,
+          "close": 2367.972,
+          "formattedTime": "2025-10-30 00:00:00"
+        }
+      ],
+      "breakDirection": "bearish",
+      "formattedTime": "2025-10-29 00:00:00",
+      "time": 1761696000,
+      "date": "2025-10-29",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": true,
+      "strength": 3,
+      "swingType": "high",
+      "swingIndex": 245,
+      "swingPrice": 2514.222,
+      "swingKeyPrice": 2485.405,
+      "swingDirection": "LH",
+      "swingTime": 1761177600,
+      "swingFormattedTime": "2025-10-23 00:00:00",
+      "breakingCandleIndex": 259,
+      "breakingCandleTime": 1762387200,
+      "breakingCandleHigh": 2559.154,
+      "breakingCandleLow": 2486.815,
+      "breakingCandleClose": 2551.101,
+      "breakingCandleFormattedTime": "2025-11-06 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 259,
+          "time": 1762387200,
+          "close": 2551.101,
+          "formattedTime": "2025-11-06 00:00:00"
+        },
+        {
+          "index": 262,
+          "time": 1762646400,
+          "close": 2555.51,
+          "formattedTime": "2025-11-09 00:00:00"
+        }
+      ],
+      "breakDirection": "bullish",
+      "formattedTime": "2025-11-06 00:00:00",
+      "time": 1762387200,
+      "date": "2025-11-06",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": false,
+      "strength": 3,
+      "swingType": "low",
+      "swingIndex": 246,
+      "swingPrice": 2409.426,
+      "swingKeyPrice": 2426.193,
+      "swingDirection": "LL",
+      "swingTime": 1761264000,
+      "swingFormattedTime": "2025-10-24 00:00:00",
+      "breakingCandleIndex": 251,
+      "breakingCandleTime": 1761696000,
+      "breakingCandleHigh": 2460.723,
+      "breakingCandleLow": 2392.267,
+      "breakingCandleClose": 2400.656,
+      "breakingCandleFormattedTime": "2025-10-29 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 251,
+          "time": 1761696000,
+          "close": 2400.656,
+          "formattedTime": "2025-10-29 00:00:00"
+        },
+        {
+          "index": 252,
+          "time": 1761782400,
+          "close": 2367.972,
+          "formattedTime": "2025-10-30 00:00:00"
+        }
+      ],
+      "breakDirection": "bearish",
+      "formattedTime": "2025-10-29 00:00:00",
+      "time": 1761696000,
+      "date": "2025-10-29",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": false,
+      "strength": 3,
+      "swingType": "low",
+      "swingIndex": 248,
+      "swingPrice": 2397.26,
+      "swingKeyPrice": 2433.678,
+      "swingDirection": "LL",
+      "swingTime": 1761436800,
+      "swingFormattedTime": "2025-10-26 00:00:00",
+      "breakingCandleIndex": 252,
+      "breakingCandleTime": 1761782400,
+      "breakingCandleHigh": 2432.397,
+      "breakingCandleLow": 2366.081,
+      "breakingCandleClose": 2367.972,
+      "breakingCandleFormattedTime": "2025-10-30 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 252,
+          "time": 1761782400,
+          "close": 2367.972,
+          "formattedTime": "2025-10-30 00:00:00"
+        },
+        {
+          "index": 253,
+          "time": 1761868800,
+          "close": 2356.334,
+          "formattedTime": "2025-10-31 00:00:00"
+        }
+      ],
+      "breakDirection": "bearish",
+      "formattedTime": "2025-10-30 00:00:00",
+      "time": 1761782400,
+      "date": "2025-10-30",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": true,
+      "strength": 3,
+      "swingType": "high",
+      "swingIndex": 249,
+      "swingPrice": 2471.207,
+      "swingKeyPrice": 2461.259,
+      "swingDirection": "LH",
+      "swingTime": 1761523200,
+      "swingFormattedTime": "2025-10-27 00:00:00",
+      "breakingCandleIndex": 257,
+      "breakingCandleTime": 1762214400,
+      "breakingCandleHigh": 2505.406,
+      "breakingCandleLow": 2435.39,
+      "breakingCandleClose": 2497.154,
+      "breakingCandleFormattedTime": "2025-11-04 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 257,
+          "time": 1762214400,
+          "close": 2497.154,
+          "formattedTime": "2025-11-04 00:00:00"
+        },
+        {
+          "index": 259,
+          "time": 1762387200,
+          "close": 2551.101,
+          "formattedTime": "2025-11-06 00:00:00"
+        }
+      ],
+      "breakDirection": "bullish",
+      "formattedTime": "2025-11-04 00:00:00",
+      "time": 1762214400,
+      "date": "2025-11-04",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_CLOSE",
+      "isCHoCH": false,
+      "strength": 2,
+      "swingType": "low",
+      "swingIndex": 253,
+      "swingPrice": 2347.449,
+      "swingKeyPrice": 2356.334,
+      "swingDirection": "LL",
+      "swingTime": 1761868800,
+      "swingFormattedTime": "2025-10-31 00:00:00",
+      "breakingCandleIndex": 324,
+      "breakingCandleTime": 1768003200,
+      "breakingCandleHigh": 2403.786,
+      "breakingCandleLow": 2340.789,
+      "breakingCandleClose": 2342.797,
+      "breakingCandleFormattedTime": "2026-01-10 00:00:00",
+      "confirmingCandles": [],
+      "breakDirection": "bearish",
+      "formattedTime": "2026-01-10 00:00:00",
+      "time": 1768003200,
+      "date": "2026-01-10",
+      "confidence": 0.6666666666666666
+    },
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": false,
+      "strength": 3,
+      "swingType": "high",
+      "swingIndex": 257,
+      "swingPrice": 2505.406,
+      "swingKeyPrice": 2497.154,
+      "swingDirection": "HH",
+      "swingTime": 1762214400,
+      "swingFormattedTime": "2025-11-04 00:00:00",
+      "breakingCandleIndex": 259,
+      "breakingCandleTime": 1762387200,
+      "breakingCandleHigh": 2559.154,
+      "breakingCandleLow": 2486.815,
+      "breakingCandleClose": 2551.101,
+      "breakingCandleFormattedTime": "2025-11-06 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 259,
+          "time": 1762387200,
+          "close": 2551.101,
+          "formattedTime": "2025-11-06 00:00:00"
+        },
+        {
+          "index": 262,
+          "time": 1762646400,
+          "close": 2555.51,
+          "formattedTime": "2025-11-09 00:00:00"
+        }
+      ],
+      "breakDirection": "bullish",
+      "formattedTime": "2025-11-06 00:00:00",
+      "time": 1762387200,
+      "date": "2025-11-06",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": false,
+      "strength": 3,
+      "swingType": "high",
+      "swingIndex": 259,
+      "swingPrice": 2559.154,
+      "swingKeyPrice": 2551.101,
+      "swingDirection": "HH",
+      "swingTime": 1762387200,
+      "swingFormattedTime": "2025-11-06 00:00:00",
+      "breakingCandleIndex": 263,
+      "breakingCandleTime": 1762732800,
+      "breakingCandleHigh": 2612.353,
+      "breakingCandleLow": 2553.218,
+      "breakingCandleClose": 2582.815,
+      "breakingCandleFormattedTime": "2025-11-10 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 263,
+          "time": 1762732800,
+          "close": 2582.815,
+          "formattedTime": "2025-11-10 00:00:00"
+        },
+        {
+          "index": 264,
+          "time": 1762819200,
+          "close": 2622.971,
+          "formattedTime": "2025-11-11 00:00:00"
+        }
+      ],
+      "breakDirection": "bullish",
+      "formattedTime": "2025-11-10 00:00:00",
+      "time": 1762732800,
+      "date": "2025-11-10",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": true,
+      "strength": 3,
+      "swingType": "low",
+      "swingIndex": 261,
+      "swingPrice": 2494.459,
+      "swingKeyPrice": 2519.652,
+      "swingDirection": "HL",
+      "swingTime": 1762560000,
+      "swingFormattedTime": "2025-11-08 00:00:00",
+      "breakingCandleIndex": 282,
+      "breakingCandleTime": 1764374400,
+      "breakingCandleHigh": 2518.726,
+      "breakingCandleLow": 2460.352,
+      "breakingCandleClose": 2462.416,
+      "breakingCandleFormattedTime": "2025-11-29 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 282,
+          "time": 1764374400,
+          "close": 2462.416,
+          "formattedTime": "2025-11-29 00:00:00"
+        },
+        {
+          "index": 283,
+          "time": 1764460800,
+          "close": 2444.41,
+          "formattedTime": "2025-11-30 00:00:00"
+        }
+      ],
+      "breakDirection": "bearish",
+      "formattedTime": "2025-11-29 00:00:00",
+      "time": 1764374400,
+      "date": "2025-11-29",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": true,
+      "strength": 3,
+      "swingType": "low",
+      "swingIndex": 264,
+      "swingPrice": 2548.283,
+      "swingKeyPrice": 2582.84,
+      "swingDirection": "HL",
+      "swingTime": 1762819200,
+      "swingFormattedTime": "2025-11-11 00:00:00",
+      "breakingCandleIndex": 280,
+      "breakingCandleTime": 1764201600,
+      "breakingCandleHigh": 2561.808,
+      "breakingCandleLow": 2492.754,
+      "breakingCandleClose": 2494.682,
+      "breakingCandleFormattedTime": "2025-11-27 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 280,
+          "time": 1764201600,
+          "close": 2494.682,
+          "formattedTime": "2025-11-27 00:00:00"
+        },
+        {
+          "index": 282,
+          "time": 1764374400,
+          "close": 2462.416,
+          "formattedTime": "2025-11-29 00:00:00"
+        }
+      ],
+      "breakDirection": "bearish",
+      "formattedTime": "2025-11-27 00:00:00",
+      "time": 1764201600,
+      "date": "2025-11-27",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": false,
+      "strength": 3,
+      "swingType": "high",
+      "swingIndex": 270,
+      "swingPrice": 2784.054,
+      "swingKeyPrice": 2769.217,
+      "swingDirection": "HH",
+      "swingTime": 1763337600,
+      "swingFormattedTime": "2025-11-17 00:00:00",
+      "breakingCandleIndex": 357,
+      "breakingCandleTime": 1770854400,
+      "breakingCandleHigh": 2830.367,
+      "breakingCandleLow": 2746.315,
+      "breakingCandleClose": 2825.899,
+      "breakingCandleFormattedTime": "2026-02-12 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 357,
+          "time": 1770854400,
+          "close": 2825.899,
+          "formattedTime": "2026-02-12 00:00:00"
+        },
+        {
+          "index": 358,
+          "time": 1770940800,
+          "close": 2866.487,
+          "formattedTime": "2026-02-13 00:00:00"
+        }
+      ],
+      "breakDirection": "bullish",
+      "formattedTime": "2026-02-12 00:00:00",
+      "time": 1770854400,
+      "date": "2026-02-12",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": true,
+      "strength": 3,
+      "swingType": "low",
+      "swingIndex": 271,
+      "swingPrice": 2703.405,
+      "swingKeyPrice": 2713.899,
+      "swingDirection": "HL",
+      "swingTime": 1763424000,
+      "swingFormattedTime": "2025-11-18 00:00:00",
+      "breakingCandleIndex": 274,
+      "breakingCandleTime": 1763683200,
+      "breakingCandleHigh": 2748.904,
+      "breakingCandleLow": 2637.843,
+      "breakingCandleClose": 2640.6,
+      "breakingCandleFormattedTime": "2025-11-21 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 274,
+          "time": 1763683200,
+          "close": 2640.6,
+          "formattedTime": "2025-11-21 00:00:00"
+        },
+        {
+          "index": 275,
+          "time": 1763769600,
+          "close": 2626.983,
+          "formattedTime": "2025-11-22 00:00:00"
+        }
+      ],
+      "breakDirection": "bearish",
+      "formattedTime": "2025-11-21 00:00:00",
+      "time": 1763683200,
+      "date": "2025-11-21",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": false,
+      "strength": 3,
+      "swingType": "high",
+      "swingIndex": 272,
+      "swingPrice": 2788.934,
+      "swingKeyPrice": 2750.619,
+      "swingDirection": "HH",
+      "swingTime": 1763510400,
+      "swingFormattedTime": "2025-11-19 00:00:00",
+      "breakingCandleIndex": 357,
+      "breakingCandleTime": 1770854400,
+      "breakingCandleHigh": 2830.367,
+      "breakingCandleLow": 2746.315,
+      "breakingCandleClose": 2825.899,
+      "breakingCandleFormattedTime": "2026-02-12 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 357,
+          "time": 1770854400,
+          "close": 2825.899,
+          "formattedTime": "2026-02-12 00:00:00"
+        },
+        {
+          "index": 358,
+          "time": 1770940800,
+          "close": 2866.487,
+          "formattedTime": "2026-02-13 00:00:00"
+        }
+      ],
+      "breakDirection": "bullish",
+      "formattedTime": "2026-02-12 00:00:00",
+      "time": 1770854400,
+      "date": "2026-02-12",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": false,
+      "strength": 3,
+      "swingType": "low",
+      "swingIndex": 276,
+      "swingPrice": 2611.437,
+      "swingKeyPrice": 2626.601,
+      "swingDirection": "LL",
+      "swingTime": 1763856000,
+      "swingFormattedTime": "2025-11-23 00:00:00",
+      "breakingCandleIndex": 278,
+      "breakingCandleTime": 1764028800,
+      "breakingCandleHigh": 2622.598,
+      "breakingCandleLow": 2572.356,
+      "breakingCandleClose": 2580.166,
+      "breakingCandleFormattedTime": "2025-11-25 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 278,
+          "time": 1764028800,
+          "close": 2580.166,
+          "formattedTime": "2025-11-25 00:00:00"
+        },
+        {
+          "index": 279,
+          "time": 1764115200,
+          "close": 2548.471,
+          "formattedTime": "2025-11-26 00:00:00"
+        }
+      ],
+      "breakDirection": "bearish",
+      "formattedTime": "2025-11-25 00:00:00",
+      "time": 1764028800,
+      "date": "2025-11-25",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": false,
+      "strength": 3,
+      "swingType": "low",
+      "swingIndex": 281,
+      "swingPrice": 2451.712,
+      "swingKeyPrice": 2494.576,
+      "swingDirection": "LL",
+      "swingTime": 1764288000,
+      "swingFormattedTime": "2025-11-28 00:00:00",
+      "breakingCandleIndex": 283,
+      "breakingCandleTime": 1764460800,
+      "breakingCandleHigh": 2471.194,
+      "breakingCandleLow": 2423.11,
+      "breakingCandleClose": 2444.41,
+      "breakingCandleFormattedTime": "2025-11-30 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 283,
+          "time": 1764460800,
+          "close": 2444.41,
+          "formattedTime": "2025-11-30 00:00:00"
+        },
+        {
+          "index": 284,
+          "time": 1764547200,
+          "close": 2442.309,
+          "formattedTime": "2025-12-01 00:00:00"
+        }
+      ],
+      "breakDirection": "bearish",
+      "formattedTime": "2025-11-30 00:00:00",
+      "time": 1764460800,
+      "date": "2025-11-30",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": true,
+      "strength": 3,
+      "swingType": "high",
+      "swingIndex": 282,
+      "swingPrice": 2518.726,
+      "swingKeyPrice": 2496.748,
+      "swingDirection": "LH",
+      "swingTime": 1764374400,
+      "swingFormattedTime": "2025-11-29 00:00:00",
+      "breakingCandleIndex": 335,
+      "breakingCandleTime": 1768953600,
+      "breakingCandleHigh": 2559.634,
+      "breakingCandleLow": 2496.931,
+      "breakingCandleClose": 2552.961,
+      "breakingCandleFormattedTime": "2026-01-21 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 335,
+          "time": 1768953600,
+          "close": 2552.961,
+          "formattedTime": "2026-01-21 00:00:00"
+        },
+        {
+          "index": 340,
+          "time": 1769385600,
+          "close": 2564.91,
+          "formattedTime": "2026-01-26 00:00:00"
+        }
+      ],
+      "breakDirection": "bullish",
+      "formattedTime": "2026-01-21 00:00:00",
+      "time": 1768953600,
+      "date": "2026-01-21",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": false,
+      "strength": 3,
+      "swingType": "low",
+      "swingIndex": 283,
+      "swingPrice": 2423.11,
+      "swingKeyPrice": 2444.41,
+      "swingDirection": "LL",
+      "swingTime": 1764460800,
+      "swingFormattedTime": "2025-11-30 00:00:00",
+      "breakingCandleIndex": 287,
+      "breakingCandleTime": 1764806400,
+      "breakingCandleHigh": 2429.3,
+      "breakingCandleLow": 2359.22,
+      "breakingCandleClose": 2372.019,
+      "breakingCandleFormattedTime": "2025-12-04 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 287,
+          "time": 1764806400,
+          "close": 2372.019,
+          "formattedTime": "2025-12-04 00:00:00"
+        },
+        {
+          "index": 289,
+          "time": 1764979200,
+          "close": 2349.88,
+          "formattedTime": "2025-12-06 00:00:00"
+        }
+      ],
+      "breakDirection": "bearish",
+      "formattedTime": "2025-12-04 00:00:00",
+      "time": 1764806400,
+      "date": "2025-12-04",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": false,
+      "strength": 3,
+      "swingType": "low",
+      "swingIndex": 285,
+      "swingPrice": 2388.042,
+      "swingKeyPrice": 2439.016,
+      "swingDirection": "LL",
+      "swingTime": 1764633600,
+      "swingFormattedTime": "2025-12-02 00:00:00",
+      "breakingCandleIndex": 287,
+      "breakingCandleTime": 1764806400,
+      "breakingCandleHigh": 2429.3,
+      "breakingCandleLow": 2359.22,
+      "breakingCandleClose": 2372.019,
+      "breakingCandleFormattedTime": "2025-12-04 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 287,
+          "time": 1764806400,
+          "close": 2372.019,
+          "formattedTime": "2025-12-04 00:00:00"
+        },
+        {
+          "index": 289,
+          "time": 1764979200,
+          "close": 2349.88,
+          "formattedTime": "2025-12-06 00:00:00"
+        }
+      ],
+      "breakDirection": "bearish",
+      "formattedTime": "2025-12-04 00:00:00",
+      "time": 1764806400,
+      "date": "2025-12-04",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_CLOSE",
+      "isCHoCH": false,
+      "strength": 2,
+      "swingType": "low",
+      "swingIndex": 287,
+      "swingPrice": 2359.22,
+      "swingKeyPrice": 2372.019,
+      "swingDirection": "LL",
+      "swingTime": 1764806400,
+      "swingFormattedTime": "2025-12-04 00:00:00",
+      "breakingCandleIndex": 289,
+      "breakingCandleTime": 1764979200,
+      "breakingCandleHigh": 2379.364,
+      "breakingCandleLow": 2343.609,
+      "breakingCandleClose": 2349.88,
+      "breakingCandleFormattedTime": "2025-12-06 00:00:00",
+      "confirmingCandles": [],
+      "breakDirection": "bearish",
+      "formattedTime": "2025-12-06 00:00:00",
+      "time": 1764979200,
+      "date": "2025-12-06",
+      "confidence": 0.6666666666666666
+    },
+    {
+      "bosType": "BOS_WICK",
+      "isCHoCH": false,
+      "strength": 1,
+      "swingType": "low",
+      "swingIndex": 290,
+      "swingPrice": 2328.374,
+      "swingKeyPrice": 2349.958,
+      "swingDirection": "LL",
+      "swingTime": 1765065600,
+      "swingFormattedTime": "2025-12-07 00:00:00",
+      "breakingCandleIndex": 328,
+      "breakingCandleTime": 1768348800,
+      "breakingCandleHigh": 2372.389,
+      "breakingCandleLow": 2318.176,
+      "breakingCandleClose": 2354.25,
+      "breakingCandleFormattedTime": "2026-01-14 00:00:00",
+      "confirmingCandles": [],
+      "breakDirection": "bearish",
+      "formattedTime": "2026-01-14 00:00:00",
+      "time": 1768348800,
+      "date": "2026-01-14",
+      "confidence": 0.3333333333333333
+    },
+    {
+      "bosType": "BOS_CLOSE",
+      "isCHoCH": true,
+      "strength": 2,
+      "swingType": "low",
+      "swingIndex": 292,
+      "swingPrice": 2350.242,
+      "swingKeyPrice": 2364.371,
+      "swingDirection": "HL",
+      "swingTime": 1765238400,
+      "swingFormattedTime": "2025-12-09 00:00:00",
+      "breakingCandleIndex": 324,
+      "breakingCandleTime": 1768003200,
+      "breakingCandleHigh": 2403.786,
+      "breakingCandleLow": 2340.789,
+      "breakingCandleClose": 2342.797,
+      "breakingCandleFormattedTime": "2026-01-10 00:00:00",
+      "confirmingCandles": [],
+      "breakDirection": "bearish",
+      "formattedTime": "2026-01-10 00:00:00",
+      "time": 1768003200,
+      "date": "2026-01-10",
+      "confidence": 0.8666666666666667
+    },
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": true,
+      "strength": 3,
+      "swingType": "high",
+      "swingIndex": 293,
+      "swingPrice": 2431.616,
+      "swingKeyPrice": 2424.263,
+      "swingDirection": "LH",
+      "swingTime": 1765324800,
+      "swingFormattedTime": "2025-12-10 00:00:00",
+      "breakingCandleIndex": 297,
+      "breakingCandleTime": 1765670400,
+      "breakingCandleHigh": 2459.983,
+      "breakingCandleLow": 2402.36,
+      "breakingCandleClose": 2450.16,
+      "breakingCandleFormattedTime": "2025-12-14 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 297,
+          "time": 1765670400,
+          "close": 2450.16,
+          "formattedTime": "2025-12-14 00:00:00"
+        },
+        {
+          "index": 298,
+          "time": 1765756800,
+          "close": 2502.557,
+          "formattedTime": "2025-12-15 00:00:00"
+        }
+      ],
+      "breakDirection": "bullish",
+      "formattedTime": "2025-12-14 00:00:00",
+      "time": 1765670400,
+      "date": "2025-12-14",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": true,
+      "strength": 3,
+      "swingType": "low",
+      "swingIndex": 294,
+      "swingPrice": 2372.679,
+      "swingKeyPrice": 2397.917,
+      "swingDirection": "HL",
+      "swingTime": 1765411200,
+      "swingFormattedTime": "2025-12-11 00:00:00",
+      "breakingCandleIndex": 321,
+      "breakingCandleTime": 1767744000,
+      "breakingCandleHigh": 2408.239,
+      "breakingCandleLow": 2352.393,
+      "breakingCandleClose": 2362.913,
+      "breakingCandleFormattedTime": "2026-01-07 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 321,
+          "time": 1767744000,
+          "close": 2362.913,
+          "formattedTime": "2026-01-07 00:00:00"
+        },
+        {
+          "index": 324,
+          "time": 1768003200,
+          "close": 2342.797,
+          "formattedTime": "2026-01-10 00:00:00"
+        }
+      ],
+      "breakDirection": "bearish",
+      "formattedTime": "2026-01-07 00:00:00",
+      "time": 1767744000,
+      "date": "2026-01-07",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": false,
+      "strength": 3,
+      "swingType": "high",
+      "swingIndex": 299,
+      "swingPrice": 2522.887,
+      "swingKeyPrice": 2502.439,
+      "swingDirection": "HH",
+      "swingTime": 1765843200,
+      "swingFormattedTime": "2025-12-16 00:00:00",
+      "breakingCandleIndex": 335,
+      "breakingCandleTime": 1768953600,
+      "breakingCandleHigh": 2559.634,
+      "breakingCandleLow": 2496.931,
+      "breakingCandleClose": 2552.961,
+      "breakingCandleFormattedTime": "2026-01-21 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 335,
+          "time": 1768953600,
+          "close": 2552.961,
+          "formattedTime": "2026-01-21 00:00:00"
+        },
+        {
+          "index": 340,
+          "time": 1769385600,
+          "close": 2564.91,
+          "formattedTime": "2026-01-26 00:00:00"
+        }
+      ],
+      "breakDirection": "bullish",
+      "formattedTime": "2026-01-21 00:00:00",
+      "time": 1768953600,
+      "date": "2026-01-21",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": true,
+      "strength": 3,
+      "swingType": "low",
+      "swingIndex": 300,
+      "swingPrice": 2438.527,
+      "swingKeyPrice": 2446.783,
+      "swingDirection": "HL",
+      "swingTime": 1765929600,
+      "swingFormattedTime": "2025-12-17 00:00:00",
+      "breakingCandleIndex": 306,
+      "breakingCandleTime": 1766448000,
+      "breakingCandleHigh": 2455.8,
+      "breakingCandleLow": 2382.713,
+      "breakingCandleClose": 2388.922,
+      "breakingCandleFormattedTime": "2025-12-23 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 306,
+          "time": 1766448000,
+          "close": 2388.922,
+          "formattedTime": "2025-12-23 00:00:00"
+        },
+        {
+          "index": 308,
+          "time": 1766620800,
+          "close": 2379.082,
+          "formattedTime": "2025-12-25 00:00:00"
+        }
+      ],
+      "breakDirection": "bearish",
+      "formattedTime": "2025-12-23 00:00:00",
+      "time": 1766448000,
+      "date": "2025-12-23",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": true,
+      "strength": 3,
+      "swingType": "high",
+      "swingIndex": 302,
+      "swingPrice": 2512.246,
+      "swingKeyPrice": 2499.678,
+      "swingDirection": "LH",
+      "swingTime": 1766102400,
+      "swingFormattedTime": "2025-12-19 00:00:00",
+      "breakingCandleIndex": 335,
+      "breakingCandleTime": 1768953600,
+      "breakingCandleHigh": 2559.634,
+      "breakingCandleLow": 2496.931,
+      "breakingCandleClose": 2552.961,
+      "breakingCandleFormattedTime": "2026-01-21 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 335,
+          "time": 1768953600,
+          "close": 2552.961,
+          "formattedTime": "2026-01-21 00:00:00"
+        },
+        {
+          "index": 340,
+          "time": 1769385600,
+          "close": 2564.91,
+          "formattedTime": "2026-01-26 00:00:00"
+        }
+      ],
+      "breakDirection": "bullish",
+      "formattedTime": "2026-01-21 00:00:00",
+      "time": 1768953600,
+      "date": "2026-01-21",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": false,
+      "strength": 3,
+      "swingType": "low",
+      "swingIndex": 303,
+      "swingPrice": 2436.578,
+      "swingKeyPrice": 2439.496,
+      "swingDirection": "LL",
+      "swingTime": 1766188800,
+      "swingFormattedTime": "2025-12-20 00:00:00",
+      "breakingCandleIndex": 306,
+      "breakingCandleTime": 1766448000,
+      "breakingCandleHigh": 2455.8,
+      "breakingCandleLow": 2382.713,
+      "breakingCandleClose": 2388.922,
+      "breakingCandleFormattedTime": "2025-12-23 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 306,
+          "time": 1766448000,
+          "close": 2388.922,
+          "formattedTime": "2025-12-23 00:00:00"
+        },
+        {
+          "index": 308,
+          "time": 1766620800,
+          "close": 2379.082,
+          "formattedTime": "2025-12-25 00:00:00"
+        }
+      ],
+      "breakDirection": "bearish",
+      "formattedTime": "2025-12-23 00:00:00",
+      "time": 1766448000,
+      "date": "2025-12-23",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": false,
+      "strength": 3,
+      "swingType": "high",
+      "swingIndex": 304,
+      "swingPrice": 2515.181,
+      "swingKeyPrice": 2489.403,
+      "swingDirection": "HH",
+      "swingTime": 1766275200,
+      "swingFormattedTime": "2025-12-21 00:00:00",
+      "breakingCandleIndex": 335,
+      "breakingCandleTime": 1768953600,
+      "breakingCandleHigh": 2559.634,
+      "breakingCandleLow": 2496.931,
+      "breakingCandleClose": 2552.961,
+      "breakingCandleFormattedTime": "2026-01-21 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 335,
+          "time": 1768953600,
+          "close": 2552.961,
+          "formattedTime": "2026-01-21 00:00:00"
+        },
+        {
+          "index": 340,
+          "time": 1769385600,
+          "close": 2564.91,
+          "formattedTime": "2026-01-26 00:00:00"
+        }
+      ],
+      "breakDirection": "bullish",
+      "formattedTime": "2026-01-21 00:00:00",
+      "time": 1768953600,
+      "date": "2026-01-21",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": false,
+      "strength": 3,
+      "swingType": "low",
+      "swingIndex": 307,
+      "swingPrice": 2366.166,
+      "swingKeyPrice": 2388.843,
+      "swingDirection": "LL",
+      "swingTime": 1766534400,
+      "swingFormattedTime": "2025-12-24 00:00:00",
+      "breakingCandleIndex": 321,
+      "breakingCandleTime": 1767744000,
+      "breakingCandleHigh": 2408.239,
+      "breakingCandleLow": 2352.393,
+      "breakingCandleClose": 2362.913,
+      "breakingCandleFormattedTime": "2026-01-07 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 321,
+          "time": 1767744000,
+          "close": 2362.913,
+          "formattedTime": "2026-01-07 00:00:00"
+        },
+        {
+          "index": 324,
+          "time": 1768003200,
+          "close": 2342.797,
+          "formattedTime": "2026-01-10 00:00:00"
+        }
+      ],
+      "breakDirection": "bearish",
+      "formattedTime": "2026-01-07 00:00:00",
+      "time": 1767744000,
+      "date": "2026-01-07",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": true,
+      "strength": 3,
+      "swingType": "high",
+      "swingIndex": 308,
+      "swingPrice": 2421.871,
+      "swingKeyPrice": 2400.565,
+      "swingDirection": "LH",
+      "swingTime": 1766620800,
+      "swingFormattedTime": "2025-12-25 00:00:00",
+      "breakingCandleIndex": 310,
+      "breakingCandleTime": 1766793600,
+      "breakingCandleHigh": 2473.059,
+      "breakingCandleLow": 2408.675,
+      "breakingCandleClose": 2427.344,
+      "breakingCandleFormattedTime": "2025-12-27 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 310,
+          "time": 1766793600,
+          "close": 2427.344,
+          "formattedTime": "2025-12-27 00:00:00"
+        },
+        {
+          "index": 318,
+          "time": 1767484800,
+          "close": 2441.263,
+          "formattedTime": "2026-01-04 00:00:00"
+        }
+      ],
+      "breakDirection": "bullish",
+      "formattedTime": "2025-12-27 00:00:00",
+      "time": 1766793600,
+      "date": "2025-12-27",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": true,
+      "strength": 3,
+      "swingType": "low",
+      "swingIndex": 309,
+      "swingPrice": 2366.67,
+      "swingKeyPrice": 2378.996,
+      "swingDirection": "HL",
+      "swingTime": 1766707200,
+      "swingFormattedTime": "2025-12-26 00:00:00",
+      "breakingCandleIndex": 321,
+      "breakingCandleTime": 1767744000,
+      "breakingCandleHigh": 2408.239,
+      "breakingCandleLow": 2352.393,
+      "breakingCandleClose": 2362.913,
+      "breakingCandleFormattedTime": "2026-01-07 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 321,
+          "time": 1767744000,
+          "close": 2362.913,
+          "formattedTime": "2026-01-07 00:00:00"
+        },
+        {
+          "index": 324,
+          "time": 1768003200,
+          "close": 2342.797,
+          "formattedTime": "2026-01-10 00:00:00"
+        }
+      ],
+      "breakDirection": "bearish",
+      "formattedTime": "2026-01-07 00:00:00",
+      "time": 1767744000,
+      "date": "2026-01-07",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": false,
+      "strength": 3,
+      "swingType": "high",
+      "swingIndex": 310,
+      "swingPrice": 2473.059,
+      "swingKeyPrice": 2427.344,
+      "swingDirection": "HH",
+      "swingTime": 1766793600,
+      "swingFormattedTime": "2025-12-27 00:00:00",
+      "breakingCandleIndex": 334,
+      "breakingCandleTime": 1768867200,
+      "breakingCandleHigh": 2509.671,
+      "breakingCandleLow": 2430.435,
+      "breakingCandleClose": 2509.559,
+      "breakingCandleFormattedTime": "2026-01-20 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 334,
+          "time": 1768867200,
+          "close": 2509.559,
+          "formattedTime": "2026-01-20 00:00:00"
+        },
+        {
+          "index": 335,
+          "time": 1768953600,
+          "close": 2552.961,
+          "formattedTime": "2026-01-21 00:00:00"
+        }
+      ],
+      "breakDirection": "bullish",
+      "formattedTime": "2026-01-20 00:00:00",
+      "time": 1768867200,
+      "date": "2026-01-20",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": true,
+      "strength": 3,
+      "swingType": "high",
+      "swingIndex": 313,
+      "swingPrice": 2439.291,
+      "swingKeyPrice": 2423.342,
+      "swingDirection": "LH",
+      "swingTime": 1767052800,
+      "swingFormattedTime": "2025-12-30 00:00:00",
+      "breakingCandleIndex": 318,
+      "breakingCandleTime": 1767484800,
+      "breakingCandleHigh": 2457.317,
+      "breakingCandleLow": 2405.677,
+      "breakingCandleClose": 2441.263,
+      "breakingCandleFormattedTime": "2026-01-04 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 318,
+          "time": 1767484800,
+          "close": 2441.263,
+          "formattedTime": "2026-01-04 00:00:00"
+        },
+        {
+          "index": 319,
+          "time": 1767571200,
+          "close": 2451.166,
+          "formattedTime": "2026-01-05 00:00:00"
+        }
+      ],
+      "breakDirection": "bullish",
+      "formattedTime": "2026-01-04 00:00:00",
+      "time": 1767484800,
+      "date": "2026-01-04",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_CLOSE",
+      "isCHoCH": false,
+      "strength": 2,
+      "swingType": "low",
+      "swingIndex": 314,
+      "swingPrice": 2357.93,
+      "swingKeyPrice": 2376.196,
+      "swingDirection": "LL",
+      "swingTime": 1767139200,
+      "swingFormattedTime": "2025-12-31 00:00:00",
+      "breakingCandleIndex": 324,
+      "breakingCandleTime": 1768003200,
+      "breakingCandleHigh": 2403.786,
+      "breakingCandleLow": 2340.789,
+      "breakingCandleClose": 2342.797,
+      "breakingCandleFormattedTime": "2026-01-10 00:00:00",
+      "confirmingCandles": [],
+      "breakDirection": "bearish",
+      "formattedTime": "2026-01-10 00:00:00",
+      "time": 1768003200,
+      "date": "2026-01-10",
+      "confidence": 0.6666666666666666
+    },
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": true,
+      "strength": 3,
+      "swingType": "high",
+      "swingIndex": 316,
+      "swingPrice": 2435.341,
+      "swingKeyPrice": 2412.442,
+      "swingDirection": "LH",
+      "swingTime": 1767312000,
+      "swingFormattedTime": "2026-01-02 00:00:00",
+      "breakingCandleIndex": 318,
+      "breakingCandleTime": 1767484800,
+      "breakingCandleHigh": 2457.317,
+      "breakingCandleLow": 2405.677,
+      "breakingCandleClose": 2441.263,
+      "breakingCandleFormattedTime": "2026-01-04 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 318,
+          "time": 1767484800,
+          "close": 2441.263,
+          "formattedTime": "2026-01-04 00:00:00"
+        },
+        {
+          "index": 319,
+          "time": 1767571200,
+          "close": 2451.166,
+          "formattedTime": "2026-01-05 00:00:00"
+        }
+      ],
+      "breakDirection": "bullish",
+      "formattedTime": "2026-01-04 00:00:00",
+      "time": 1767484800,
+      "date": "2026-01-04",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": false,
+      "strength": 3,
+      "swingType": "high",
+      "swingIndex": 320,
+      "swingPrice": 2465.93,
+      "swingKeyPrice": 2451.17,
+      "swingDirection": "HH",
+      "swingTime": 1767657600,
+      "swingFormattedTime": "2026-01-06 00:00:00",
+      "breakingCandleIndex": 334,
+      "breakingCandleTime": 1768867200,
+      "breakingCandleHigh": 2509.671,
+      "breakingCandleLow": 2430.435,
+      "breakingCandleClose": 2509.559,
+      "breakingCandleFormattedTime": "2026-01-20 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 334,
+          "time": 1768867200,
+          "close": 2509.559,
+          "formattedTime": "2026-01-20 00:00:00"
+        },
+        {
+          "index": 335,
+          "time": 1768953600,
+          "close": 2552.961,
+          "formattedTime": "2026-01-21 00:00:00"
+        }
+      ],
+      "breakDirection": "bullish",
+      "formattedTime": "2026-01-20 00:00:00",
+      "time": 1768867200,
+      "date": "2026-01-20",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_CLOSE",
+      "isCHoCH": false,
+      "strength": 2,
+      "swingType": "low",
+      "swingIndex": 321,
+      "swingPrice": 2352.393,
+      "swingKeyPrice": 2362.913,
+      "swingDirection": "LL",
+      "swingTime": 1767744000,
+      "swingFormattedTime": "2026-01-07 00:00:00",
+      "breakingCandleIndex": 324,
+      "breakingCandleTime": 1768003200,
+      "breakingCandleHigh": 2403.786,
+      "breakingCandleLow": 2340.789,
+      "breakingCandleClose": 2342.797,
+      "breakingCandleFormattedTime": "2026-01-10 00:00:00",
+      "confirmingCandles": [],
+      "breakDirection": "bearish",
+      "formattedTime": "2026-01-10 00:00:00",
+      "time": 1768003200,
+      "date": "2026-01-10",
+      "confidence": 0.6666666666666666
+    },
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": true,
+      "strength": 3,
+      "swingType": "high",
+      "swingIndex": 322,
+      "swingPrice": 2414.587,
+      "swingKeyPrice": 2405.518,
+      "swingDirection": "LH",
+      "swingTime": 1767830400,
+      "swingFormattedTime": "2026-01-08 00:00:00",
+      "breakingCandleIndex": 332,
+      "breakingCandleTime": 1768694400,
+      "breakingCandleHigh": 2447.389,
+      "breakingCandleLow": 2400.63,
+      "breakingCandleClose": 2435.444,
+      "breakingCandleFormattedTime": "2026-01-18 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 332,
+          "time": 1768694400,
+          "close": 2435.444,
+          "formattedTime": "2026-01-18 00:00:00"
+        },
+        {
+          "index": 333,
+          "time": 1768780800,
+          "close": 2440.878,
+          "formattedTime": "2026-01-19 00:00:00"
+        }
+      ],
+      "breakDirection": "bullish",
+      "formattedTime": "2026-01-18 00:00:00",
+      "time": 1768694400,
+      "date": "2026-01-18",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_WICK",
+      "isCHoCH": false,
+      "strength": 1,
+      "swingType": "low",
+      "swingIndex": 325,
+      "swingPrice": 2333.536,
+      "swingKeyPrice": 2342.762,
+      "swingDirection": "LL",
+      "swingTime": 1768089600,
+      "swingFormattedTime": "2026-01-11 00:00:00",
+      "breakingCandleIndex": 328,
+      "breakingCandleTime": 1768348800,
+      "breakingCandleHigh": 2372.389,
+      "breakingCandleLow": 2318.176,
+      "breakingCandleClose": 2354.25,
+      "breakingCandleFormattedTime": "2026-01-14 00:00:00",
+      "confirmingCandles": [],
+      "breakDirection": "bearish",
+      "formattedTime": "2026-01-14 00:00:00",
+      "time": 1768348800,
+      "date": "2026-01-14",
+      "confidence": 0.3333333333333333
+    },
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": true,
+      "strength": 3,
+      "swingType": "high",
+      "swingIndex": 326,
+      "swingPrice": 2401.987,
+      "swingKeyPrice": 2382.099,
+      "swingDirection": "LH",
+      "swingTime": 1768176000,
+      "swingFormattedTime": "2026-01-12 00:00:00",
+      "breakingCandleIndex": 331,
+      "breakingCandleTime": 1768608000,
+      "breakingCandleHigh": 2411.664,
+      "breakingCandleLow": 2378.726,
+      "breakingCandleClose": 2407.96,
+      "breakingCandleFormattedTime": "2026-01-17 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 331,
+          "time": 1768608000,
+          "close": 2407.96,
+          "formattedTime": "2026-01-17 00:00:00"
+        },
+        {
+          "index": 332,
+          "time": 1768694400,
+          "close": 2435.444,
+          "formattedTime": "2026-01-18 00:00:00"
+        }
+      ],
+      "breakDirection": "bullish",
+      "formattedTime": "2026-01-17 00:00:00",
+      "time": 1768608000,
+      "date": "2026-01-17",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": false,
+      "strength": 3,
+      "swingType": "high",
+      "swingIndex": 335,
+      "swingPrice": 2559.634,
+      "swingKeyPrice": 2552.961,
+      "swingDirection": "HH",
+      "swingTime": 1768953600,
+      "swingFormattedTime": "2026-01-21 00:00:00",
+      "breakingCandleIndex": 340,
+      "breakingCandleTime": 1769385600,
+      "breakingCandleHigh": 2575.624,
+      "breakingCandleLow": 2493.132,
+      "breakingCandleClose": 2564.91,
+      "breakingCandleFormattedTime": "2026-01-26 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 340,
+          "time": 1769385600,
+          "close": 2564.91,
+          "formattedTime": "2026-01-26 00:00:00"
+        },
+        {
+          "index": 341,
+          "time": 1769472000,
+          "close": 2633.927,
+          "formattedTime": "2026-01-27 00:00:00"
+        }
+      ],
+      "breakDirection": "bullish",
+      "formattedTime": "2026-01-26 00:00:00",
+      "time": 1769385600,
+      "date": "2026-01-26",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": false,
+      "strength": 3,
+      "swingType": "high",
+      "swingIndex": 342,
+      "swingPrice": 2710.858,
+      "swingKeyPrice": 2688.251,
+      "swingDirection": "HH",
+      "swingTime": 1769558400,
+      "swingFormattedTime": "2026-01-28 00:00:00",
+      "breakingCandleIndex": 356,
+      "breakingCandleTime": 1770768000,
+      "breakingCandleHigh": 2768.709,
+      "breakingCandleLow": 2655.293,
+      "breakingCandleClose": 2755.043,
+      "breakingCandleFormattedTime": "2026-02-11 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 356,
+          "time": 1770768000,
+          "close": 2755.043,
+          "formattedTime": "2026-02-11 00:00:00"
+        },
+        {
+          "index": 357,
+          "time": 1770854400,
+          "close": 2825.899,
+          "formattedTime": "2026-02-12 00:00:00"
+        }
+      ],
+      "breakDirection": "bullish",
+      "formattedTime": "2026-02-11 00:00:00",
+      "time": 1770768000,
+      "date": "2026-02-11",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": true,
+      "strength": 3,
+      "swingType": "high",
+      "swingIndex": 348,
+      "swingPrice": 2679.11,
+      "swingKeyPrice": 2671.594,
+      "swingDirection": "LH",
+      "swingTime": 1770076800,
+      "swingFormattedTime": "2026-02-03 00:00:00",
+      "breakingCandleIndex": 350,
+      "breakingCandleTime": 1770249600,
+      "breakingCandleHigh": 2722.284,
+      "breakingCandleLow": 2655.607,
+      "breakingCandleClose": 2693.331,
+      "breakingCandleFormattedTime": "2026-02-05 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 350,
+          "time": 1770249600,
+          "close": 2693.331,
+          "formattedTime": "2026-02-05 00:00:00"
+        },
+        {
+          "index": 352,
+          "time": 1770422400,
+          "close": 2702.629,
+          "formattedTime": "2026-02-07 00:00:00"
+        }
+      ],
+      "breakDirection": "bullish",
+      "formattedTime": "2026-02-05 00:00:00",
+      "time": 1770249600,
+      "date": "2026-02-05",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": false,
+      "strength": 3,
+      "swingType": "high",
+      "swingIndex": 350,
+      "swingPrice": 2722.284,
+      "swingKeyPrice": 2693.331,
+      "swingDirection": "HH",
+      "swingTime": 1770249600,
+      "swingFormattedTime": "2026-02-05 00:00:00",
+      "breakingCandleIndex": 356,
+      "breakingCandleTime": 1770768000,
+      "breakingCandleHigh": 2768.709,
+      "breakingCandleLow": 2655.293,
+      "breakingCandleClose": 2755.043,
+      "breakingCandleFormattedTime": "2026-02-11 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 356,
+          "time": 1770768000,
+          "close": 2755.043,
+          "formattedTime": "2026-02-11 00:00:00"
+        },
+        {
+          "index": 357,
+          "time": 1770854400,
+          "close": 2825.899,
+          "formattedTime": "2026-02-12 00:00:00"
+        }
+      ],
+      "breakDirection": "bullish",
+      "formattedTime": "2026-02-11 00:00:00",
+      "time": 1770768000,
+      "date": "2026-02-11",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": false,
+      "strength": 3,
+      "swingType": "high",
+      "swingIndex": 352,
+      "swingPrice": 2750.702,
+      "swingKeyPrice": 2702.629,
+      "swingDirection": "HH",
+      "swingTime": 1770422400,
+      "swingFormattedTime": "2026-02-07 00:00:00",
+      "breakingCandleIndex": 356,
+      "breakingCandleTime": 1770768000,
+      "breakingCandleHigh": 2768.709,
+      "breakingCandleLow": 2655.293,
+      "breakingCandleClose": 2755.043,
+      "breakingCandleFormattedTime": "2026-02-11 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 356,
+          "time": 1770768000,
+          "close": 2755.043,
+          "formattedTime": "2026-02-11 00:00:00"
+        },
+        {
+          "index": 357,
+          "time": 1770854400,
+          "close": 2825.899,
+          "formattedTime": "2026-02-12 00:00:00"
+        }
+      ],
+      "breakDirection": "bullish",
+      "formattedTime": "2026-02-11 00:00:00",
+      "time": 1770768000,
+      "date": "2026-02-11",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_SUSTAINED",
+      "isCHoCH": false,
+      "strength": 3,
+      "swingType": "high",
+      "swingIndex": 358,
+      "swingPrice": 2872.138,
+      "swingKeyPrice": 2866.487,
+      "swingDirection": "HH",
+      "swingTime": 1770940800,
+      "swingFormattedTime": "2026-02-13 00:00:00",
+      "breakingCandleIndex": 364,
+      "breakingCandleTime": 1771459200,
+      "breakingCandleHigh": 2928.988,
+      "breakingCandleLow": 2775.383,
+      "breakingCandleClose": 2915.231,
+      "breakingCandleFormattedTime": "2026-02-19 00:00:00",
+      "confirmingCandles": [
+        {
+          "index": 364,
+          "time": 1771459200,
+          "close": 2915.231,
+          "formattedTime": "2026-02-19 00:00:00"
+        },
+        {
+          "index": 365,
+          "time": 1771545600,
+          "close": 2923.761,
+          "formattedTime": "2026-02-20 00:00:00"
+        }
+      ],
+      "breakDirection": "bullish",
+      "formattedTime": "2026-02-19 00:00:00",
+      "time": 1771459200,
+      "date": "2026-02-19",
+      "confidence": 1
+    },
+    {
+      "bosType": "BOS_WICK",
+      "isCHoCH": true,
+      "strength": 1,
+      "swingType": "low",
+      "swingIndex": 361,
+      "swingPrice": 2773.674,
+      "swingKeyPrice": 2799.871,
+      "swingDirection": "HL",
+      "swingTime": 1771200000,
+      "swingFormattedTime": "2026-02-16 00:00:00",
+      "breakingCandleIndex": 363,
+      "breakingCandleTime": 1771372800,
+      "breakingCandleHigh": 2832.905,
+      "breakingCandleLow": 2773.435,
+      "breakingCandleClose": 2780.122,
+      "breakingCandleFormattedTime": "2026-02-18 00:00:00",
+      "confirmingCandles": [],
+      "breakDirection": "bearish",
+      "formattedTime": "2026-02-18 00:00:00",
+      "time": 1771372800,
+      "date": "2026-02-18",
+      "confidence": 0.5333333333333333
+    }
+  ],
+  "lastBullishBOS": {
+    "bosType": "BOS_SUSTAINED",
+    "isCHoCH": false,
+    "strength": 3,
+    "swingType": "high",
+    "swingIndex": 358,
+    "swingPrice": 2872.138,
+    "swingKeyPrice": 2866.487,
+    "swingDirection": "HH",
+    "swingTime": 1770940800,
+    "swingFormattedTime": "2026-02-13 00:00:00",
+    "breakingCandleIndex": 364,
+    "breakingCandleTime": 1771459200,
+    "breakingCandleHigh": 2928.988,
+    "breakingCandleLow": 2775.383,
+    "breakingCandleClose": 2915.231,
+    "breakingCandleFormattedTime": "2026-02-19 00:00:00",
+    "confirmingCandles": [
+      {
+        "index": 364,
+        "time": 1771459200,
+        "close": 2915.231,
+        "formattedTime": "2026-02-19 00:00:00"
+      },
+      {
+        "index": 365,
+        "time": 1771545600,
+        "close": 2923.761,
+        "formattedTime": "2026-02-20 00:00:00"
+      }
+    ],
+    "breakDirection": "bullish",
+    "formattedTime": "2026-02-19 00:00:00",
+    "time": 1771459200,
+    "date": "2026-02-19",
+    "confidence": 1
+  },
+  "lastBearishBOS": {
+    "bosType": "BOS_WICK",
+    "isCHoCH": true,
+    "strength": 1,
+    "swingType": "low",
+    "swingIndex": 361,
+    "swingPrice": 2773.674,
+    "swingKeyPrice": 2799.871,
+    "swingDirection": "HL",
+    "swingTime": 1771200000,
+    "swingFormattedTime": "2026-02-16 00:00:00",
+    "breakingCandleIndex": 363,
+    "breakingCandleTime": 1771372800,
+    "breakingCandleHigh": 2832.905,
+    "breakingCandleLow": 2773.435,
+    "breakingCandleClose": 2780.122,
+    "breakingCandleFormattedTime": "2026-02-18 00:00:00",
+    "confirmingCandles": [],
+    "breakDirection": "bearish",
+    "formattedTime": "2026-02-18 00:00:00",
+    "time": 1771372800,
+    "date": "2026-02-18",
+    "confidence": 0.5333333333333333
+  }
+}
