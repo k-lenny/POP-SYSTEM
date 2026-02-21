@@ -1,0 +1,59 @@
+{
+  "store": [
+    {
+      "type": "EQH",
+      "key": "163_792_EQH",
+      "zoneTop": 890.19,
+      "zoneBottom": 889.91,
+      "zoneMid": 890.05,
+      "firstSwingIndex": 163,
+      "firstSwingPrice": 890.19,
+      "firstSwingKeyPrice": 889.91,
+      "firstSwingDirection": "HH",
+      "firstSwingTime": 1771443720,
+      "firstSwingFormattedTime": "2026-02-18 19:42:00",
+      "secondSwingIndex": 792,
+      "secondSwingPrice": 890.14,
+      "secondSwingKeyPrice": 888.91,
+      "secondSwingDirection": "HH",
+      "secondSwingTime": 1771556940,
+      "secondSwingFormattedTime": "2026-02-20 03:09:00",
+      "vShapeDepth": 825.25,
+      "vShapeIndex": 170,
+      "vShapeTime": 1771516800,
+      "vShapeFormattedTime": "2026-02-19 16:00:00",
+      "candlesBetween": 628,
+      "preBreakoutVDepth": 905.8,
+      "preBreakoutVIndex": 793,
+      "preBreakoutVTime": 1771628940,
+      "preBreakoutVFormattedTime": "2026-02-20 23:09:00",
+      "status": "broken",
+      "brokenTime": 1771628940,
+      "brokenFormattedTime": "2026-02-20 23:09:00",
+      "brokenIndex": 793,
+      "brokenBy": 906.74,
+      "brokenBosType": "BOS_SUSTAINED",
+      "sweptTime": null,
+      "sweptFormattedTime": null,
+      "sweptIndex": null,
+      "sweptBy": null,
+      "lastCheckedIndex": 793,
+      "bias": {
+        "bias": "bearish",
+        "isCHoCH": true,
+        "bosType": "BOS_SUSTAINED",
+        "strength": 3,
+        "confidence": 1,
+        "formattedTime": "2026-02-21 09:15:00"
+      },
+      "formattedTime": "2026-02-20 23:06:00",
+      "time": 1771628760,
+      "date": "2026-02-20",
+      "confidence": 0.5
+    }
+  ],
+  "lastSwingCount": {
+    "highs": 201,
+    "lows": 207
+  }
+}

@@ -79,6 +79,7 @@ class EqhEqlEngine extends EventEmitter {
     // We treat them as valid (no crossing known).
     if (level.preBreakoutVDepth === null) return true;
 
+
     // Infinity/-Infinity means we are still tracking – no crossing yet.
     if (!isFinite(level.preBreakoutVDepth)) return true;
 
