@@ -1,12 +1,8 @@
-// server/src/signals/dataProcessor/swings.js
+// server/src/signals/dataProcessor/swings.js (memory-only version)
 const EventEmitter = require('events');
-const fs = require('fs').promises;
-const path = require('path');
 const Logger = require('../../utils/logger');
 const metrics = require('../../utils/metrics');
 const { getConfig } = require('../../config');
-
-
 
 // ── Key price calculation ──
 const calculateKeyPrice = (type, candle) => {
@@ -32,7 +28,6 @@ class SwingEngine extends EventEmitter {
    * @param {Object} options - Configuration options.
    * @param {Logger} options.logger - Logger instance.
    * @param {boolean} options.emitEvents - Whether to emit events.
-   * @param {string} options.dataDir - Directory for persistence.
    */
   constructor(options = {}) {
     super();
@@ -42,7 +37,6 @@ class SwingEngine extends EventEmitter {
 
     this.logger = options.logger || new Logger('SwingEngine');
     this.emitEvents = options.emitEvents ?? getConfig().ENABLE_EVENTS;
-    this.dataDir = options.dataDir || path.join(__dirname, '../../data/swings');
   }
 
   // ── Concurrency lock ──
@@ -65,37 +59,6 @@ class SwingEngine extends EventEmitter {
   // ── Get config with overrides ──
   _getConfig(symbol, granularity) {
     return getConfig(symbol, granularity);
-  }
-
-  // ── Persistence ──
-  async _saveToDisk(symbol, granularity) {
-    const filePath = path.join(this.dataDir, `${symbol}_${granularity}.json`);
-    const data = {
-      store: this.store[symbol]?.[granularity] || [],
-    };
-    await fs.mkdir(this.dataDir, { recursive: true });
-    await fs.writeFile(filePath, JSON.stringify(data, null, 2));
-    this.logger.debug(`Saved swings for ${symbol} @ ${granularity} to disk`);
-  }
-
-  async _loadFromDisk(symbol, granularity) {
-    const filePath = path.join(this.dataDir, `${symbol}_${granularity}.json`);
-    try {
-      const data = JSON.parse(await fs.readFile(filePath, 'utf8'));
-      if (data.store) {
-        this._initStore(symbol, granularity);
-        this.store[symbol][granularity] = data.store;
-        // Rebuild indexSets
-        for (const swing of data.store) {
-          this._registerSwing(symbol, granularity, swing);
-        }
-        // Recalculate directions
-        this.updateDirections(symbol, granularity, true);
-        this.logger.info(`Loaded swings for ${symbol} @ ${granularity} from disk (${data.store.length} swings)`);
-      }
-    } catch (err) {
-      if (err.code !== 'ENOENT') this.logger.error(`Failed to load swings for ${symbol} @ ${granularity}: ${err.message}`);
-    }
   }
 
   // ── O(1) duplicate check via Set ──
@@ -219,8 +182,6 @@ class SwingEngine extends EventEmitter {
       const elapsed = metrics.endTimer(timer);
       this.logger.info(`[SwingEngine] ${symbol} @ ${granularity}s — ${swings.length} swings detected (strength ${strength}) [${elapsed}ms]`);
 
-      if (this.dataDir) await this._saveToDisk(symbol, granularity);
-
       return swings;
     });
   }
@@ -301,7 +262,6 @@ class SwingEngine extends EventEmitter {
 
       if (newSwings.length > 0) {
         this.updateDirections(symbol, granularity, false);
-        if (this.dataDir) await this._saveToDisk(symbol, granularity);
       }
 
       const elapsed = metrics.endTimer(timer);

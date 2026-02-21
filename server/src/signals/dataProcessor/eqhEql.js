@@ -1,7 +1,5 @@
-// server/src/signals/dataProcessor/eqhEql.js
+// server/src/signals/dataProcessor/eqhEql.js (memory-only version)
 const EventEmitter = require('events');
-const fs = require('fs').promises;
-const path = require('path');
 const swingEngine    = require('./swings');
 const breakoutEngine = require('./breakouts');
 const {
@@ -20,7 +18,6 @@ class EqhEqlEngine extends EventEmitter {
    * @param {Object} options - Configuration options.
    * @param {Logger} options.logger - Logger instance.
    * @param {boolean} options.emitEvents - Whether to emit events.
-   * @param {string} options.dataDir - Directory for persistence.
    */
   constructor(options = {}) {
     super();
@@ -34,7 +31,6 @@ class EqhEqlEngine extends EventEmitter {
 
     this.logger      = options.logger      || new Logger('EqhEqlEngine');
     this.emitEvents  = options.emitEvents  ?? getConfig().ENABLE_EVENTS;
-    this.dataDir = options.dataDir || path.join(__dirname, '../../data/eqhEql');
   }
 
   // ─────────────────────────────────────────────
@@ -94,51 +90,6 @@ class EqhEqlEngine extends EventEmitter {
 
     // No crossing – level is valid.
     return true;
-  }
-
-  // ── Persistence ──
-  async _saveToDisk(symbol, granularity) {
-    if (!this.dataDir) return;
-    const filePath = path.join(this.dataDir, `${symbol}_${granularity}.json`);
-    const data = {
-      store: this.store[symbol]?.[granularity] || [],
-      lastSwingCount: this.lastSwingCount[symbol]?.[granularity] || { highs: 0, lows: 0 },
-    };
-    await fs.mkdir(this.dataDir, { recursive: true });
-    await fs.writeFile(filePath, JSON.stringify(data, null, 2));
-    this.logger.debug(`Saved levels for ${symbol} @ ${granularity} to disk`);
-  }
-
-  async _loadFromDisk(symbol, granularity) {
-    if (!this.dataDir) return;
-    const filePath = path.join(this.dataDir, `${symbol}_${granularity}.json`);
-    try {
-      const data = JSON.parse(await fs.readFile(filePath, 'utf8'));
-      if (data.store) {
-        this._initStore(symbol, granularity);
-        this.store[symbol][granularity] = data.store;
-        this.lastSwingCount[symbol][granularity] = data.lastSwingCount || { highs: 0, lows: 0 };
-
-        // Migrate old levels to include new fields
-        let migrationCount = 0;
-        for (const level of data.store) {
-          if (this._migrateLevel(level)) {
-            migrationCount++;
-          }
-          this._registerLevel(symbol, granularity, level);
-          this._registerLevelCounts(symbol, granularity, level);
-        }
-        
-        if (migrationCount > 0) {
-          this.logger.info(`Migrated ${migrationCount} levels to new schema for ${symbol} @ ${granularity}`);
-        }
-        
-        this._repairCachesIfNeeded(symbol, granularity);
-        this.logger.info(`Loaded levels for ${symbol} @ ${granularity} from disk (${data.store.length} levels)`);
-      }
-    } catch (err) {
-      if (err.code !== 'ENOENT') this.logger.error(`Failed to load levels for ${symbol} @ ${granularity}: ${err.message}`);
-    }
   }
 
   _migrateLevel(level) {
@@ -758,8 +709,6 @@ class EqhEqlEngine extends EventEmitter {
       const elapsed = metrics.endTimer(timer);
       this.logger.info(`${symbol} @ ${granularity}s — ${c.get('eqh') + c.get('eql')} levels (EQH: ${c.get('eqh')}, EQL: ${c.get('eql')} | Active: ${c.get('active')}, Broken: ${c.get('broken')}, Swept: ${c.get('swept')}) [${elapsed}ms]`);
 
-      if (this.dataDir) await this._saveToDisk(symbol, granularity);
-
       return sorted;
     });
   }
@@ -866,8 +815,6 @@ class EqhEqlEngine extends EventEmitter {
 
       const elapsed = metrics.endTimer(timer);
       this.logger.debug(`detectLatest for ${symbol} @ ${granularity}s completed in ${elapsed}ms, ${newLevels.length} new levels`);
-
-      if (this.dataDir && newLevels.length > 0) await this._saveToDisk(symbol, granularity);
 
       return newLevels;
     });

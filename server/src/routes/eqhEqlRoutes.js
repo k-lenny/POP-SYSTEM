@@ -1,4 +1,4 @@
-// server/src/routes/eqhEqlRoutes.js
+// server/src/routes/eqhEqlRoutes.js (memory-only version)
 const express = require('express')
 const router  = express.Router()
 
@@ -18,30 +18,17 @@ const {
 } = require('../utils/resolvers')
 
 // Helper: ensure levels exist in memory for this symbol/granularity.
-// If none present, try loading from disk, then run detection if still empty.
-async function ensureLevelsLoaded(symbol, granularity) {
-  // 1. Check if already in memory (filtered view)
+// If none present, run detection.
+async function ensureLevelsInMemory(symbol, granularity) {
+  // Check if already in memory (filtered view)
   let levels = eqhEqlEngine.get(symbol, granularity);
   if (levels.length > 0) {
     console.log(`[EqhEqlRoute] Using ${levels.length} cached levels for ${symbol} @ ${granularity}s`);
     return levels;
   }
 
-  // 2. Try loading from disk
-  console.log(`[EqhEqlRoute] Attempting to load from disk for ${symbol} @ ${granularity}s`);
-  await eqhEqlEngine._loadFromDisk(symbol, granularity);
-  
-  // Check the raw store (unfiltered) to see if any levels exist at all
-  const rawStore = eqhEqlEngine.store[symbol]?.[granularity];
-  if (rawStore && rawStore.length > 0) {
-    // There are levels in the store, even if all are filtered out by validation.
-    levels = eqhEqlEngine.get(symbol, granularity);
-    console.log(`[EqhEqlRoute] Loaded ${rawStore.length} raw levels, ${levels.length} valid after filter for ${symbol} @ ${granularity}s`);
-    return levels;
-  }
-
-  // 3. Raw store is empty – run detection
-  console.log(`[EqhEqlRoute] No levels found on disk or memory for ${symbol} @ ${granularity}s, starting detection...`);
+  // No levels in memory – run detection
+  console.log(`[EqhEqlRoute] No levels in memory for ${symbol} @ ${granularity}s, starting detection...`);
   
   try {
     let candles = signalEngine.getCandles(symbol, granularity, true);
@@ -120,14 +107,14 @@ async function ensureLevelsLoaded(symbol, granularity) {
       const detectedLevels = await eqhEqlEngine.detectAll(symbol, granularity, candles);
       console.log(`[EqhEqlRoute] Detection complete: ${detectedLevels.length} levels found for ${symbol} @ ${granularity}s`);
       
-      // After detection, check raw store again
-      const newRawStore = eqhEqlEngine.store[symbol]?.[granularity];
-      console.log(`[EqhEqlRoute] Raw store now has ${newRawStore ? newRawStore.length : 0} levels`);
+      // After detection, check store again
+      const newStore = eqhEqlEngine.store[symbol]?.[granularity];
+      console.log(`[EqhEqlRoute] Store now has ${newStore ? newStore.length : 0} levels`);
     } else {
       console.log(`[EqhEqlRoute] WARNING: No candles available for ${symbol} @ ${granularity}s after all attempts`);
     }
   } catch (err) {
-    console.error('[EqhEqlRoute] ensureLevelsLoaded error:', err);
+    console.error('[EqhEqlRoute] ensureLevelsInMemory error:', err);
   }
   
   // Return filtered view
@@ -324,7 +311,7 @@ router.get('/:symbol/:granularity', async (req, res) => {
     const granularity = resolveGranularity(req.params.granularity)
     if (!granularity) return sendError(res, 400, `Invalid granularity "${req.params.granularity}"`, { validGranularities: getValidGranularities() })
 
-    const levels = await ensureLevelsLoaded(symbol, granularity)
+    const levels = await ensureLevelsInMemory(symbol, granularity)
 
     const limit = req.query.limit ? parseInt(req.query.limit) : undefined
     let resultLevels = levels
@@ -355,7 +342,7 @@ router.get('/:symbol/:granularity/eqh', async (req, res) => {
     const granularity = resolveGranularity(req.params.granularity)
     if (!granularity) return sendError(res, 400, `Invalid granularity "${req.params.granularity}"`, { validGranularities: getValidGranularities() })
 
-    await ensureLevelsLoaded(symbol, granularity)
+    await ensureLevelsInMemory(symbol, granularity)
     const levels = eqhEqlEngine.getEQH(symbol, granularity)
 
     return sendSuccess(res, { symbol, granularity, type: 'EQH', count: levels.length, levels })
@@ -375,7 +362,7 @@ router.get('/:symbol/:granularity/eql', async (req, res) => {
     const granularity = resolveGranularity(req.params.granularity)
     if (!granularity) return sendError(res, 400, `Invalid granularity "${req.params.granularity}"`, { validGranularities: getValidGranularities() })
 
-    await ensureLevelsLoaded(symbol, granularity)
+    await ensureLevelsInMemory(symbol, granularity)
     const levels = eqhEqlEngine.getEQL(symbol, granularity)
 
     return sendSuccess(res, { symbol, granularity, type: 'EQL', count: levels.length, levels })
@@ -395,7 +382,7 @@ router.get('/:symbol/:granularity/active', async (req, res) => {
     const granularity = resolveGranularity(req.params.granularity)
     if (!granularity) return sendError(res, 400, `Invalid granularity "${req.params.granularity}"`, { validGranularities: getValidGranularities() })
 
-    await ensureLevelsLoaded(symbol, granularity)
+    await ensureLevelsInMemory(symbol, granularity)
     const levels = eqhEqlEngine.getActive(symbol, granularity)
 
     return sendSuccess(res, { symbol, granularity, status: 'active', count: levels.length, levels })
@@ -415,7 +402,7 @@ router.get('/:symbol/:granularity/active/eqh', async (req, res) => {
     const granularity = resolveGranularity(req.params.granularity)
     if (!granularity) return sendError(res, 400, `Invalid granularity "${req.params.granularity}"`, { validGranularities: getValidGranularities() })
 
-    await ensureLevelsLoaded(symbol, granularity)
+    await ensureLevelsInMemory(symbol, granularity)
     const levels = eqhEqlEngine.getActiveEQH(symbol, granularity)
 
     return sendSuccess(res, { symbol, granularity, type: 'EQH', status: 'active', count: levels.length, levels })
@@ -435,7 +422,7 @@ router.get('/:symbol/:granularity/active/eql', async (req, res) => {
     const granularity = resolveGranularity(req.params.granularity)
     if (!granularity) return sendError(res, 400, `Invalid granularity "${req.params.granularity}"`, { validGranularities: getValidGranularities() })
 
-    await ensureLevelsLoaded(symbol, granularity)
+    await ensureLevelsInMemory(symbol, granularity)
     const levels = eqhEqlEngine.getActiveEQL(symbol, granularity)
 
     return sendSuccess(res, { symbol, granularity, type: 'EQL', status: 'active', count: levels.length, levels })
@@ -455,7 +442,7 @@ router.get('/:symbol/:granularity/broken', async (req, res) => {
     const granularity = resolveGranularity(req.params.granularity)
     if (!granularity) return sendError(res, 400, `Invalid granularity "${req.params.granularity}"`, { validGranularities: getValidGranularities() })
 
-    await ensureLevelsLoaded(symbol, granularity)
+    await ensureLevelsInMemory(symbol, granularity)
     const levels = eqhEqlEngine.getBroken(symbol, granularity)
 
     return sendSuccess(res, { symbol, granularity, status: 'broken', count: levels.length, levels })
@@ -475,7 +462,7 @@ router.get('/:symbol/:granularity/swept', async (req, res) => {
     const granularity = resolveGranularity(req.params.granularity)
     if (!granularity) return sendError(res, 400, `Invalid granularity "${req.params.granularity}"`, { validGranularities: getValidGranularities() })
 
-    await ensureLevelsLoaded(symbol, granularity)
+    await ensureLevelsInMemory(symbol, granularity)
     const levels = eqhEqlEngine.getSwept(symbol, granularity)
 
     return sendSuccess(res, { symbol, granularity, status: 'swept', count: levels.length, levels })
@@ -495,7 +482,7 @@ router.get('/:symbol/:granularity/summary', async (req, res) => {
     const granularity = resolveGranularity(req.params.granularity)
     if (!granularity) return sendError(res, 400, `Invalid granularity "${req.params.granularity}"`, { validGranularities: getValidGranularities() })
 
-    await ensureLevelsLoaded(symbol, granularity)
+    await ensureLevelsInMemory(symbol, granularity)
     const summary = eqhEqlEngine.getSummary(symbol, granularity)
 
     return sendSuccess(res, { summary })
@@ -515,7 +502,7 @@ router.get('/:symbol/:granularity/latest', async (req, res) => {
     const granularity = resolveGranularity(req.params.granularity)
     if (!granularity) return sendError(res, 400, `Invalid granularity "${req.params.granularity}"`, { validGranularities: getValidGranularities() })
 
-    await ensureLevelsLoaded(symbol, granularity)
+    await ensureLevelsInMemory(symbol, granularity)
     const latest = eqhEqlEngine.getLatest(symbol, granularity)
     const latestActive = eqhEqlEngine.getLatestActive(symbol, granularity)
 
@@ -546,6 +533,8 @@ router.post('/redetect/:symbol/:granularity', async (req, res) => {
       return sendError(res, 400, 'No candles available for this symbol/granularity')
     }
 
+    // Clear existing levels before redetection
+    eqhEqlEngine.clearStore(symbol, granularity)
     const levels = await eqhEqlEngine.detectAll(symbol, granularity, candles)
 
     return sendSuccess(res, {
@@ -574,7 +563,7 @@ router.get('/all/:granularity', async (req, res) => {
     const results = []
 
     for (const symbol of symbols) {
-      await ensureLevelsLoaded(symbol, granularity)
+      await ensureLevelsInMemory(symbol, granularity)
       let levels = eqhEqlEngine.get(symbol, granularity)
       const count = levels.length
       if (limit && limit > 0) levels = levels.slice(-limit)
