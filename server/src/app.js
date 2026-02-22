@@ -7,6 +7,7 @@ const marketRoutes   = require('./routes/marketRoutes')
 const swingsRoutes   = require('./routes/swingsRoutes')
 const breakoutRoutes = require('./routes/breakoutRoutes')
 const eqhEqlRoutes   = require('./routes/eqhEqlRoutes')
+const setupRoutes    = require('./routes/setupRoutes')
 
 const { startSignalEngine, isFullyLoaded, getCandles, volatilitySymbols, timeframes, subscribeToAllSymbols } = require('./signals/signalEngine')
 
@@ -36,6 +37,7 @@ app.use('/api',        marketRoutes)
 app.use('/swings',     swingsRoutes)
 app.use('/breakouts',  breakoutRoutes)
 app.use('/eqheql',     eqhEqlRoutes)
+app.use('/setups',     setupRoutes)
 
 // ── List all symbols and granularities from signalEngine ──
 const symbols = Object.values(volatilitySymbols)
