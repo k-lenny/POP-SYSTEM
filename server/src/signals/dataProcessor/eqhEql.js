@@ -237,8 +237,9 @@ class EqhEqlEngine extends EventEmitter {
       hasCandles = true;
       candleCount++;
 
-      // Reject if this candle's close lies inside the zone area
-      if (c.close >= zoneLow && c.close <= zoneHigh) return null;
+      // Reject if any part of the candle (high or low) overlaps with the zone.
+      // This ensures a clean "gap" between the two swings.
+      if (c.high >= zoneLow && c.low <= zoneHigh) return null;
 
       if (type === 'EQH' && c.low  < vExtreme) { vExtreme = c.low;  vExtremeCandle = c; }
       if (type === 'EQL' && c.high > vExtreme) { vExtreme = c.high; vExtremeCandle = c; }
