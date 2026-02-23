@@ -28,7 +28,7 @@ class SetupEngine {
     const candleIndexMap = buildCandleIndexMap(candles);
     const setups = [];
 
-    const scanCandles = config.MAX_SETUP_SCAN_CANDLES || 50;
+    const scanCandles = config.MAX_SETUP_SCAN_CANDLES || 1000;
     const bosScanLimit = config.MAX_BOS_SCAN_CANDLES || 10;
 
     for (const level of brokenLevels) {

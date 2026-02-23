@@ -5,7 +5,7 @@ const defaultConfig = {
   MAX_BOS_SCAN_CANDLES: 10,
 
   // Maximum number of candles to scan for a setup V-shape after a breakout
-  MAX_SETUP_SCAN_CANDLES: 50,
+  MAX_SETUP_SCAN_CANDLES: 1000,
 
   // Maximum number of EQH/EQL levels to retain per symbol/granularity
   MAX_LEVELS_PER_SYMBOL: 1000,
