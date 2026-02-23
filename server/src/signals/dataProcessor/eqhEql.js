@@ -512,8 +512,8 @@ class EqhEqlEngine extends EventEmitter {
         }
 
       } else {
-        const wickBreaches  = candle.low   < level.zoneBottom;
-        const closeBreaches = candle.close < level.zoneBottom;
+        const wickBreaches  = candle.low   < level.zoneTop;
+        const closeBreaches = candle.close < level.zoneTop;
 
         if (closeBreaches) {
           level.status              = 'broken';
