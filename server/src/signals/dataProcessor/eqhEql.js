@@ -237,9 +237,11 @@ class EqhEqlEngine extends EventEmitter {
       hasCandles = true;
       candleCount++;
 
-      // Reject if any part of the candle (high or low) overlaps with the zone.
-      // This ensures a clean "gap" between the two swings.
-      if (c.high >= zoneLow && c.low <= zoneHigh) return null;
+      // Reject if any intermediate candle's high (for EQH) or low (for EQL)
+      // breaks the level of the first swing. This allows for overlap as long
+      // as the absolute high/low is not violated.
+      if (type === 'EQH' && c.high > firstSwing.price) return null;
+      if (type === 'EQL' && c.low < firstSwing.price) return null;
 
       if (type === 'EQH' && c.low  < vExtreme) { vExtreme = c.low;  vExtremeCandle = c; }
       if (type === 'EQL' && c.high > vExtreme) { vExtreme = c.high; vExtremeCandle = c; }
