@@ -8,6 +8,7 @@ class SetupEngine {
   /**
    * Finds setups based on broken EQH/EQL levels.
    * A setup is a broken level followed by a "V-shape" pullback/retracement.
+   * This requires a "sustained" breakout before scanning for the V-shape.
    * @param {string} symbol The symbol to check (e.g., 'BTCUSD').
    * @param {number} granularity The granularity in seconds (e.g., 3600).
    * @returns {Array<Object>} An array of setup objects.
@@ -27,38 +28,65 @@ class SetupEngine {
     const candleIndexMap = buildCandleIndexMap(candles);
     const setups = [];
 
-    // How many candles to scan after a breakout to find the extreme.
     const scanCandles = config.MAX_SETUP_SCAN_CANDLES || 50;
+    const bosScanLimit = config.MAX_BOS_SCAN_CANDLES || 10;
 
     for (const level of brokenLevels) {
-      // Find the array position of the candle that broke the level.
+      // 1. Find the initial breaking candle.
       const breakArrayPos = candleIndexMap.get(level.brokenIndex);
+      if (breakArrayPos === undefined) {
+        continue;
+      }
+      const breakingCandle = candles[breakArrayPos];
 
+      // 2. Find the second, "confirming" candle based on the new "BOS Sustained" rule.
+      // This candle must close past the HIGH (for EQH) or LOW (for EQL) of the initial breaking candle.
+      let confirmingCandle = null;
+      let confirmingCandlePos = -1;
+      const confirmationScanStart = breakArrayPos + 1;
+      const confirmationScanEnd = Math.min(candles.length, confirmationScanStart + bosScanLimit);
+
+      for (let i = confirmationScanStart; i < confirmationScanEnd; i++) {
+        const c = candles[i];
+        if (level.type === 'EQH' && c.close > breakingCandle.high) {
+          confirmingCandle = c;
+          confirmingCandlePos = i;
+          break; // Found it
+        } else if (level.type === 'EQL' && c.close < breakingCandle.low) {
+          confirmingCandle = c;
+          confirmingCandlePos = i;
+          break; // Found it
+        }
+      }
+
+      // If no confirming candle is found, this is not a valid setup under the new rules. Skip it.
+      if (!confirmingCandle) {
+        continue;
+      }
+
+      // 3. Scan for the setup V-shape, starting AFTER the confirming candle.
       let extremeCandle = null;
+      const vShapeScanStart = confirmingCandlePos + 1;
+      const vShapeScanEnd = Math.min(candles.length, vShapeScanStart + scanCandles);
 
-      if (breakArrayPos !== undefined) {
-        const scanStart = breakArrayPos + 1;
-        const scanEnd = Math.min(candles.length, scanStart + scanCandles);
-
-        if (level.type === 'EQH') {
-          // For a broken EQH (highs taken), the "setup V-shape" is the lowest low (pullback) after the breakout.
-          let minLow = Infinity;
-          for (let i = scanStart; i < scanEnd; i++) {
-            const candle = candles[i];
-            if (candle.low < minLow) {
-              minLow = candle.low;
-              extremeCandle = candle;
-            }
+      if (level.type === 'EQH') {
+        // For a broken EQH, the "setup V-shape" is the lowest low (pullback) after the sustained break.
+        let minLow = Infinity;
+        for (let i = vShapeScanStart; i < vShapeScanEnd; i++) {
+          const candle = candles[i];
+          if (candle.low < minLow) {
+            minLow = candle.low;
+            extremeCandle = candle;
           }
-        } else { // EQL
-          // For a broken EQL (lows taken), the "setup V-shape" is the highest high (retracement) after the breakout.
-          let maxHigh = -Infinity;
-          for (let i = scanStart; i < scanEnd; i++) {
-            const candle = candles[i];
-            if (candle.high > maxHigh) {
-              maxHigh = candle.high;
-              extremeCandle = candle;
-            }
+        }
+      } else { // EQL
+        // For a broken EQL, the "setup V-shape" is the highest high (retracement) after the sustained break.
+        let maxHigh = -Infinity;
+        for (let i = vShapeScanStart; i < vShapeScanEnd; i++) {
+          const candle = candles[i];
+          if (candle.high > maxHigh) {
+            maxHigh = candle.high;
+            extremeCandle = candle;
           }
         }
       }

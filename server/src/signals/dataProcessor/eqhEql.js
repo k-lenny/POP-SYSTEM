@@ -243,6 +243,17 @@ class EqhEqlEngine extends EventEmitter {
       if (type === 'EQH' && c.high > firstSwing.price) return null;
       if (type === 'EQL' && c.low < firstSwing.price) return null;
 
+      // NEW LOGIC: Reject if an intermediate candle's body is more extreme than the second swing's body.
+      // This prevents identifying levels where the structure is messy or has already been violated internally.
+      if (type === 'EQH') {
+        const intermediateKeyPrice = Math.max(c.open, c.close);
+        if (intermediateKeyPrice > secondSwing.keyPrice) return null;
+      }
+      if (type === 'EQL') {
+        const intermediateKeyPrice = Math.min(c.open, c.close);
+        if (intermediateKeyPrice < secondSwing.keyPrice) return null;
+      }
+
       if (type === 'EQH' && c.low  < vExtreme) { vExtreme = c.low;  vExtremeCandle = c; }
       if (type === 'EQL' && c.high > vExtreme) { vExtreme = c.high; vExtremeCandle = c; }
     }
