@@ -42,12 +42,16 @@ class ConfirmedSetupEngine {
         continue;
       }
 
-      const breakoutStatus = this._getBreakoutStatus(setup, candles, candleIndexMap);
+      const breakoutResult = this._getBreakoutStatus(setup, candles, candleIndexMap);
 
       confirmedSetups.push({
         ...setup,
         setupStatus: status,
-        ConfirmedSetupBreakoutStatus: breakoutStatus,
+        setupStatusIndex: setup.setupVshapeIndex,
+        setupStatusFormattedTime: setup.setupVshapeFormattedTime,
+        ConfirmedSetupBreakoutStatus: breakoutResult.status,
+        ConfirmedSetupBreakoutStatusIndex: breakoutResult.index,
+        ConfirmedSetupBreakoutStatusFormattedTime: breakoutResult.formattedTime,
       });
     }
 
@@ -136,16 +140,20 @@ class ConfirmedSetupEngine {
   _getBreakoutStatus(setup, candles, candleIndexMap) {
     const startScanPos = nextArrayIdx(candleIndexMap, candles, setup.setupVshapeIndex);
     if (startScanPos === undefined) {
-      return 'NO';
+      return { status: 'NO', index: null, formattedTime: null };
     }
 
     for (let i = startScanPos; i < candles.length; i++) {
       const candle = candles[i];
-      if (setup.type === 'EQL' && candle.close < setup.impulseExtremeDepth) return 'YES';
-      if (setup.type === 'EQH' && candle.close > setup.impulseExtremeDepth) return 'YES';
+      if (setup.type === 'EQL' && candle.close < setup.impulseExtremeDepth) {
+        return { status: 'YES', index: candle.index, formattedTime: candle.formattedTime };
+      }
+      if (setup.type === 'EQH' && candle.close > setup.impulseExtremeDepth) {
+        return { status: 'YES', index: candle.index, formattedTime: candle.formattedTime };
+      }
     }
 
-    return 'NO';
+    return { status: 'NO', index: null, formattedTime: null };
   }
 }
 

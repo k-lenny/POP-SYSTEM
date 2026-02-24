@@ -9,6 +9,7 @@ const breakoutRoutes = require('./routes/breakoutRoutes')
 const eqhEqlRoutes   = require('./routes/eqhEqlRoutes')
 const setupRoutes    = require('./routes/setupRoutes')
 const confirmedSetupRoutes = require('./routes/confirmedSetupRoute')
+const retestRoutes   = require('./routes/retestRoutes')
 
 const { startSignalEngine, isFullyLoaded, getCandles, volatilitySymbols, timeframes, subscribeToAllSymbols } = require('./signals/signalEngine')
 
@@ -40,6 +41,7 @@ app.use('/breakouts',  breakoutRoutes)
 app.use('/eqheql',     eqhEqlRoutes)
 app.use('/setups',     setupRoutes)
 app.use('/confirmed-setups', confirmedSetupRoutes)
+app.use('/retests',    retestRoutes)
 
 // ── List all symbols and granularities from signalEngine ──
 const symbols = Object.values(volatilitySymbols)
