@@ -16,8 +16,6 @@ const volatilitySymbols = {
   'Volatility 90s': '1HZ90V',
   'Volatility 100': 'R_100',
   'Volatility 100s': '1HZ100V',
-  'Volatility 150s': '1HZ150V',    // 1s tick for 150 level
-  'Volatility 250s': '1HZ250V',    // 1s tick for 250 level
   'AUD/JPY': 'frxAUDJPY', 
   'EUR/USD': 'frxEURUSD',
   'GBP/USD': 'frxGBPUSD',
