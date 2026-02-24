@@ -72,6 +72,14 @@ class RetestEngine {
         candleIndexMap
       );
 
+      const previousStatus = this._calculatePreviousStatus(
+        retestState.retestSwing,
+        retestState.prevSwing,
+        isBearish,
+        candles,
+        candleIndexMap
+      );
+
       retests.push({
         ...setup,
         // Retest Status
@@ -110,6 +118,7 @@ class RetestEngine {
         NextMSSbreakoutFormattedTime: nextMSS.breakoutFormattedTime,
         
         NextStatus: nextStatus,
+        PreviousStatus: previousStatus,
       });
     }
 
@@ -324,6 +333,53 @@ class RetestEngine {
 
     // Condition 3: Default
     return 'WAITING FOR SETUP';
+  }
+
+  _calculatePreviousStatus(retestSwing, prevSwing, isBearish, candles, candleIndexMap) {
+    if (!retestSwing || !prevSwing) {
+      return 'WRONG S SETUP';
+    }
+
+    const level = prevSwing.price;
+    const retestCandleIndex = candleIndexMap.get(retestSwing.index);
+
+    if (retestCandleIndex === undefined) {
+      return 'WRONG S SETUP';
+    }
+    const retestCandle = candles[retestCandleIndex];
+
+    if (isBearish) { // EQL
+      // Condition: Retest high must cross above previous swing high level
+      if (retestCandle.high <= level) {
+        return 'WRONG S SETUP'; // Did not cross
+      }
+      // Now check if it was a valid sweep (wick or 1-candle rule)
+      if (retestCandle.close <= level) {
+        return 'RIGHT S SETUP'; // Wick crossing
+      }
+      // If close is above, check next candle
+      const nextC = candles[retestCandleIndex + 1];
+      if (nextC && nextC.close < level) {
+        return 'RIGHT S SETUP'; // 1-candle rule met
+      }
+    } else { // EQH (Bullish)
+      // Condition: Retest low must cross below previous swing low level
+      if (retestCandle.low >= level) {
+        return 'WRONG S SETUP'; // Did not cross
+      }
+      // Now check if it was a valid sweep
+      if (retestCandle.close >= level) {
+        return 'RIGHT S SETUP'; // Wick crossing
+      }
+      // If close is below, check next candle
+      const nextC = candles[retestCandleIndex + 1];
+      if (nextC && nextC.close > level) {
+        return 'RIGHT S SETUP'; // 1-candle rule met
+      }
+    }
+
+    // If none of the "RIGHT S SETUP" conditions were met after a crossing, it's a sustained break.
+    return 'WRONG S SETUP';
   }
 
   /**
