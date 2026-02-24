@@ -63,6 +63,15 @@ class RetestEngine {
         );
       }
 
+      const nextStatus = this._calculateNextStatus(
+        retestState.retestSwing,
+        retestState.nextSwing,
+        nextMSS,
+        isBearish,
+        candles,
+        candleIndexMap
+      );
+
       retests.push({
         ...setup,
         // Retest Status
@@ -99,6 +108,8 @@ class RetestEngine {
         NextMSSbreakout: nextMSS.breakoutPrice,
         NextMSSbreakoutIndex: nextMSS.breakoutIndex,
         NextMSSbreakoutFormattedTime: nextMSS.breakoutFormattedTime,
+        
+        NextStatus: nextStatus,
       });
     }
 
@@ -262,6 +273,57 @@ class RetestEngine {
 
       return { isValid: false, reason: 'SUSTAINED_CLOSE_BELOW_INVALIDATION' };
     }
+  }
+
+  _calculateNextStatus(retestSwing, nextSwing, nextMSS, isBearish, candles, candleIndexMap) {
+    // If any required data is missing, we can't determine the status.
+    if (!retestSwing || !nextSwing || !nextMSS || !nextMSS.extremePrice) {
+      return 'WAITING FOR SETUP';
+    }
+
+    const retestPrice = retestSwing.price;
+    const nextSwingPrice = nextSwing.price;
+    const mssPrice = nextMSS.extremePrice;
+
+    // Condition 1: Check for "OTE"
+    const highPoint = isBearish ? retestPrice : mssPrice;
+    const lowPoint = isBearish ? mssPrice : retestPrice;
+
+    // Ensure we have a valid range to check against
+    if (highPoint > lowPoint) {
+        const range = highPoint - lowPoint;
+        const oteLevel62 = lowPoint + (range * 0.625);
+        const oteLevel79 = lowPoint + (range * 0.79);
+
+        if (nextSwingPrice >= oteLevel62 && nextSwingPrice <= oteLevel79) {
+            return 'OTE';
+        }
+    }
+
+    // Condition 2: Check for "DOUBLE EQ"
+    const retestCandleIndex = candleIndexMap.get(retestSwing.index);
+    if (retestCandleIndex !== undefined) {
+        const retestCandle = candles[retestCandleIndex];
+        const retestCandleHigh = retestCandle.high;
+        const retestCandleLow = retestCandle.low;
+        const retestCandleBodyUpper = Math.max(retestCandle.open, retestCandle.close);
+        const retestCandleBodyLower = Math.min(retestCandle.open, retestCandle.close);
+
+        if (isBearish) {
+            // For bearish, check if next swing high is within the wick of the retest high
+            if (nextSwingPrice <= retestCandleHigh && nextSwingPrice >= retestCandleBodyUpper) {
+                return 'DOUBLE EQ';
+            }
+        } else {
+            // For bullish, check if next swing low is within the wick of the retest low
+            if (nextSwingPrice >= retestCandleLow && nextSwingPrice <= retestCandleBodyLower) {
+                return 'DOUBLE EQ';
+            }
+        }
+    }
+
+    // Condition 3: Default
+    return 'WAITING FOR SETUP';
   }
 
   /**
