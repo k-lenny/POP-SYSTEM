@@ -29,7 +29,15 @@ class RetestEngine {
       const isBearish = setup.type === 'EQL';
       const retestState = this._findRetestState(setup, candles, swings, candleIndexMap);
 
-      let mssResult = {
+      let prevMSS = {
+        extremePrice: null,
+        extremeIndex: null,
+        extremeFormattedTime: null,
+        breakoutPrice: null,
+        breakoutIndex: null,
+        breakoutFormattedTime: null,
+      };
+      let nextMSS = {
         extremePrice: null,
         extremeIndex: null,
         extremeFormattedTime: null,
@@ -39,9 +47,15 @@ class RetestEngine {
       };
 
       if (retestState.status === 'FORMED') {
-        mssResult = this._findMSS(
-          retestState.retestSwing,
+        prevMSS = this._calculateMSS(
           retestState.prevSwing,
+          retestState.retestSwing,
+          isBearish,
+          candles,
+          candleIndexMap
+        );
+        nextMSS = this._calculateMSS(
+          retestState.retestSwing,
           retestState.nextSwing,
           isBearish,
           candles,
@@ -70,15 +84,21 @@ class RetestEngine {
         NextExtremeSwingIndex: retestState.nextSwing ? retestState.nextSwing.index : null,
         NextExtremeSwingFormattedTime: retestState.nextSwing ? retestState.nextSwing.formattedTime : null,
 
-        // MSS
-        MSSExtreme: mssResult.extremePrice,
-        MSSExtremeIndex: mssResult.extremeIndex,
-        MSSExtremeFormattedTime: mssResult.extremeFormattedTime,
+        // Previous MSS
+        PreviousMSSExtreme: prevMSS.extremePrice,
+        PreviousMSSExtremeIndex: prevMSS.extremeIndex,
+        PreviousMSSExtremeFormattedTime: prevMSS.extremeFormattedTime,
+        PreviousMSSbreakout: prevMSS.breakoutPrice,
+        PreviousMSSbreakoutIndex: prevMSS.breakoutIndex,
+        PreviousMSSbreakoutFormattedTime: prevMSS.breakoutFormattedTime,
         
-        // MSS Breakout
-        MSSbreakout: mssResult.breakoutPrice,
-        MSSbreakoutIndex: mssResult.breakoutIndex,
-        MSSbreakoutFormattedTime: mssResult.breakoutFormattedTime,
+        // Next MSS
+        NextMSSExtreme: nextMSS.extremePrice,
+        NextMSSExtremeIndex: nextMSS.extremeIndex,
+        NextMSSExtremeFormattedTime: nextMSS.extremeFormattedTime,
+        NextMSSbreakout: nextMSS.breakoutPrice,
+        NextMSSbreakoutIndex: nextMSS.breakoutIndex,
+        NextMSSbreakoutFormattedTime: nextMSS.breakoutFormattedTime,
       });
     }
 
@@ -227,46 +247,36 @@ class RetestEngine {
   }
 
   /**
-   * Finds the MSS Extreme and its Breakout.
+   * Calculates MSS Extreme and Breakout between two swings.
    */
-  _findMSS(retestSwing, prevSwing, nextSwing, isBearish, candles, candleIndexMap) {
-    // For Bearish (EQL): We want the Lowest Low (Support) to break.
-    // For Bullish (EQH): We want the Highest High (Resistance) to break.
-    
+  _calculateMSS(startSwing, endSwing, isBearish, candles, candleIndexMap) {
+    if (!startSwing || !endSwing) {
+      return { extremePrice: null, extremeIndex: null, extremeFormattedTime: null, breakoutPrice: null, breakoutIndex: null, breakoutFormattedTime: null };
+    }
+
     let extremeCandle = null;
     let extremeVal = isBearish ? Infinity : -Infinity;
 
-    // Helper to scan range
-    const scanRange = (startIdx, endIdx) => {
-      const startPos = nextArrayIdx(candleIndexMap, candles, startIdx);
-      const endPos = candleIndexMap.get(endIdx);
-      
-      if (startPos === undefined || endPos === undefined || startPos >= endPos) return;
-
-      for (let i = startPos; i <= endPos; i++) {
-        const c = candles[i];
-        if (isBearish) {
-          if (c.low < extremeVal) {
-            extremeVal = c.low;
-            extremeCandle = c;
-          }
-        } else {
-          if (c.high > extremeVal) {
-            extremeVal = c.high;
-            extremeCandle = c;
-          }
-        }
-      }
-    };
-
-    // Scan Range 1: Previous -> Retest
-    if (prevSwing) {
-      scanRange(prevSwing.index, retestSwing.index);
+    const startPos = nextArrayIdx(candleIndexMap, candles, startSwing.index);
+    const endPos = candleIndexMap.get(endSwing.index);
+    
+    if (startPos === undefined || endPos === undefined || startPos >= endPos) {
+      return { extremePrice: null, extremeIndex: null, extremeFormattedTime: null, breakoutPrice: null, breakoutIndex: null, breakoutFormattedTime: null };
     }
 
-    // Scan Range 2: Retest -> Next
-    if (nextSwing) {
-      scanRange(retestSwing.index, nextSwing.index);
+    for (let i = startPos; i <= endPos; i++) {
+      const c = candles[i];
+      if (isBearish) {
+        if (c.low < extremeVal) {
+          extremeVal = c.low;
+          extremeCandle = c;
+        }
+      } else {
+        if (c.high > extremeVal) {
+          extremeVal = c.high;
+          extremeCandle = c;
+        }
+      }
     }
 
     if (!extremeCandle) {
