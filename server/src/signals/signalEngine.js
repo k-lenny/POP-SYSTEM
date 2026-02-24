@@ -18,6 +18,20 @@ const volatilitySymbols = {
   'Volatility 100s': '1HZ100V',
   'Volatility 150s': '1HZ150V',    // 1s tick for 150 level
   'Volatility 250s': '1HZ250V',    // 1s tick for 250 level
+  'AUD/JPY': 'frxAUDJPY', 
+  'EUR/USD': 'frxEURUSD',
+  'GBP/USD': 'frxGBPUSD',
+  'USD/JPY': 'frxUSDJPY',
+  'USD/CHF': 'frxUSDCHF',
+  'USD/CAD': 'frxUSDCAD',
+  'AUD/USD': 'frxAUDUSD',
+  'NZD/USD': 'frxNZDUSD',
+  'Gold': 'frxXAUUSD',         // Gold vs US Dollar
+  'Silver': 'frxXAGUSD',       // Silver vs US Dollar
+  'Platinum': 'frxXPTUSD',     // Platinum vs US Dollar
+  'Palladium': 'frxXPDUSD', 
+  'BTC/USD': 'cryBTCUSD',
+  'ETH/USD': 'cryETHUSD',
 }
 
 

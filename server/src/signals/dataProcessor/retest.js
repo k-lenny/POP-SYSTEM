@@ -103,6 +103,7 @@ class RetestEngine {
 
       retests.push({
         ...setup,
+        signalType: setup.type === 'EQL' ? 'SELL' : 'BUY',
         // Retest Status
         RetestStatus: retestState.status,
         RetestViolationReason: retestState.violationReason || null,
