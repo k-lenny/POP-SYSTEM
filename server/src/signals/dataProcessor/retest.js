@@ -20,6 +20,7 @@ class RetestEngine {
     if (!candles.length || !swings.length) return [];
 
     const candleIndexMap = buildCandleIndexMap(candles);
+    const lastCandleTime = candles.length > 0 ? new Date(candles[candles.length - 1].formattedTime) : new Date();
     const retests = [];
 
     for (const setup of confirmedSetups) {
@@ -46,6 +47,9 @@ class RetestEngine {
         breakoutFormattedTime: null,
       };
 
+      let prevFinalRetest = { Status: 'WAITING FOR FINAL RETEST', Index: null, FormattedTime: null };
+      let nextFinalRetest = { Status: 'WAITING FOR FINAL RETEST', Index: null, FormattedTime: null };
+
       if (retestState.status === 'FORMED') {
         prevMSS = this._calculateMSS(
           retestState.prevSwing,
@@ -60,6 +64,23 @@ class RetestEngine {
           isBearish,
           candles,
           candleIndexMap
+        );
+
+        prevFinalRetest = this._findFinalRetest(
+          prevMSS.extremePrice,
+          prevMSS.breakoutIndex,
+          isBearish,
+          candles,
+          candleIndexMap,
+          lastCandleTime
+        );
+        nextFinalRetest = this._findFinalRetest(
+          nextMSS.extremePrice,
+          nextMSS.breakoutIndex,
+          isBearish,
+          candles,
+          candleIndexMap,
+          lastCandleTime
         );
       }
 
@@ -116,6 +137,16 @@ class RetestEngine {
         NextMSSbreakout: nextMSS.breakoutPrice,
         NextMSSbreakoutIndex: nextMSS.breakoutIndex,
         NextMSSbreakoutFormattedTime: nextMSS.breakoutFormattedTime,
+
+        // Next Final Retest
+        NextFinalRetest: nextFinalRetest.Status,
+        NextFinalRetestIndex: nextFinalRetest.Index,
+        NextFinalRetestFormattedTime: nextFinalRetest.FormattedTime,
+
+        // Previous Final Retest
+        PreviousFinalRetest: prevFinalRetest.Status,
+        PreviousFinalRetestIndex: prevFinalRetest.Index,
+        PreviousFinalRetestFormattedTime: prevFinalRetest.FormattedTime,
         
         NextStatus: nextStatus,
         PreviousStatus: previousStatus,
@@ -380,6 +411,50 @@ class RetestEngine {
 
     // If none of the "RIGHT S SETUP" conditions were met after a crossing, it's a sustained break.
     return 'WRONG S SETUP';
+  }
+
+  _formatTimeAgo(date1, date2) {
+    const ms = date1.getTime() - date2.getTime();
+    const secs = Math.round(ms / 1000);
+    const mins = Math.round(secs / 60);
+    const hours = Math.round(mins / 60);
+    const days = Math.round(hours / 24);
+
+    if (secs < 60) return `${secs} seconds ago`;
+    if (mins < 60) return `${mins} minutes ago`;
+    if (hours < 24) return `${hours} hours ago`;
+    return `${days} days ago`;
+  }
+
+  _findFinalRetest(mssExtremePrice, mssBreakoutIndex, isBearish, candles, candleIndexMap, lastCandleTime) {
+    const result = {
+      Status: 'WAITING FOR FINAL RETEST',
+      Index: null,
+      FormattedTime: null,
+    };
+
+    if (mssBreakoutIndex === null || mssExtremePrice === null) {
+      return result;
+    }
+
+    const breakoutCandlePos = candleIndexMap.get(mssBreakoutIndex);
+    if (breakoutCandlePos === undefined) {
+      return result;
+    }
+    
+    for (let i = breakoutCandlePos + 1; i < candles.length; i++) {
+      const c = candles[i];
+      const retested = isBearish ? c.high >= mssExtremePrice : c.low <= mssExtremePrice;
+
+      if (retested) {
+        result.Status = `RETESTED ${this._formatTimeAgo(lastCandleTime, new Date(c.formattedTime))}`;
+        result.Index = c.index;
+        result.FormattedTime = c.formattedTime;
+        return result; // Found the first retest, stop searching
+      }
+    }
+
+    return result;
   }
 
   /**
