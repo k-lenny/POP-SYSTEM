@@ -180,13 +180,31 @@ class RetestEngine {
         }
       }
 
-      // Find Next Swing of SAME TYPE
+      // Find Next Swing of SAME TYPE (most extreme one after retest swing)
       let nextSwing = null;
+      const nextCandidates = [];
       for (let k = i + 1; k < swings.length; k++) {
         if (swings[k].type === targetSwingType) {
-          nextSwing = swings[k];
-          break;
+          nextCandidates.push(swings[k]);
         }
+      }
+
+      if (nextCandidates.length > 0) {
+        let extremeNextCandidate = nextCandidates[0];
+        for (const candidate of nextCandidates) {
+          if (isBearish) {
+            // For Bearish EQL, next "extreme" is the highest high (a lower high)
+            if (candidate.price > extremeNextCandidate.price) {
+              extremeNextCandidate = candidate;
+            }
+          } else {
+            // For Bullish EQH, next "extreme" is the lowest low (a higher low)
+            if (candidate.price < extremeNextCandidate.price) {
+              extremeNextCandidate = candidate;
+            }
+          }
+        }
+        nextSwing = extremeNextCandidate;
       }
 
       return {
