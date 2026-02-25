@@ -21,6 +21,7 @@ class RetestEngine {
 
     const candleIndexMap = buildCandleIndexMap(candles);
     const lastCandleTime = candles.length > 0 ? new Date(candles[candles.length - 1].formattedTime) : new Date();
+    const currentPrice = candles.length > 0 ? candles[candles.length - 1].close : 0;
     const retests = [];
 
     for (const setup of confirmedSetups) {
@@ -101,6 +102,78 @@ class RetestEngine {
         candleIndexMap
       );
 
+      // ─── Calculate NextRetestStatus ───
+      let nextRetestStatus = 'PENDING';
+      let isNextExpired = false;
+      let isNextActive = false;
+      let isNextPending = false;
+
+      // 1. Check EXPIRED
+      if (nextMSS.extremePrice !== null) {
+        if (setup.type === 'EQL') { // Bearish
+          if (currentPrice < nextMSS.extremePrice) isNextExpired = true;
+        } else { // Bullish
+          if (currentPrice > nextMSS.extremePrice) isNextExpired = true;
+        }
+      }
+
+      // 2. Check ACTIVE
+      if (['OTE', 'DOUBLE EQ'].includes(nextStatus)) {
+        if (retestState.nextSwing && nextMSS.extremePrice !== null) {
+          const minP = Math.min(retestState.nextSwing.price, nextMSS.extremePrice);
+          const maxP = Math.max(retestState.nextSwing.price, nextMSS.extremePrice);
+          if (currentPrice >= minP && currentPrice <= maxP) {
+            isNextActive = true;
+          }
+        }
+      }
+
+      // 3. Check PENDING
+      if (nextStatus === 'WAITING FOR SETUP' || nextFinalRetest.Status === 'WAITING FOR FINAL RETEST') {
+        isNextPending = true;
+      }
+
+      if (isNextExpired) nextRetestStatus = 'EXPIRED';
+      else if (isNextActive) nextRetestStatus = 'ACTIVE';
+      else if (isNextPending) nextRetestStatus = 'PENDING';
+
+
+      // ─── Calculate PreviousRetestStatus ───
+      let prevRetestStatus = 'PENDING';
+      let isPrevExpired = false;
+      let isPrevActive = false;
+      let isPrevPending = false;
+
+      // 1. Check EXPIRED
+      if (prevMSS.extremePrice !== null) {
+        if (setup.type === 'EQL') { // Bearish
+          if (currentPrice < prevMSS.extremePrice) isPrevExpired = true;
+        } else { // Bullish
+          if (currentPrice > prevMSS.extremePrice) isPrevExpired = true;
+        }
+      }
+
+      // 2. Check ACTIVE
+      if (previousStatus === 'RIGHT S SETUP') {
+        if (retestState.prevSwing && prevMSS.extremePrice !== null) {
+          const minP = Math.min(retestState.prevSwing.price, prevMSS.extremePrice);
+          const maxP = Math.max(retestState.prevSwing.price, prevMSS.extremePrice);
+          if (currentPrice >= minP && currentPrice <= maxP) {
+            isPrevActive = true;
+          }
+        }
+      }
+
+      // 3. Check PENDING
+      if (previousStatus === 'WRONG S SETUP' || prevFinalRetest.Status === 'WAITING FOR FINAL RETEST') {
+        isPrevPending = true;
+      }
+
+      if (isPrevExpired) prevRetestStatus = 'EXPIRED';
+      else if (isPrevActive) prevRetestStatus = 'ACTIVE';
+      else if (isPrevPending) prevRetestStatus = 'PENDING';
+
+
       retests.push({
         ...setup,
         signalType: setup.type === 'EQL' ? 'SELL' : 'BUY',
@@ -151,6 +224,9 @@ class RetestEngine {
         
         NextStatus: nextStatus,
         PreviousStatus: previousStatus,
+
+        NextRetestStatus: nextRetestStatus,
+        PreviousRetestStatus: prevRetestStatus,
       });
     }
 
