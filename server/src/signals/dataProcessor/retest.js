@@ -1,4 +1,5 @@
 const confirmedSetupEngine = require('./confirmedSetup');
+const majorSwingsEngine = require('./majorSwings');
 const swingEngine = require('./swings');
 const signalEngine = require('../signalEngine');
 const { buildCandleIndexMap, nextArrayIdx } = require('../../utils/dataProcessorUtils');
@@ -17,6 +18,7 @@ class RetestEngine {
     // 2. Get Swings and Candles
     const swings = swingEngine.get(symbol, granularity);
     const candles = signalEngine.getCandles(symbol, granularity, true);
+    const majorSwings = majorSwingsEngine.getMajorSwings(symbol, granularity);
     if (!candles.length || !swings.length) return [];
 
     const candleIndexMap = buildCandleIndexMap(candles);
@@ -173,6 +175,51 @@ class RetestEngine {
       else if (isPrevActive) prevRetestStatus = 'ACTIVE';
       else if (isPrevPending) prevRetestStatus = 'PENDING';
 
+      // ─── Calculate Trade Statuses (RUNNING, WAITING, CLOSED) ───
+      
+      // Count Major Swings after Setup V-Shape
+      // For EQL (Bearish), we count Major Lows. For EQH (Bullish), we count Major Highs.
+      const targetMajorType = setup.type === 'EQL' ? 'low' : 'high';
+      const relevantMajorSwings = majorSwings.filter(s => 
+        s.index > setup.setupVshapeIndex && 
+        s.type === targetMajorType
+      );
+      const majorSwingCount = relevantMajorSwings.length;
+
+      // Helper to calculate "Time Ago" string
+      const calculateRunningTime = (retestStatus, mssData, retestSwing, isBearish) => {
+        if (retestStatus === 'PENDING') return '';
+        
+        let changeTime = null;
+        
+        if (retestStatus === 'EXPIRED') {
+          // Find when it expired (broke MSS extreme)
+          changeTime = this._findExpirationTime(mssData.extremePrice, mssData.breakoutIndex, isBearish, candles, candleIndexMap);
+        } else if (retestStatus === 'ACTIVE') {
+          // Find when it became active (entered zone after breakout)
+          // Zone is between RetestSwing and MSS Extreme
+          if (retestSwing && mssData.extremePrice !== null && mssData.breakoutIndex !== null) {
+             changeTime = this._findActivationTime(retestSwing.price, mssData.extremePrice, mssData.breakoutIndex, candles, candleIndexMap);
+          }
+        }
+
+        if (changeTime) {
+          return `(ACTIVE ${this._formatTimeAgo(lastCandleTime, new Date(changeTime))} AGO)`;
+        }
+        return '(ACTIVE N/A AGO)';
+      };
+
+      // NextTradeStatus
+      let nextTradeStatus = 'WAITING';
+      if (nextRetestStatus === 'PENDING') nextTradeStatus = 'WAITING';
+      else if (majorSwingCount >= 3) nextTradeStatus = 'CLOSED';
+      else nextTradeStatus = `RUNNING ${calculateRunningTime(nextRetestStatus, nextMSS, retestState.nextSwing, isBearish)}`;
+
+      // PrevTradeStatus
+      let prevTradeStatus = 'WAITING';
+      if (prevRetestStatus === 'PENDING') prevTradeStatus = 'WAITING';
+      else if (majorSwingCount >= 3) prevTradeStatus = 'CLOSED';
+      else prevTradeStatus = `RUNNING ${calculateRunningTime(prevRetestStatus, prevMSS, retestState.prevSwing, isBearish)}`;
 
       retests.push({
         ...setup,
@@ -227,6 +274,9 @@ class RetestEngine {
 
         NextRetestStatus: nextRetestStatus,
         PreviousRetestStatus: prevRetestStatus,
+
+        NextTradeStatus: nextTradeStatus,
+        PrevTradeStatus: prevTradeStatus,
       });
     }
 
@@ -535,6 +585,48 @@ class RetestEngine {
     }
 
     return result;
+  }
+
+  _findExpirationTime(mssExtreme, mssBreakoutIndex, isBearish, candles, candleIndexMap) {
+    if (mssExtreme === null || mssBreakoutIndex === null) return null;
+    const startPos = candleIndexMap.get(mssBreakoutIndex);
+    if (startPos === undefined) return null;
+
+    for (let i = startPos + 1; i < candles.length; i++) {
+      const c = candles[i];
+      // Expired if price breaks the extreme
+      // EQL (Bearish): Price goes BELOW extreme (which is a Low) -> Wait, EQL setup is bearish.
+      // MSS Extreme for EQL is the Lowest Low of the MSS.
+      // If price breaks BELOW that, the MSS continues? 
+      // Wait, logic in getRetests: "if (currentPrice < nextMSS.extremePrice) isNextExpired = true;" for EQL.
+      // So yes, break below extreme expires the retest opportunity (continuation).
+      if (isBearish) {
+        if (c.close < mssExtreme) return c.formattedTime;
+      } else {
+        if (c.close > mssExtreme) return c.formattedTime;
+      }
+    }
+    return null;
+  }
+
+  _findActivationTime(swingPrice, mssExtreme, mssBreakoutIndex, candles, candleIndexMap) {
+    if (swingPrice === null || mssExtreme === null || mssBreakoutIndex === null) return null;
+    const startPos = candleIndexMap.get(mssBreakoutIndex);
+    if (startPos === undefined) return null;
+
+    const minP = Math.min(swingPrice, mssExtreme);
+    const maxP = Math.max(swingPrice, mssExtreme);
+
+    for (let i = startPos + 1; i < candles.length; i++) {
+      const c = candles[i];
+      // Active if price touches the zone
+      // Check High/Low intersection with [minP, maxP]
+      if (c.high >= minP && c.low <= maxP) {
+        return c.formattedTime;
+      }
+    }
+    // If not found, maybe it's active right now? Return latest
+    return candles[candles.length-1]?.formattedTime;
   }
 
   /**
