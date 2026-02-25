@@ -119,7 +119,7 @@ class RetestEngine {
 
       // 2. Check ACTIVE
       if (['OTE', 'DOUBLE EQ'].includes(nextStatus)) {
-        if (retestState.nextSwing && nextMSS.extremePrice !== null) {
+        if (retestState.nextSwing && nextMSS.extremePrice !== null && nextMSS.breakoutIndex !== null) {
           const minP = Math.min(retestState.nextSwing.price, nextMSS.extremePrice);
           const maxP = Math.max(retestState.nextSwing.price, nextMSS.extremePrice);
           if (currentPrice >= minP && currentPrice <= maxP) {
@@ -155,7 +155,7 @@ class RetestEngine {
 
       // 2. Check ACTIVE
       if (previousStatus === 'RIGHT S SETUP') {
-        if (retestState.prevSwing && prevMSS.extremePrice !== null) {
+        if (retestState.prevSwing && prevMSS.extremePrice !== null && prevMSS.breakoutIndex !== null) {
           const minP = Math.min(retestState.prevSwing.price, prevMSS.extremePrice);
           const maxP = Math.max(retestState.prevSwing.price, prevMSS.extremePrice);
           if (currentPrice >= minP && currentPrice <= maxP) {
