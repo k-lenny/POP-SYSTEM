@@ -188,38 +188,40 @@ class RetestEngine {
 
       // Helper to calculate "Time Ago" string
       const calculateRunningTime = (retestStatus, mssData, retestSwing, isBearish) => {
-        if (retestStatus === 'PENDING') return '';
+        let activationTime = null;
         
-        let changeTime = null;
-        
-        if (retestStatus === 'EXPIRED') {
-          // Find when it expired (broke MSS extreme)
-          changeTime = this._findExpirationTime(mssData.extremePrice, mssData.breakoutIndex, isBearish, candles, candleIndexMap);
-        } else if (retestStatus === 'ACTIVE') {
-          // Find when it became active (entered zone after breakout)
-          // Zone is between RetestSwing and MSS Extreme
-          if (retestSwing && mssData.extremePrice !== null && mssData.breakoutIndex !== null) {
-             changeTime = this._findActivationTime(retestSwing.price, mssData.extremePrice, mssData.breakoutIndex, candles, candleIndexMap);
-          }
+        // Find the last time the trade was in the active zone
+        if (retestSwing && mssData.extremePrice !== null && mssData.breakoutIndex !== null) {
+           activationTime = this._findActivationTime(retestSwing.price, mssData.extremePrice, mssData.breakoutIndex, candles, candleIndexMap);
         }
 
-        if (changeTime) {
-          return `(ACTIVE ${this._formatTimeAgo(lastCandleTime, new Date(changeTime))} AGO)`;
+        // If an activation time was found, format the string
+        if (activationTime) {
+          return `(${this._formatTimeAgo(lastCandleTime, new Date(activationTime))} AGO)`;
         }
-        return '(ACTIVE N/A AGO)';
+        // Otherwise, return an empty string
+        return '';
       };
 
       // NextTradeStatus
-      let nextTradeStatus = 'WAITING';
-      if (nextRetestStatus === 'PENDING') nextTradeStatus = 'WAITING';
-      else if (majorSwingCount >= 3) nextTradeStatus = 'CLOSED';
-      else nextTradeStatus = `RUNNING ${calculateRunningTime(nextRetestStatus, nextMSS, retestState.nextSwing, isBearish)}`;
+      let nextTradeStatus;
+      if (majorSwingCount >= 3) {
+        nextTradeStatus = 'CLOSED';
+      } else if (nextStatus === 'OTE' || nextStatus === 'DOUBLE EQ') {
+        nextTradeStatus = `RUNNING ${calculateRunningTime(nextRetestStatus, nextMSS, retestState.nextSwing, isBearish)}`;
+      } else {
+        nextTradeStatus = 'WAITING';
+      }
 
       // PrevTradeStatus
-      let prevTradeStatus = 'WAITING';
-      if (prevRetestStatus === 'PENDING') prevTradeStatus = 'WAITING';
-      else if (majorSwingCount >= 3) prevTradeStatus = 'CLOSED';
-      else prevTradeStatus = `RUNNING ${calculateRunningTime(prevRetestStatus, prevMSS, retestState.prevSwing, isBearish)}`;
+      let prevTradeStatus;
+      if (majorSwingCount >= 3) {
+        prevTradeStatus = 'CLOSED';
+      } else if (previousStatus === 'RIGHT S SETUP') {
+        prevTradeStatus = `RUNNING ${calculateRunningTime(prevRetestStatus, prevMSS, retestState.prevSwing, isBearish)}`;
+      } else {
+        prevTradeStatus = 'WAITING';
+      }
 
       retests.push({
         ...setup,
@@ -349,16 +351,34 @@ class RetestEngine {
     if (invalidationResult.isValid) {
       // Valid Retest
       
-      // Find Previous Swing of SAME TYPE
+      // Find Previous "Extreme" Swing of SAME TYPE
       let prevSwing = null;
-      for (let k = i - 1; k >= 0; k--) {
-        // Constraint: Previous swing must also be after the breakout
-        if (swings[k].index <= breakoutIndex) break;
-
-        if (swings[k].type === targetSwingType) {
-          prevSwing = swings[k];
-          break;
+      const prevSwingCandidates = [];
+      // Collect all swings of the same type that occurred after the breakout
+      // but before the main RetestExtremeSwing.
+      // 'i' is the index of the RetestExtremeSwing in the main 'swings' array.
+      for (let k = 0; k < i; k++) {
+        const currentSwing = swings[k];
+        if (currentSwing.index > breakoutIndex && currentSwing.type === targetSwingType) {
+          prevSwingCandidates.push(currentSwing);
         }
+      }
+
+      if (prevSwingCandidates.length > 0) {
+        let extremePrevSwing = prevSwingCandidates[0];
+        for (let k = 1; k < prevSwingCandidates.length; k++) {
+          const currentCandidate = prevSwingCandidates[k];
+          if (isBearish) { // Find highest high
+            if (currentCandidate.price > extremePrevSwing.price) {
+              extremePrevSwing = currentCandidate;
+            }
+          } else { // Find lowest low
+            if (currentCandidate.price < extremePrevSwing.price) {
+              extremePrevSwing = currentCandidate;
+            }
+          }
+        }
+        prevSwing = extremePrevSwing;
       }
 
       // Find Next Swing of SAME TYPE (most extreme one after retest swing)
@@ -617,16 +637,17 @@ class RetestEngine {
     const minP = Math.min(swingPrice, mssExtreme);
     const maxP = Math.max(swingPrice, mssExtreme);
 
-    for (let i = startPos + 1; i < candles.length; i++) {
+    // Iterate backwards from the last candle to find the most recent activation
+    for (let i = candles.length - 1; i > startPos; i--) {
       const c = candles[i];
       // Active if price touches the zone
       // Check High/Low intersection with [minP, maxP]
       if (c.high >= minP && c.low <= maxP) {
-        return c.formattedTime;
+        return c.formattedTime; // This is now the last time
       }
     }
-    // If not found, maybe it's active right now? Return latest
-    return candles[candles.length-1]?.formattedTime;
+    // If not found, it means the price never entered the zone after the breakout.
+    return null;
   }
 
   /**
