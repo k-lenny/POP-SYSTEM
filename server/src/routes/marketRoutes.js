@@ -17,6 +17,13 @@ const {
   timeframes,
 } = require('../signals/signalEngine')
 
+const swingEngine = require('../signals/dataProcessor/swings')
+const eqhEqlEngine = require('../signals/dataProcessor/eqhEql')
+const breakoutEngine = require('../signals/dataProcessor/breakouts')
+const setupEngine = require('../signals/dataProcessor/setup')
+const confirmedSetupEngine = require('../signals/dataProcessor/confirmedSetup')
+const retestEngine = require('../signals/dataProcessor/retest')
+
 const {
   resolveSymbol,
   resolveGranularity,
@@ -251,6 +258,53 @@ router.get('/structure', (req, res) => {
 })
 
 
+// ── Full Snapshot for All Symbols ──
+router.get('/snapshot/:granularity', async (req, res) => {
+  logRequest(req)
+  const granularity = resolveGranularity(req.params.granularity)
+  if (!granularity) {
+    return sendError(res, 400, `Invalid granularity "${req.params.granularity}"`, {
+      validGranularities: getValidGranularities(),
+    })
+  }
+
+  const symbols = Object.values(volatilitySymbols)
+  const snapshot = {}
+
+  for (const symbol of symbols) {
+    const candles = getCandles(symbol, granularity)
+    
+    if (!candles || candles.length === 0) {
+      snapshot[symbol] = { status: 'No Data', count: 0 }
+      continue
+    }
+
+    try {
+      snapshot[symbol] = {
+        status: 'Active',
+        candleCount: candles.length,
+        latestCandle: getLatestCandle(symbol, granularity),
+        swings: swingEngine.get(symbol, granularity),
+        levels: eqhEqlEngine.get(symbol, granularity),
+        breakouts: breakoutEngine.get(symbol, granularity),
+        setups: setupEngine.getSetups(symbol, granularity),
+        confirmedSetups: confirmedSetupEngine.getConfirmedSetups(symbol, granularity),
+        retests: retestEngine.getRetests(symbol, granularity)
+      }
+    } catch (err) {
+      console.error(`Error gathering snapshot for ${symbol}:`, err)
+      snapshot[symbol] = { status: 'Error', error: err.message }
+    }
+  }
+
+  return sendSuccess(res, {
+    granularity,
+    totalSymbols: symbols.length,
+    snapshot,
+  })
+})
+
+
 // ── Subscribe Route ──
 router.post('/subscribe', (req, res) => {
   logRequest(req)
@@ -297,6 +351,7 @@ router.use((req, res) => {
       'GET  /api/candles/:symbol?granularity=3600&limit=200&offset=0',
       'GET  /api/structure/:symbol?granularity=3600&type=swingHighs',
       'GET  /api/structure',
+      'GET  /api/snapshot/:granularity',
       'POST /api/subscribe { symbol, granularity }',
     ],
   })

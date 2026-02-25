@@ -83,6 +83,44 @@ async function ensureDataLoaded(symbol, granularity) {
 }
 
 /**
+ * GET /retests/all/:granularity
+ * Returns retest setups for ALL symbols at the given timeframe.
+ */
+router.get('/all/:granularity', async (req, res) => {
+  try {
+    const { granularity } = req.params;
+    
+    // Validate granularity
+    const validGrans = Object.values(timeframes);
+    if (!validGrans.includes(Number(granularity))) {
+      return res.status(400).json({ error: `Invalid granularity: ${granularity}` });
+    }
+
+    const symbols = Object.values(volatilitySymbols);
+    const results = {};
+    let totalRetests = 0;
+
+    await Promise.all(symbols.map(async (symbol) => {
+      await ensureDataLoaded(symbol, Number(granularity));
+      const retests = retestEngine.getRetests(symbol, Number(granularity));
+      if (retests.length > 0) {
+        results[symbol] = retests;
+        totalRetests += retests.length;
+      }
+    }));
+
+    res.json({
+      granularity: Number(granularity),
+      totalRetests,
+      data: results
+    });
+  } catch (error) {
+    console.error('Error fetching all retests:', error);
+    res.status(500).json({ error: 'Internal server error processing all retests' });
+  }
+});
+
+/**
  * GET /retests/:symbol/:granularity
  * Returns all retest setups for the given symbol and timeframe.
  */
