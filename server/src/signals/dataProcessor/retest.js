@@ -302,6 +302,9 @@ class RetestEngine {
       // Find Previous Swing of SAME TYPE
       let prevSwing = null;
       for (let k = i - 1; k >= 0; k--) {
+        // Constraint: Previous swing must also be after the breakout
+        if (swings[k].index <= breakoutIndex) break;
+
         if (swings[k].type === targetSwingType) {
           prevSwing = swings[k];
           break;
