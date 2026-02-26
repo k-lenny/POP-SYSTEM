@@ -6,6 +6,90 @@ const { buildCandleIndexMap, nextArrayIdx } = require('../../utils/dataProcessor
 
 class RetestEngine {
   /**
+   * Finds a classic Order Block (last opposing candle before an impulse).
+   * @private
+   */
+  _findOB(setup, isBuy, candles, candleIndexMap) {
+    const { setupVshapeIndex, impulseExtremeIndex } = setup;
+    if (setupVshapeIndex === null || impulseExtremeIndex === null) return null;
+
+    const pos1 = candleIndexMap.get(setupVshapeIndex);
+    const pos2 = candleIndexMap.get(impulseExtremeIndex);
+    if (pos1 === undefined || pos2 === undefined) return null;
+
+    const startPos = Math.min(pos1, pos2);
+    const endPos = Math.max(pos1, pos2);
+
+    for (let i = endPos; i >= startPos; i--) {
+      const candle = candles[i];
+      if (!candle) continue;
+      const isGreen = candle.close > candle.open;
+      const isRed = candle.close < candle.open;
+      // Classic OB: last opposing candle before the move
+      if ((isBuy && isRed) || (!isBuy && isGreen)) {
+        return { high: candle.high, low: candle.low, formattedTime: candle.formattedTime };
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Finds a Mitigation Block (last candle in direction of impulse).
+   * Logic is copied from mitigationBlock.js to avoid circular dependency.
+   * @private
+   */
+  _findMitigationBlock(setup, isBuy, candles, candleIndexMap) {
+    const { preBreakoutVIndex, impulseExtremeIndex } = setup;
+    if (preBreakoutVIndex === null || impulseExtremeIndex === null) return null;
+
+    const pos1 = candleIndexMap.get(preBreakoutVIndex);
+    const pos2 = candleIndexMap.get(impulseExtremeIndex);
+    if (pos1 === undefined || pos2 === undefined) return null;
+
+    const startPos = Math.min(pos1, pos2);
+    const endPos = Math.max(pos1, pos2);
+
+    for (let i = endPos; i >= startPos; i--) {
+      const candle = candles[i];
+      if (!candle) continue;
+      const isGreen = candle.close > candle.open;
+      const isRed = candle.close < candle.open;
+      if ((isBuy && isGreen) || (!isBuy && isRed)) {
+        return { high: candle.high, low: candle.low, formattedTime: candle.formattedTime };
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Checks if a swing constitutes a valid, non-sustained retest of a block.
+   * @private
+   */
+  _checkBlockRetest(swing, block, isBearish, candles, candleIndexMap) {
+    if (!swing || !block) return false;
+
+    const swingPos = candleIndexMap.get(swing.index);
+    if (swingPos === undefined) return false;
+    const swingCandle = candles[swingPos];
+
+    if (isBearish) { // EQL setup, retest is a high swing, block is below.
+      if (swingCandle.high < block.low) return false; // Didn't reach the block.
+      if (swingCandle.close <= block.high) return true; // Wicked into/above or closed inside the block.
+
+      // Closed above the block, check for a sustained break (which is invalid).
+      const nextC = candles[swingPos + 1];
+      return !(nextC && nextC.close > block.high); // Valid if next candle doesn't also close above.
+    } else { // EQH setup, retest is a low swing, block is above.
+      if (swingCandle.low > block.high) return false; // Didn't reach the block.
+      if (swingCandle.close >= block.low) return true; // Wicked into/below or closed inside the block.
+
+      // Closed below the block, check for a sustained break.
+      const nextC = candles[swingPos + 1];
+      return !(nextC && nextC.close < block.low); // Valid if next candle doesn't also close below.
+    }
+  }
+
+  /**
    * Identifies retest patterns on confirmed setups.
    * @param {string} symbol
    * @param {number} granularity
@@ -31,6 +115,7 @@ class RetestEngine {
       if (setup.ConfirmedSetupBreakoutStatus !== 'YES') continue;
       
       const isBearish = setup.type === 'EQL';
+      const isBuy = !isBearish;
       const retestState = this._findRetestState(setup, candles, swings, candleIndexMap);
 
       let prevMSS = {
@@ -223,6 +308,38 @@ class RetestEngine {
         prevTradeStatus = 'WAITING';
       }
 
+      // ─── Calculate Confidence Scores ───
+      let NextConfidenceScore = 0;
+      let PrevConfidenceScore = 0;
+
+      // Point 1: Retest of Mitigation Block or OB
+      const setupMitigationBlock = this._findMitigationBlock(setup, isBuy, candles, candleIndexMap);
+      const ob = this._findOB(setup, isBuy, candles, candleIndexMap);
+
+      const retestedMitigation = this._checkBlockRetest(retestState.retestSwing, setupMitigationBlock, isBearish, candles, candleIndexMap);
+      const retestedOB = this._checkBlockRetest(retestState.retestSwing, ob, isBearish, candles, candleIndexMap);
+
+      if (retestedMitigation || retestedOB) {
+        NextConfidenceScore++;
+        PrevConfidenceScore++;
+      }
+
+      // Points 2 & 3 for NextConfidenceScore
+      if (nextTradeStatus === 'RUNNING (0 seconds ago AGO)') {
+        NextConfidenceScore++;
+      }
+      if (nextStatus === 'OTE' || nextStatus === 'DOUBLE EQ') {
+        NextConfidenceScore++;
+      }
+
+      // Points 2 & 3 for PrevConfidenceScore
+      if (prevTradeStatus === 'RUNNING (0 seconds ago AGO)') {
+        PrevConfidenceScore++;
+      }
+      if (previousStatus === 'RIGHT S SETUP') {
+        PrevConfidenceScore++;
+      }
+
       retests.push({
         ...setup,
         signalType: setup.type === 'EQL' ? 'SELL' : 'BUY',
@@ -279,6 +396,9 @@ class RetestEngine {
 
         NextTradeStatus: nextTradeStatus,
         PrevTradeStatus: prevTradeStatus,
+
+        NextConfidenceScore,
+        PrevConfidenceScore,
       });
     }
 
