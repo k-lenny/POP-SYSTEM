@@ -12,6 +12,7 @@ const confirmedSetupRoutes = require('./routes/confirmedSetupRoute')
 const retestRoutes   = require('./routes/retestRoutes')
 const majorSwingsRoutes = require('./routes/majorSwingsRoutes')
 const mitigationBlockRoutes = require('./routes/mitigationBlockRoutes');
+const OBLVRoutes = require('./routes/OBLVRoutes');
 
 const { startSignalEngine, isFullyLoaded, getCandles, volatilitySymbols, timeframes, subscribeToAllSymbols } = require('./signals/signalEngine')
 
@@ -46,6 +47,7 @@ app.use('/confirmed-setups', confirmedSetupRoutes)
 app.use('/retests',    retestRoutes)
 app.use('/major-swings', majorSwingsRoutes)
 app.use('/mitigation-blocks', mitigationBlockRoutes);
+app.use('/oblv', OBLVRoutes);
 
 // ── List all symbols and granularities from signalEngine ──
 const symbols = Object.values(volatilitySymbols)
