@@ -43,8 +43,7 @@ const processOBLV = (symbol, granularity, ohlcData) => {
 
         if (bundles.length === 0) continue;
 
-        const bundleData = [];
-        bundles.forEach((bundle, index) => {
+        const bundleData = bundles.reduce((acc, bundle, index) => {
             const [c1, c2, c3] = bundle;
             let liquidityVoid = null;
             if (isHighFirst) {
@@ -56,19 +55,34 @@ const processOBLV = (symbol, granularity, ohlcData) => {
                     liquidityVoid = { start: c1.high, end: c3.low };
                 }
             }
-            bundleData.push({
-                bundle: index + 1,
-                startTime: new Date(c1.time * 1000).toISOString(),
-                endTime: new Date(c3.time * 1000).toISOString(),
-                liquidityVoid: liquidityVoid ? { ...liquidityVoid, name: `LV${index + 1}` } : null
-            });
-        });
 
-        oblvData.push({
-            swingHighTime: isHighFirst ? new Date(swing.time * 1000).toISOString() : new Date(nextSwing.time * 1000).toISOString(),
-            swingLowTime: isHighFirst ? new Date(nextSwing.time * 1000).toISOString() : new Date(swing.time * 1000).toISOString(),
-            bundles: bundleData,
-        });
+            if (liquidityVoid) {
+                acc.push({
+                    bundle: index + 1,
+                    startTime: new Date(c1.time * 1000).toISOString(),
+                    endTime: new Date(c3.time * 1000).toISOString(),
+                    liquidityVoid: { ...liquidityVoid, name: `LV${index + 1}` }
+                });
+            }
+            return acc;
+        }, []);
+
+        if (bundleData.length > 0) {
+            // The first LV found is bundleData[0]. Its original index in `bundles` was `bundleData[0].bundle - 1`.
+            const firstLVBundleIndex = bundleData[0].bundle - 1;
+            
+            // The OB is the first candle (c1) of the 3-candle pattern that forms the first LV.
+            // This is the last candle before the void itself and is part of the LV's formation.
+            const obCandle = segment[firstLVBundleIndex];
+
+            oblvData.push({
+                swingHighTime: isHighFirst ? new Date(swing.time * 1000).toISOString() : new Date(nextSwing.time * 1000).toISOString(),
+                swingLowTime: isHighFirst ? new Date(nextSwing.time * 1000).toISOString() : new Date(swing.time * 1000).toISOString(),
+                OB: obCandle ? { high: obCandle.high, low: obCandle.low, open: obCandle.open, close: obCandle.close } : null,
+                OBFormattedTime: obCandle ? obCandle.formattedTime : null,
+                bundles: bundleData,
+            });
+        }
     }
 
     return oblvData;
