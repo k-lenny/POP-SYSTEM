@@ -671,10 +671,19 @@ class RetestEngine {
     // Ensure we have a valid range to check against
     if (highPoint > lowPoint) {
         const range = highPoint - lowPoint;
-        const oteLevel62 = lowPoint + (range * 0.625);
-        const oteLevel79 = lowPoint + (range * 0.79);
+        let oteLower, oteUpper;
 
-        if (nextSwingPrice >= oteLevel62 && nextSwingPrice <= oteLevel79) {
+        if (isBearish) {
+            // Bearish: Retracement UP from Low to High (Premium)
+            oteLower = lowPoint + (range * 0.625);
+            oteUpper = lowPoint + (range * 0.79);
+        } else {
+            // Bullish: Retracement DOWN from High to Low (Discount)
+            oteLower = highPoint - (range * 0.79);
+            oteUpper = highPoint - (range * 0.625);
+        }
+
+        if (nextSwingPrice >= oteLower && nextSwingPrice <= oteUpper) {
             return 'OTE';
         }
     }
