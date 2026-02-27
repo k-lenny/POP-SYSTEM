@@ -90,6 +90,42 @@ class RetestEngine {
   }
 
   /**
+   * Checks if a swing retests the impulse extreme depth level.
+   * @private
+   */
+  _checkImpulseDepthRetest(swing, impulseExtremeDepth, isBearish, candles, candleIndexMap) {
+    if (!swing || impulseExtremeDepth === null) return false;
+
+    const swingPos = candleIndexMap.get(swing.index);
+    if (swingPos === undefined) return false;
+    const swingCandle = candles[swingPos];
+
+    if (isBearish) { // EQL setup, retest is a high swing.
+      // Condition 1: Retest swing candle interacts with the impulse depth level.
+      if (swingCandle.high >= impulseExtremeDepth && swingCandle.low <= impulseExtremeDepth) return true;
+
+      // Condition 2: Wick or single candle close above the zone.
+      if (swingCandle.high < impulseExtremeDepth) return false; // Didn't reach the level.
+      if (swingCandle.close <= impulseExtremeDepth) return true; // Wicked above.
+
+      // Closed above the level, check for a sustained break (which is invalid).
+      const nextC = candles[swingPos + 1];
+      return !(nextC && nextC.close > swingCandle.close); // Valid if next candle doesn't also close above.
+    } else { // EQH setup, retest is a low swing.
+      // Condition 1: Retest swing candle interacts with the impulse depth level.
+      if (swingCandle.high >= impulseExtremeDepth && swingCandle.low <= impulseExtremeDepth) return true;
+        
+      // Condition 2: Wick or single candle close below the zone.
+      if (swingCandle.low > impulseExtremeDepth) return false; // Didn't reach the level.
+      if (swingCandle.close >= impulseExtremeDepth) return true; // Wicked below.
+
+      // Closed below the level, check for a sustained break.
+      const nextC = candles[swingPos + 1];
+      return !(nextC && nextC.close < swingCandle.close); // Valid if next candle doesn't also close below.
+    }
+  }
+
+  /**
    * Identifies retest patterns on confirmed setups.
    * @param {string} symbol
    * @param {number} granularity
@@ -308,11 +344,36 @@ class RetestEngine {
         prevTradeStatus = 'WAITING';
       }
 
-      // ─── Calculate Confidence Scores ───
+      // ─── Calculate Confidence Scores (Max 3 points each) ───
+      /**
+       * Confidence scores are awarded based on a 3-point system to quantify the quality of a potential trade setup.
+       * Both `PrevConfidenceScore` (for S-Setups) and `NextConfidenceScore` (for OTE/Double EQ) start at 0.
+       *
+       * ---
+       *
+       * ### Point 1: Quality of Retest (Applies to Both Scores)
+       * **+1 point** is awarded if the primary `RetestExtremeSwing` successfully tests a significant price level.
+       * This level can be one of:
+       * - **An Order Block (OB):** The last opposing candle before the impulse that broke the structure.
+       * - **A Mitigation Block:** The last candle in the *same direction* as the impulse.
+       * - **The Impulse Extreme Depth:** The breakout level of the original setup.
+       * If the retest swing's wick touches or has a non-sustained close into any of these zones, this point is awarded to both scores.
+       *
+       * ---
+       *
+       * ### `NextConfidenceScore`
+       * **+1 point** is awarded if `NextStatus` is 'OTE' or 'DOUBLE EQ' **AND** `NextRetestStatus` is 'ACTIVE'. This confirms a high-probability pattern is currently actionable.
+       *
+       * ---
+       *
+       * ### `PrevConfidenceScore`
+       * **+1 point** is awarded if `PreviousStatus` is 'RIGHT S SETUP' **AND** `PreviousRetestStatus` is 'ACTIVE'. This confirms a valid sweep setup is currently actionable.
+       *
+       */
       let NextConfidenceScore = 0;
       let PrevConfidenceScore = 0;
 
-      // Point 1: Retest of Mitigation Block or OB
+      // Point 1: Quality of the Retest Swing (Shared by both scores)
       const setupMitigationBlock = this._findMitigationBlock(setup, isBuy, candles, candleIndexMap);
       const ob = this._findOB(setup, isBuy, candles, candleIndexMap);
 
@@ -324,21 +385,29 @@ class RetestEngine {
         PrevConfidenceScore++;
       }
 
-      // Points 2 & 3 for NextConfidenceScore
-      if (nextTradeStatus === 'RUNNING (0 seconds ago AGO)') {
-        NextConfidenceScore++;
-      }
-      if (nextStatus === 'OTE' || nextStatus === 'DOUBLE EQ') {
+      // Point 2 for NextConfidenceScore
+      if ((nextStatus === 'OTE' || nextStatus === 'DOUBLE EQ') && (nextRetestStatus === 'ACTIVE' || nextRetestStatus === 'EXPIRED')) {
         NextConfidenceScore++;
       }
 
-      // Points 2 & 3 for PrevConfidenceScore
+      // Point 2 for PrevConfidenceScore
+      if (previousStatus === 'RIGHT S SETUP' && (prevRetestStatus === 'ACTIVE' || prevRetestStatus === 'EXPIRED')) {
+        PrevConfidenceScore++;
+      }
+
+      // Point 3 for NextConfidenceScore
+      if (nextTradeStatus === 'RUNNING (0 seconds ago AGO)') {
+        NextConfidenceScore++;
+      }
+
+      // Point 3 for PrevConfidenceScore
       if (prevTradeStatus === 'RUNNING (0 seconds ago AGO)') {
         PrevConfidenceScore++;
       }
-      if (previousStatus === 'RIGHT S SETUP') {
-        PrevConfidenceScore++;
-      }
+
+      // Cap scores at 3
+      if (NextConfidenceScore > 3) NextConfidenceScore = 3;
+      if (PrevConfidenceScore > 3) PrevConfidenceScore = 3;
 
       retests.push({
         ...setup,
