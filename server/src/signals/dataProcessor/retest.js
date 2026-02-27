@@ -542,32 +542,14 @@ class RetestEngine {
       
       // Find Previous "Extreme" Swing of SAME TYPE
       let prevSwing = null;
-      const prevSwingCandidates = [];
-      // Collect all swings of the same type that occurred after the breakout
-      // but before the main RetestExtremeSwing.
-      // 'i' is the index of the RetestExtremeSwing in the main 'swings' array.
-      for (let k = 0; k < i; k++) {
+      // Find the last swing of the same type that occurred after the breakout
+      // but before the retest swing. 'i' is the index of the retest swing in the main 'swings' array.
+      for (let k = i - 1; k >= 0; k--) {
         const currentSwing = swings[k];
         if (currentSwing.index > breakoutIndex && currentSwing.type === targetSwingType) {
-          prevSwingCandidates.push(currentSwing);
+          prevSwing = currentSwing;
+          break; // Found the last one, stop searching.
         }
-      }
-
-      if (prevSwingCandidates.length > 0) {
-        let extremePrevSwing = prevSwingCandidates[0];
-        for (let k = 1; k < prevSwingCandidates.length; k++) {
-          const currentCandidate = prevSwingCandidates[k];
-          if (isBearish) { // Find highest high
-            if (currentCandidate.price > extremePrevSwing.price) {
-              extremePrevSwing = currentCandidate;
-            }
-          } else { // Find lowest low
-            if (currentCandidate.price < extremePrevSwing.price) {
-              extremePrevSwing = currentCandidate;
-            }
-          }
-        }
-        prevSwing = extremePrevSwing;
       }
 
       // Find Next Swing of SAME TYPE (most extreme one after retest swing)
