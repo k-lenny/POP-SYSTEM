@@ -1,43 +1,64 @@
+// server/src/signals/dataProcessor/retestEngine.js
+
 const confirmedSetupEngine = require('./confirmedSetup');
 const majorSwingsEngine = require('./majorSwings');
 const swingEngine = require('./swings');
 const signalEngine = require('../signalEngine');
 const { buildCandleIndexMap, nextArrayIdx } = require('../../utils/dataProcessorUtils');
+const { processOBLV } = require('./OBLV');
 
 class RetestEngine {
+
   /**
-   * Finds a classic Order Block (last opposing candle before an impulse).
+   * Finds the OB zone based on all detected OBs between setupVshapeIndex and breakout.
+   * Returns { high, low } of OB zone.
    * @private
    */
-  _findOB(setup, isBuy, candles, candleIndexMap) {
-    const { setupVshapeIndex, impulseExtremeIndex } = setup;
-    if (setupVshapeIndex === null || impulseExtremeIndex === null) return null;
+_findOB(setup, isBuy, candles, candleIndexMap) {
+  if (!setup || !setup.symbol || !setup.granularity) return null;
 
-    const pos1 = candleIndexMap.get(setupVshapeIndex);
-    const pos2 = candleIndexMap.get(impulseExtremeIndex);
-    if (pos1 === undefined || pos2 === undefined) return null;
+  const obData =
+    this.oblvStore?.[setup.symbol]?.[setup.granularity];
 
-    const startPos = Math.min(pos1, pos2);
-    const endPos = Math.max(pos1, pos2);
+  if (!obData || obData.length === 0) return null;
 
-    for (let i = endPos; i >= startPos; i--) {
-      const candle = candles[i];
-      if (!candle) continue;
-      const isGreen = candle.close > candle.open;
-      const isRed = candle.close < candle.open;
-      // Classic OB: last opposing candle before the move
-      if ((isBuy && isRed) || (!isBuy && isGreen)) {
-        return { high: candle.high, low: candle.low, formattedTime: candle.formattedTime };
-      }
-    }
+  const setupIndex = setup.setupStatusIndex;
+  const breakoutIndex = setup.ConfirmedSetupBreakoutStatusIndex;
+
+  if (
+    setupIndex == null ||
+    breakoutIndex == null ||
+    setupIndex >= breakoutIndex
+  ) {
     return null;
   }
 
-  /**
-   * Finds a Mitigation Block (last candle in direction of impulse).
-   * Logic is copied from mitigationBlock.js to avoid circular dependency.
-   * @private
-   */
+  // 🔥 Find FIRST OB after setup (single candle only)
+  for (const obEntry of obData) {
+    if (!obEntry.OBFormattedTime) continue;
+
+    const obIndex = candleIndexMap.get(
+      new Date(obEntry.OBFormattedTime).getTime() / 1000
+    );
+
+    if (obIndex == null) continue;
+
+    if (obIndex > setupIndex && obIndex < breakoutIndex) {
+      const ob = obEntry.OB;
+
+      if (!ob) return null;
+
+      return {
+        high: ob.high,
+        low: ob.low,
+        open: ob.open,
+        close: ob.close,
+      };
+    }
+  }
+
+  return null;
+}
   _findMitigationBlock(setup, isBuy, candles, candleIndexMap) {
     const { preBreakoutVIndex, impulseExtremeIndex } = setup;
     if (preBreakoutVIndex === null || impulseExtremeIndex === null) return null;
@@ -61,10 +82,6 @@ class RetestEngine {
     return null;
   }
 
-  /**
-   * Checks if a swing constitutes a valid, non-sustained retest of a block.
-   * @private
-   */
   _checkBlockRetest(swing, block, isBearish, candles, candleIndexMap) {
     if (!swing || !block) return false;
 
@@ -72,59 +89,18 @@ class RetestEngine {
     if (swingPos === undefined) return false;
     const swingCandle = candles[swingPos];
 
-    if (isBearish) { // EQL setup, retest is a high swing, block is below.
-      if (swingCandle.high < block.low) return false; // Didn't reach the block.
-      if (swingCandle.close <= block.high) return true; // Wicked into/above or closed inside the block.
-
-      // Closed above the block, check for a sustained break (which is invalid).
+    if (isBearish) { 
+      if (swingCandle.high < block.low) return false;
+      if (swingCandle.close <= block.high) return true;
       const nextC = candles[swingPos + 1];
-      return !(nextC && nextC.close > block.high); // Valid if next candle doesn't also close above.
-    } else { // EQH setup, retest is a low swing, block is above.
-      if (swingCandle.low > block.high) return false; // Didn't reach the block.
-      if (swingCandle.close >= block.low) return true; // Wicked into/below or closed inside the block.
-
-      // Closed below the block, check for a sustained break.
+      return !(nextC && nextC.close > block.high);
+    } else { 
+      if (swingCandle.low > block.high) return false;
+      if (swingCandle.close >= block.low) return true;
       const nextC = candles[swingPos + 1];
-      return !(nextC && nextC.close < block.low); // Valid if next candle doesn't also close below.
+      return !(nextC && nextC.close < block.low);
     }
   }
-
-  /**
-   * Checks if a swing retests the impulse extreme depth level.
-   * @private
-   */
-  _checkImpulseDepthRetest(swing, impulseExtremeDepth, isBearish, candles, candleIndexMap) {
-    if (!swing || impulseExtremeDepth === null) return false;
-
-    const swingPos = candleIndexMap.get(swing.index);
-    if (swingPos === undefined) return false;
-    const swingCandle = candles[swingPos];
-
-    if (isBearish) { // EQL setup, retest is a high swing.
-      // Condition 1: Retest swing candle interacts with the impulse depth level.
-      if (swingCandle.high >= impulseExtremeDepth && swingCandle.low <= impulseExtremeDepth) return true;
-
-      // Condition 2: Wick or single candle close above the zone.
-      if (swingCandle.high < impulseExtremeDepth) return false; // Didn't reach the level.
-      if (swingCandle.close <= impulseExtremeDepth) return true; // Wicked above.
-
-      // Closed above the level, check for a sustained break (which is invalid).
-      const nextC = candles[swingPos + 1];
-      return !(nextC && nextC.close > swingCandle.close); // Valid if next candle doesn't also close above.
-    } else { // EQH setup, retest is a low swing.
-      // Condition 1: Retest swing candle interacts with the impulse depth level.
-      if (swingCandle.high >= impulseExtremeDepth && swingCandle.low <= impulseExtremeDepth) return true;
-        
-      // Condition 2: Wick or single candle close below the zone.
-      if (swingCandle.low > impulseExtremeDepth) return false; // Didn't reach the level.
-      if (swingCandle.close >= impulseExtremeDepth) return true; // Wicked below.
-
-      // Closed below the level, check for a sustained break.
-      const nextC = candles[swingPos + 1];
-      return !(nextC && nextC.close < swingCandle.close); // Valid if next candle doesn't also close below.
-    }
-  }
-
   /**
    * Identifies retest patterns on confirmed setups.
    * @param {string} symbol
@@ -138,6 +114,16 @@ class RetestEngine {
     // 2. Get Swings and Candles
     const swings = swingEngine.get(symbol, granularity);
     const candles = signalEngine.getCandles(symbol, granularity, true);
+    if (!candles.length) return [];
+
+if (!this.oblvStore) this.oblvStore = {};
+if (!this.oblvStore[symbol]) this.oblvStore[symbol] = {};
+
+this.oblvStore[symbol][granularity] = processOBLV(
+  symbol,
+  granularity,
+  candles
+);
     const majorSwings = majorSwingsEngine.getMajorSwings(symbol, granularity);
     if (!candles.length || !swings.length) return [];
 
@@ -373,6 +359,9 @@ class RetestEngine {
       let NextConfidenceScore = 0;
       let PrevConfidenceScore = 0;
 
+      let NextConfidenceReasons = [];
+let PrevConfidenceReasons = [];
+
       // Point 1: Quality of the Retest Swing (Shared by both scores)
       const setupMitigationBlock = this._findMitigationBlock(setup, isBuy, candles, candleIndexMap);
       const ob = this._findOB(setup, isBuy, candles, candleIndexMap);
@@ -380,30 +369,45 @@ class RetestEngine {
       const retestedMitigation = this._checkBlockRetest(retestState.retestSwing, setupMitigationBlock, isBearish, candles, candleIndexMap);
       const retestedOB = this._checkBlockRetest(retestState.retestSwing, ob, isBearish, candles, candleIndexMap);
 
-      if (retestedMitigation || retestedOB) {
-        NextConfidenceScore++;
-        PrevConfidenceScore++;
-      }
+    if (retestedMitigation || retestedOB) {
+  NextConfidenceScore++;
+  PrevConfidenceScore++;
+
+  if (retestedOB) {
+    NextConfidenceReasons.push('Retest respected Order Block');
+    PrevConfidenceReasons.push('Retest respected Order Block');
+  }
+
+  if (retestedMitigation) {
+    NextConfidenceReasons.push('Retest respected Mitigation Block');
+    PrevConfidenceReasons.push('Retest respected Mitigation Block');
+  }
+}
 
       // Point 2 for NextConfidenceScore
-      if ((nextStatus === 'OTE' || nextStatus === 'DOUBLE EQ') && (nextRetestStatus === 'ACTIVE' || nextRetestStatus === 'EXPIRED')) {
-        NextConfidenceScore++;
-      }
+     if ((nextStatus === 'OTE' || nextStatus === 'DOUBLE EQ') &&
+    (nextRetestStatus === 'ACTIVE' || nextRetestStatus === 'EXPIRED')) {
 
+  NextConfidenceScore++;
+  NextConfidenceReasons.push(`Pattern confirmed: ${nextStatus}`);
+}
       // Point 2 for PrevConfidenceScore
-      if (previousStatus === 'RIGHT S SETUP' && (prevRetestStatus === 'ACTIVE' || prevRetestStatus === 'EXPIRED')) {
-        PrevConfidenceScore++;
-      }
+     if (previousStatus === 'RIGHT S SETUP' &&
+    (prevRetestStatus === 'ACTIVE' || prevRetestStatus === 'EXPIRED')) {
 
+  PrevConfidenceScore++;
+  PrevConfidenceReasons.push('Valid Sweep (Right S Setup)');
+}
       // Point 3 for NextConfidenceScore
-      if (nextTradeStatus === 'RUNNING (0 seconds ago AGO)') {
-        NextConfidenceScore++;
-      }
-
+    if (nextTradeStatus === 'RUNNING (0 seconds ago AGO)') {
+  NextConfidenceScore++;
+  NextConfidenceReasons.push('Fresh activation');
+}
       // Point 3 for PrevConfidenceScore
-      if (prevTradeStatus === 'RUNNING (0 seconds ago AGO)') {
-        PrevConfidenceScore++;
-      }
+   if (prevTradeStatus === 'RUNNING (0 seconds ago AGO)') {
+  PrevConfidenceScore++;
+  PrevConfidenceReasons.push('Fresh activation');
+}
 
       // Cap scores at 3
       if (NextConfidenceScore > 3) NextConfidenceScore = 3;
@@ -468,6 +472,8 @@ class RetestEngine {
 
         NextConfidenceScore,
         PrevConfidenceScore,
+        NextConfidenceReasons,
+PrevConfidenceReasons,
       });
     }
 
