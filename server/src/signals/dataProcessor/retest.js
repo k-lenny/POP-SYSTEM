@@ -726,45 +726,55 @@ PrevConfidenceReasons,
     }
 
     const level = prevSwing.price;
-    const retestCandleIndex = candleIndexMap.get(retestSwing.index);
 
-    if (retestCandleIndex === undefined) {
-      return 'WRONG S SETUP';
-    }
+    // First, ensure the retest swing actually went past the previous swing's level at some point.
+    // This is the fundamental requirement for a sweep.
+    const retestCandleIndex = candleIndexMap.get(retestSwing.index);
+    if (retestCandleIndex === undefined) return 'WRONG S SETUP';
     const retestCandle = candles[retestCandleIndex];
 
     if (isBearish) { // EQL
-      // Condition: Retest high must cross above previous swing high level
-      if (retestCandle.high <= level) {
-        return 'WRONG S SETUP'; // Did not cross
-      }
-      // Now check if it was a valid sweep (wick or 1-candle rule)
-      if (retestCandle.close <= level) {
-        return 'RIGHT S SETUP'; // Wick crossing
-      }
-      // If close is above, check next candle
-      const nextC = candles[retestCandleIndex + 1];
-      if (nextC && nextC.close < level) {
-        return 'RIGHT S SETUP'; // 1-candle rule met
-      }
-    } else { // EQH (Bullish)
-      // Condition: Retest low must cross below previous swing low level
-      if (retestCandle.low >= level) {
-        return 'WRONG S SETUP'; // Did not cross
-      }
-      // Now check if it was a valid sweep
-      if (retestCandle.close >= level) {
-        return 'RIGHT S SETUP'; // Wick crossing
-      }
-      // If close is below, check next candle
-      const nextC = candles[retestCandleIndex + 1];
-      if (nextC && nextC.close > level) {
-        return 'RIGHT S SETUP'; // 1-candle rule met
-      }
+      if (retestCandle.high <= level) return 'WRONG S SETUP'; // Must break the high
+    } else { // EQH
+      if (retestCandle.low >= level) return 'WRONG S SETUP'; // Must break the low
+    }
+    
+    // Now, check for a sustained break (2+ consecutive closes) in the window leading up to and including the retest swing.
+    const startIdx = candleIndexMap.get(prevSwing.index);
+    const endIdx = retestCandleIndex;
+    
+    if (startIdx === undefined || startIdx >= endIdx) {
+      return 'WRONG S SETUP';
     }
 
-    // If none of the "RIGHT S SETUP" conditions were met after a crossing, it's a sustained break.
-    return 'WRONG S SETUP';
+    let consecutiveClosesPastLevel = 0;
+
+    // Iterate from the candle AFTER prevSwing up to and INCLUDING the retestSwing candle.
+    for (let i = startIdx + 1; i <= endIdx; i++) {
+        const candle = candles[i];
+        if (!candle) continue;
+
+        let closedPast = false;
+        if (isBearish) { // EQL
+            closedPast = candle.close > level;
+        } else { // EQH
+            closedPast = candle.close < level;
+        }
+
+        if (closedPast) {
+            consecutiveClosesPastLevel++;
+        } else {
+            // As soon as a candle closes back on the right side, the count of *consecutive* closes resets.
+            consecutiveClosesPastLevel = 0;
+        }
+
+        if (consecutiveClosesPastLevel >= 2) {
+            return 'WRONG S SETUP';
+        }
+    }
+
+    // If the loop completes without finding 2 consecutive closes past the level, it's a valid sweep.
+    return 'RIGHT S SETUP';
   }
 
   _formatTimeAgo(date1, date2) {
