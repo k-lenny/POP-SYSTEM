@@ -135,6 +135,8 @@ class ConfirmedSetupEngine {
 
   /**
    * Checks if the price has broken the impulse extreme after the setup formed.
+   * Uses strict validation: first candle that crosses by body confirms breakout,
+   * but if crossed by wick only, subsequent body crosses must exceed all previous crossing candles' extremes.
    * @private
    */
   _getBreakoutStatus(setup, candles, candleIndexMap) {
@@ -143,14 +145,61 @@ class ConfirmedSetupEngine {
       return { status: 'NO', index: null, formattedTime: null };
     }
 
+    const isEQH = setup.type === 'EQH';
+    const impulseExtreme = setup.impulseExtremeDepth;
+    const crossingCandles = []; // Track all candles that crossed the impulse extreme
+
     for (let i = startScanPos; i < candles.length; i++) {
       const candle = candles[i];
-      if (setup.type === 'EQL' && candle.close < setup.impulseExtremeDepth) {
-        return { status: 'YES', index: candle.index, formattedTime: candle.formattedTime };
+      
+      // Check if this candle crosses the impulse extreme
+      const crossesByWickOrBody = isEQH 
+        ? candle.high > impulseExtreme 
+        : candle.low < impulseExtreme;
+      
+      if (!crossesByWickOrBody) {
+        continue; // This candle doesn't cross, skip it
       }
-      if (setup.type === 'EQH' && candle.close > setup.impulseExtremeDepth) {
-        return { status: 'YES', index: candle.index, formattedTime: candle.formattedTime };
+
+      // Check if it crosses by body (close is beyond the impulse extreme)
+      const crossesByBody = isEQH 
+        ? candle.close > impulseExtreme 
+        : candle.close < impulseExtreme;
+
+      if (crossesByBody) {
+        // Body cross detected
+        if (crossingCandles.length === 0) {
+          // First candle that crossed - if it's by body, immediate breakout
+          return { status: 'YES', index: candle.index, formattedTime: candle.formattedTime };
+        } else {
+          // Not the first crossing candle - must exceed all previous crossing candles' extremes
+          let exceedsAllPrevious = true;
+          
+          for (const prevCandle of crossingCandles) {
+            if (isEQH) {
+              // For EQH: current close must be above all previous crossing candles' highs
+              if (candle.close <= prevCandle.high) {
+                exceedsAllPrevious = false;
+                break;
+              }
+            } else {
+              // For EQL: current close must be below all previous crossing candles' lows
+              if (candle.close >= prevCandle.low) {
+                exceedsAllPrevious = false;
+                break;
+              }
+            }
+          }
+
+          if (exceedsAllPrevious) {
+            // Valid breakout - close exceeded all previous crossing candles' extremes
+            return { status: 'YES', index: candle.index, formattedTime: candle.formattedTime };
+          }
+        }
       }
+
+      // Track this crossing candle (whether by wick or body)
+      crossingCandles.push(candle);
     }
 
     return { status: 'NO', index: null, formattedTime: null };
