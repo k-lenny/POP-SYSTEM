@@ -790,36 +790,56 @@ PrevConfidenceReasons,
     return `${days} days ago`;
   }
 
-  _findFinalRetest(mssExtremePrice, mssBreakoutIndex, isBearish, candles, candleIndexMap, lastCandleTime) {
-    const result = {
-      Status: 'WAITING FOR FINAL RETEST',
-      Index: null,
-      FormattedTime: null,
-    };
+_findFinalRetest(mssExtremePrice, mssBreakoutIndex, isBearish, candles, candleIndexMap, lastCandleTime) {
+  const result = {
+    Status: 'WAITING FOR FINAL RETEST',
+    Index: null,
+    FormattedTime: null,
+  };
 
-    if (mssBreakoutIndex === null || mssExtremePrice === null) {
-      return result;
-    }
-
-    const breakoutCandlePos = candleIndexMap.get(mssBreakoutIndex);
-    if (breakoutCandlePos === undefined) {
-      return result;
-    }
-    
-    for (let i = breakoutCandlePos + 1; i < candles.length; i++) {
-      const c = candles[i];
-      const retested = isBearish ? c.high >= mssExtremePrice : c.low <= mssExtremePrice;
-
-      if (retested) {
-        result.Status = `RETESTED ${this._formatTimeAgo(lastCandleTime, new Date(c.formattedTime))}`;
-        result.Index = c.index;
-        result.FormattedTime = c.formattedTime;
-        return result; // Found the first retest, stop searching
-      }
-    }
-
+  if (mssBreakoutIndex === null || mssExtremePrice === null) {
     return result;
   }
+
+  const breakoutCandlePos = candleIndexMap.get(mssBreakoutIndex);
+  if (breakoutCandlePos === undefined) {
+    return result;
+  }
+  
+  let extremeRetestCandle = null;
+  let extremeRetestValue = isBearish ? -Infinity : Infinity;
+  
+  // Scan all candles after breakout to find the MOST EXTREME retest
+  for (let i = breakoutCandlePos + 1; i < candles.length; i++) {
+    const c = candles[i];
+    const retested = isBearish ? c.high >= mssExtremePrice : c.low <= mssExtremePrice;
+
+    if (retested) {
+      // For bearish, track the HIGHEST high that retested
+      // For bullish, track the LOWEST low that retested
+      if (isBearish) {
+        if (c.high > extremeRetestValue) {
+          extremeRetestValue = c.high;
+          extremeRetestCandle = c;
+        }
+      } else {
+        if (c.low < extremeRetestValue) {
+          extremeRetestValue = c.low;
+          extremeRetestCandle = c;
+        }
+      }
+    }
+  }
+
+  // If we found at least one retest, return the most extreme one
+  if (extremeRetestCandle) {
+    result.Status = `RETESTED ${this._formatTimeAgo(lastCandleTime, new Date(extremeRetestCandle.formattedTime))}`;
+    result.Index = extremeRetestCandle.index;
+    result.FormattedTime = extremeRetestCandle.formattedTime;
+  }
+
+  return result;
+}
 
   _findExpirationTime(mssExtreme, mssBreakoutIndex, isBearish, candles, candleIndexMap) {
     if (mssExtreme === null || mssBreakoutIndex === null) return null;
