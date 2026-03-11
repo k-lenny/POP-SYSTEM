@@ -284,14 +284,14 @@ this.oblvStore[symbol][granularity] = processOBLV(
 
       // ─── Calculate Trade Statuses (RUNNING, WAITING, CLOSED) ───
       
-      // Count Major Swings after Setup V-Shape
-      // For EQL (Bearish), we count Major Lows. For EQH (Bullish), we count Major Highs.
-      const targetMajorType = setup.type === 'EQL' ? 'low' : 'high';
-      const relevantMajorSwings = majorSwings.filter(s => 
-        s.index > setup.setupVshapeIndex && 
-        s.type === targetMajorType
-      );
-      const majorSwingCount = relevantMajorSwings.length;
+     // Count Major Swings after Impulse Extreme
+// For EQL (Bearish), we count Major Lows. For EQH (Bullish), we count Major Highs.
+const targetMajorType = setup.type === 'EQL' ? 'low' : 'high';
+const relevantMajorSwings = majorSwings.filter(s => 
+  s.index > setup.impulseExtremeIndex && 
+  s.type === targetMajorType
+);
+const majorSwingCount = relevantMajorSwings.length;
 
       // Helper to calculate "Time Ago" string
       const calculateRunningTime = (retestStatus, mssData, retestSwing, isBearish) => {
@@ -747,34 +747,45 @@ PrevConfidenceReasons,
       return 'WRONG S SETUP';
     }
 
-    let consecutiveClosesPastLevel = 0;
+let firstCandlePastLevel = null;
+let firstCandleIndex = null;
 
-    // Iterate from the candle AFTER prevSwing up to and INCLUDING the retestSwing candle.
-    for (let i = startIdx + 1; i <= endIdx; i++) {
-        const candle = candles[i];
-        if (!candle) continue;
+// Iterate from the candle AFTER prevSwing up to and INCLUDING the retestSwing candle.
+for (let i = startIdx + 1; i <= endIdx; i++) {
+    const candle = candles[i];
+    if (!candle) continue;
 
-        let closedPast = false;
-        if (isBearish) { // EQL
-            closedPast = candle.close > level;
-        } else { // EQH
-            closedPast = candle.close < level;
-        }
-
-        if (closedPast) {
-            consecutiveClosesPastLevel++;
-        } else {
-            // As soon as a candle closes back on the right side, the count of *consecutive* closes resets.
-            consecutiveClosesPastLevel = 0;
-        }
-
-        if (consecutiveClosesPastLevel >= 2) {
-            return 'WRONG S SETUP';
-        }
+    let closedPast = false;
+    if (isBearish) { // EQL
+        closedPast = candle.close > level;
+    } else { // EQH
+        closedPast = candle.close < level;
     }
 
-    // If the loop completes without finding 2 consecutive closes past the level, it's a valid sweep.
-    return 'RIGHT S SETUP';
+    // Track the first candle that closes past the level
+    if (closedPast && firstCandlePastLevel === null) {
+        firstCandlePastLevel = candle;
+        firstCandleIndex = i;
+    }
+
+    // If we have a first candle, check if subsequent candles close back
+    if (firstCandlePastLevel !== null && i > firstCandleIndex) {
+        if (isBearish) { // EQL
+            // Check if current candle closes below the low of the first candle
+            if (candle.close < firstCandlePastLevel.low) {
+                return 'WRONG S SETUP';
+            }
+        } else { // EQH
+            // Check if current candle closes above the high of the first candle
+            if (candle.close > firstCandlePastLevel.high) {
+                return 'WRONG S SETUP';
+            }
+        }
+    }
+}
+
+// If the loop completes without finding a subsequent close back, it's a valid sweep.
+return 'RIGHT S SETUP';
   }
 
   _formatTimeAgo(date1, date2) {
