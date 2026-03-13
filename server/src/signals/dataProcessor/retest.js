@@ -8,28 +8,68 @@ const { buildCandleIndexMap, nextArrayIdx } = require('../../utils/dataProcessor
 const { processOBLV } = require('./OBLV');
 
 class RetestEngine {
+  constructor() {
+    this.oblvStore = {};
+    this.oblvCache = {}; // Cache to track last calculated OBLV data
+    this.PRICE_EPSILON = 1e-8; // Tolerance for floating-point price comparisons
+    
+    // Trading Constants
+    this.OTE_LOWER_RATIO = 0.625;
+    this.OTE_UPPER_RATIO = 0.79;
+    this.MAJOR_SWING_CLOSE_THRESHOLD = 3;
+    this.FRESH_ACTIVATION_MS = 60000;
+    this.CONSECUTIVE_CLOSE_THRESHOLD = 2;
+    
+    // Event-driven cache
+    this.retestCache = {}; // Cache computed retests by symbol_granularity
+    this.lastProcessedCandle = {}; // Track last candle index processed
+    this.setupsHash = {}; // Track changes in confirmed setups
+  }
+/**
+   * Log data integrity warnings
+   * @private
+   */
+  _logDataWarning(method, message, data = {}) {
+    if (process.env.NODE_ENV !== 'production') {
+      console.warn(`[RetestEngine.${method}] ${message}`, data);
+    }
+  }
 
+  /**
+   * Generate cache key for symbol/granularity pair
+   * @private
+   */
+  _getCacheKey(symbol, granularity) {
+    return `${symbol}_${granularity}`;
+  }
+
+  /**
+   * Generate hash of setup IDs to detect changes
+   * @private
+   */
+  _getSetupsHash(setups) {
+    if (!setups || setups.length === 0) return 'empty';
+    return setups
+      .map(s => `${s.setupStatusIndex}_${s.ConfirmedSetupBreakoutStatusIndex}`)
+      .sort()
+      .join('|');
+  }
   /**
    * Finds the OB zone based on all detected OBs between setupVshapeIndex and breakout.
    * Returns { high, low } of OB zone.
    * @private
    */
 _findOB(setup, isBuy, candles, candleIndexMap) {
-  if (!setup || !setup.symbol || !setup.granularity) return null;
+  if (!setup?.symbol || !setup?.granularity) return null;
 
-  const obData =
-    this.oblvStore?.[setup.symbol]?.[setup.granularity];
+  const obData = this.oblvStore?.[setup.symbol]?.[setup.granularity];
 
-  if (!obData || obData.length === 0) return null;
+  if (!obData?.length) return null;
 
   const setupIndex = setup.setupStatusIndex;
   const breakoutIndex = setup.ConfirmedSetupBreakoutStatusIndex;
 
-  if (
-    setupIndex == null ||
-    breakoutIndex == null ||
-    setupIndex >= breakoutIndex
-  ) {
+  if (setupIndex == null || breakoutIndex == null || setupIndex >= breakoutIndex) {
     return null;
   }
 
@@ -59,13 +99,13 @@ _findOB(setup, isBuy, candles, candleIndexMap) {
 
   return null;
 }
-  _findMitigationBlock(setup, isBuy, candles, candleIndexMap) {
+_findMitigationBlock(setup, isBuy, candles, candleIndexMap) {
     const { preBreakoutVIndex, impulseExtremeIndex } = setup;
-    if (preBreakoutVIndex === null || impulseExtremeIndex === null) return null;
+    if (preBreakoutVIndex == null || impulseExtremeIndex == null) return null;
 
     const pos1 = candleIndexMap.get(preBreakoutVIndex);
     const pos2 = candleIndexMap.get(impulseExtremeIndex);
-    if (pos1 === undefined || pos2 === undefined) return null;
+    if (pos1 == null || pos2 == null) return null;
 
     const startPos = Math.min(pos1, pos2);
     const endPos = Math.max(pos1, pos2);
@@ -82,11 +122,16 @@ _findOB(setup, isBuy, candles, candleIndexMap) {
     return null;
   }
 
-  _checkBlockRetest(swing, block, isBearish, candles, candleIndexMap) {
+_checkBlockRetest(swing, block, isBearish, candles, candleIndexMap) {
     if (!swing || !block) return false;
 
     const swingPos = candleIndexMap.get(swing.index);
-    if (swingPos === undefined) return false;
+    if (swingPos == null) {
+      this._logDataWarning('_checkBlockRetest', 'Swing index not found in candle map', { 
+        swingIndex: swing?.index 
+      });
+      return false;
+    }
     const swingCandle = candles[swingPos];
 
     if (isBearish) { 
@@ -106,6 +151,105 @@ _findOB(setup, isBuy, candles, candleIndexMap) {
    * @param {string} symbol
    * @param {number} granularity
    */
+  /**
+   * Check if cache needs invalidation
+   * @private
+   */
+  _shouldInvalidateCache(symbol, granularity, candles, confirmedSetups) {
+    const cacheKey = this._getCacheKey(symbol, granularity);
+    
+    // No cache exists
+    if (!this.retestCache[cacheKey]) return true;
+    
+    // Check if new candle arrived
+    const lastCandleIndex = candles.length > 0 ? candles[candles.length - 1].index : null;
+    if (this.lastProcessedCandle[cacheKey] !== lastCandleIndex) return true;
+    
+    // Check if setups changed
+    const currentHash = this._getSetupsHash(confirmedSetups);
+    if (this.setupsHash[cacheKey] !== currentHash) return true;
+    
+    return false;
+  }
+
+  /**
+   * Update only the dynamic fields (prices, statuses, confidence)
+   * without recalculating the entire retest structure
+   * @private
+   */
+  _updateDynamicFields(cachedRetests, candles, candleIndexMap) {
+    const lastCandleTime = candles.length > 0 ? new Date(candles[candles.length - 1].formattedTime) : new Date();
+    const currentPrice = candles.length > 0 ? candles[candles.length - 1].close : 0;
+    
+    for (const retest of cachedRetests) {
+      const isBearish = retest.type === 'EQL';
+      
+      // Update NextRetestStatus
+      let isNextExpired = false;
+      let isNextActive = false;
+      let isNextPending = false;
+      
+      if (retest.NextMSSExtreme !== null) {
+        if (isBearish) {
+          if (currentPrice < retest.NextMSSExtreme) isNextExpired = true;
+        } else {
+          if (currentPrice > retest.NextMSSExtreme) isNextExpired = true;
+        }
+      }
+      
+      if (['OTE', 'DOUBLE EQ'].includes(retest.NextStatus)) {
+        if (retest.NextExtremeSwing && retest.NextMSSExtreme !== null && retest.NextMSSbreakoutIndex !== null) {
+          const minP = Math.min(retest.NextExtremeSwing, retest.NextMSSExtreme);
+          const maxP = Math.max(retest.NextExtremeSwing, retest.NextMSSExtreme);
+          if (currentPrice >= minP && currentPrice <= maxP) {
+            isNextActive = true;
+          }
+        }
+      }
+      
+      if (retest.NextStatus === 'WAITING FOR SETUP' || retest.NextFinalRetest === 'WAITING FOR FINAL RETEST') {
+        isNextPending = true;
+      }
+      
+      if (isNextExpired) retest.NextRetestStatus = 'EXPIRED';
+      else if (isNextActive) retest.NextRetestStatus = 'ACTIVE';
+      else if (isNextPending) retest.NextRetestStatus = 'PENDING';
+      
+      // Update PreviousRetestStatus
+      let isPrevExpired = false;
+      let isPrevActive = false;
+      let isPrevPending = false;
+      
+      if (retest.PreviousMSSExtreme !== null) {
+        if (isBearish) {
+          if (currentPrice < retest.PreviousMSSExtreme) isPrevExpired = true;
+        } else {
+          if (currentPrice > retest.PreviousMSSExtreme) isPrevExpired = true;
+        }
+      }
+      
+      if (retest.PreviousStatus === 'RIGHT S SETUP') {
+        if (retest.PreviousExtremeSwing && retest.PreviousMSSExtreme !== null && retest.PreviousMSSbreakoutIndex !== null) {
+          const minP = Math.min(retest.PreviousExtremeSwing, retest.PreviousMSSExtreme);
+          const maxP = Math.max(retest.PreviousExtremeSwing, retest.PreviousMSSExtreme);
+          if (currentPrice >= minP && currentPrice <= maxP) {
+            isPrevActive = true;
+          }
+        }
+      }
+      
+      if (retest.PreviousStatus === 'WRONG S SETUP' || retest.PreviousFinalRetest === 'WAITING FOR FINAL RETEST') {
+        isPrevPending = true;
+      }
+      
+      if (isPrevExpired) retest.PreviousRetestStatus = 'EXPIRED';
+      else if (isPrevActive) retest.PreviousRetestStatus = 'ACTIVE';
+      else if (isPrevPending) retest.PreviousRetestStatus = 'PENDING';
+    }
+    
+    return cachedRetests;
+  }
+
   getRetests(symbol, granularity) {
     // 1. Get Confirmed Setups
     const confirmedSetups = confirmedSetupEngine.getConfirmedSetups(symbol, granularity);
@@ -115,19 +259,37 @@ _findOB(setup, isBuy, candles, candleIndexMap) {
     const swings = swingEngine.get(symbol, granularity);
     const candles = signalEngine.getCandles(symbol, granularity, true);
     if (!candles.length) return [];
+    
+
+const cacheKey = this._getCacheKey(symbol, granularity);
+    const candleIndexMap = buildCandleIndexMap(candles);
+    
+    // 3. Check if we can use cached results with quick update
+    if (!this._shouldInvalidateCache(symbol, granularity, candles, confirmedSetups)) {
+      // Cache is valid - just update dynamic fields (price-dependent statuses)
+      return this._updateDynamicFields(this.retestCache[cacheKey], candles, candleIndexMap);
+    }
+    
+    // Cache invalidated or doesn't exist - do full computation
 
 if (!this.oblvStore) this.oblvStore = {};
 if (!this.oblvStore[symbol]) this.oblvStore[symbol] = {};
 
-this.oblvStore[symbol][granularity] = processOBLV(
-  symbol,
-  granularity,
-  candles
-);
+// Cache key and last candle time check (reuse cacheKey from above)
+const lastCandleTimestamp = candles.length > 0 ? candles[candles.length - 1].formattedTime : null;
+
+// Only recalculate OBLV if data has changed (new candle arrived)
+if (!this.oblvCache[cacheKey] || this.oblvCache[cacheKey].lastUpdate !== lastCandleTimestamp) {
+  this.oblvStore[symbol][granularity] = processOBLV(
+    symbol,
+    granularity,
+    candles
+  );
+  this.oblvCache[cacheKey] = { lastUpdate: lastCandleTimestamp };
+}
     const majorSwings = majorSwingsEngine.getMajorSwings(symbol, granularity);
     if (!candles.length || !swings.length) return [];
 
-    const candleIndexMap = buildCandleIndexMap(candles);
     const lastCandleTime = candles.length > 0 ? new Date(candles[candles.length - 1].formattedTime) : new Date();
     const currentPrice = candles.length > 0 ? candles[candles.length - 1].close : 0;
     const retests = [];
@@ -281,17 +443,32 @@ this.oblvStore[symbol][granularity] = processOBLV(
       if (isPrevExpired) prevRetestStatus = 'EXPIRED';
       else if (isPrevActive) prevRetestStatus = 'ACTIVE';
       else if (isPrevPending) prevRetestStatus = 'PENDING';
-
-      // ─── Calculate Trade Statuses (RUNNING, WAITING, CLOSED) ───
+// ─── Calculate Trade Statuses (RUNNING, WAITING, CLOSED) ───
       
      // Count Major Swings after Impulse Extreme
 // For EQL (Bearish), we count Major Lows. For EQH (Bullish), we count Major Highs.
 const targetMajorType = setup.type === 'EQL' ? 'low' : 'high';
-const relevantMajorSwings = majorSwings.filter(s => 
-  s.index > setup.impulseExtremeIndex && 
-  s.type === targetMajorType
-);
-const majorSwingCount = relevantMajorSwings.length;
+
+// Binary search to find first swing after impulseExtremeIndex
+let left = 0;
+let right = majorSwings.length - 1;
+let startIdx = majorSwings.length; // Default to end if none found
+
+while (left <= right) {
+  const mid = Math.floor((left + right) / 2);
+  if (majorSwings[mid].index > setup.impulseExtremeIndex) {
+    startIdx = mid;
+    right = mid - 1;
+  } else {
+    left = mid + 1;
+  }
+}
+
+// Count matching swings from startIdx onwards
+let majorSwingCount = 0;
+for (let i = startIdx; i < majorSwings.length; i++) {
+  if (majorSwings[i].type === targetMajorType) majorSwingCount++;
+}
 
       // Helper to calculate "Time Ago" string
       const calculateRunningTime = (retestStatus, mssData, retestSwing, isBearish) => {
@@ -310,9 +487,9 @@ const majorSwingCount = relevantMajorSwings.length;
         return '';
       };
 
-      // NextTradeStatus
+   // NextTradeStatus
       let nextTradeStatus;
-      if (majorSwingCount >= 3) {
+      if (majorSwingCount >= this.MAJOR_SWING_CLOSE_THRESHOLD) {
         nextTradeStatus = 'CLOSED';
       } else if (nextStatus === 'OTE' || nextStatus === 'DOUBLE EQ') {
         nextTradeStatus = `RUNNING ${calculateRunningTime(nextRetestStatus, nextMSS, retestState.nextSwing, isBearish)}`;
@@ -322,7 +499,7 @@ const majorSwingCount = relevantMajorSwings.length;
 
       // PrevTradeStatus
       let prevTradeStatus;
-      if (majorSwingCount >= 3) {
+      if (majorSwingCount >= this.MAJOR_SWING_CLOSE_THRESHOLD) {
         prevTradeStatus = 'CLOSED';
       } else if (previousStatus === 'RIGHT S SETUP') {
         prevTradeStatus = `RUNNING ${calculateRunningTime(prevRetestStatus, prevMSS, retestState.prevSwing, isBearish)}`;
@@ -398,94 +575,137 @@ let PrevConfidenceReasons = [];
   PrevConfidenceScore++;
   PrevConfidenceReasons.push('Valid Sweep (Right S Setup)');
 }
-      // Point 3 for NextConfidenceScore
-    if (nextTradeStatus === 'RUNNING (0 seconds ago AGO)') {
-  NextConfidenceScore++;
-  NextConfidenceReasons.push('Fresh activation');
-}
-      // Point 3 for PrevConfidenceScore
-   if (prevTradeStatus === 'RUNNING (0 seconds ago AGO)') {
-  PrevConfidenceScore++;
-  PrevConfidenceReasons.push('Fresh activation');
-}
+// Point 3 for NextConfidenceScore - Check if activation is fresh
+      if (retestState.nextSwing && nextMSS.extremePrice !== null && nextMSS.breakoutIndex !== null) {
+        const nextActivationTime = this._findActivationTime(
+          retestState.nextSwing.price, 
+          nextMSS.extremePrice, 
+          nextMSS.breakoutIndex, 
+          candles, 
+          candleIndexMap
+        );
+        if (nextActivationTime) {
+          const msAgo = lastCandleTime.getTime() - new Date(nextActivationTime).getTime();
+          if (msAgo < this.FRESH_ACTIVATION_MS) {
+            NextConfidenceScore++;
+            NextConfidenceReasons.push('Fresh activation');
+          }
+        }
+      }
+
+      // Point 3 for PrevConfidenceScore - Check if activation is fresh
+      if (retestState.prevSwing && prevMSS.extremePrice !== null && prevMSS.breakoutIndex !== null) {
+        const prevActivationTime = this._findActivationTime(
+          retestState.prevSwing.price, 
+          prevMSS.extremePrice, 
+          prevMSS.breakoutIndex, 
+          candles, 
+          candleIndexMap
+        );
+        if (prevActivationTime) {
+          const msAgo = lastCandleTime.getTime() - new Date(prevActivationTime).getTime();
+          if (msAgo < this.FRESH_ACTIVATION_MS) {
+            PrevConfidenceScore++;
+            PrevConfidenceReasons.push('Fresh activation');
+          }
+        }
+      }
 
       // Cap scores at 3
       if (NextConfidenceScore > 3) NextConfidenceScore = 3;
       if (PrevConfidenceScore > 3) PrevConfidenceScore = 3;
+retests.push({
+  ...setup,
+  signalType: setup.type === 'EQL' ? 'SELL' : 'BUY',
+  // Retest Status
+  RetestStatus: retestState.status,
+  RetestViolationReason: retestState.violationReason || null,
 
-      retests.push({
-        ...setup,
-        signalType: setup.type === 'EQL' ? 'SELL' : 'BUY',
-        // Retest Status
-        RetestStatus: retestState.status,
-        RetestViolationReason: retestState.violationReason || null,
+  // Retest Swing
+  RetestExtremeSwing: retestState.retestSwing ? retestState.retestSwing.price : null,
+  RetestExtremeSwingIndex: retestState.retestSwing ? retestState.retestSwing.index : null,
+  RetestExtremeSwingFormattedTime: retestState.retestSwing ? retestState.retestSwing.formattedTime : null,
+  
+  // Previous Swing
+  PreviousExtremeSwing: retestState.prevSwing ? retestState.prevSwing.price : null,
+  PreviousExtremeSwingIndex: retestState.prevSwing ? retestState.prevSwing.index : null,
+  PreviousExtremeSwingFormattedTime: retestState.prevSwing ? retestState.prevSwing.formattedTime : null,
 
-        // Retest Swing
-        RetestExtremeSwing: retestState.retestSwing ? retestState.retestSwing.price : null,
-        RetestExtremeSwingIndex: retestState.retestSwing ? retestState.retestSwing.index : null,
-        RetestExtremeSwingFormattedTime: retestState.retestSwing ? retestState.retestSwing.formattedTime : null,
-        
-        // Previous Swing
-        PreviousExtremeSwing: retestState.prevSwing ? retestState.prevSwing.price : null,
-        PreviousExtremeSwingIndex: retestState.prevSwing ? retestState.prevSwing.index : null,
-        PreviousExtremeSwingFormattedTime: retestState.prevSwing ? retestState.prevSwing.formattedTime : null,
+  // Next Swing
+  NextExtremeSwing: retestState.nextSwing ? retestState.nextSwing.price : null,
+  NextExtremeSwingIndex: retestState.nextSwing ? retestState.nextSwing.index : null,
+  NextExtremeSwingFormattedTime: retestState.nextSwing ? retestState.nextSwing.formattedTime : null,
 
-        // Next Swing
-        NextExtremeSwing: retestState.nextSwing ? retestState.nextSwing.price : null,
-        NextExtremeSwingIndex: retestState.nextSwing ? retestState.nextSwing.index : null,
-        NextExtremeSwingFormattedTime: retestState.nextSwing ? retestState.nextSwing.formattedTime : null,
+  // Previous MSS
+  PreviousMSSExtreme: prevMSS.extremePrice,
+  PreviousMSSExtremeIndex: prevMSS.extremeIndex,
+  PreviousMSSExtremeFormattedTime: prevMSS.extremeFormattedTime,
+  PreviousMSSbreakout: prevMSS.breakoutPrice,
+  PreviousMSSbreakoutIndex: prevMSS.breakoutIndex,
+  PreviousMSSbreakoutFormattedTime: prevMSS.breakoutFormattedTime,
+  
+  // Next MSS
+  NextMSSExtreme: nextMSS.extremePrice,
+  NextMSSExtremeIndex: nextMSS.extremeIndex,
+  NextMSSExtremeFormattedTime: nextMSS.extremeFormattedTime,
+  NextMSSbreakout: nextMSS.breakoutPrice,
+  NextMSSbreakoutIndex: nextMSS.breakoutIndex,
+  NextMSSbreakoutFormattedTime: nextMSS.breakoutFormattedTime,
 
-        // Previous MSS
-        PreviousMSSExtreme: prevMSS.extremePrice,
-        PreviousMSSExtremeIndex: prevMSS.extremeIndex,
-        PreviousMSSExtremeFormattedTime: prevMSS.extremeFormattedTime,
-        PreviousMSSbreakout: prevMSS.breakoutPrice,
-        PreviousMSSbreakoutIndex: prevMSS.breakoutIndex,
-        PreviousMSSbreakoutFormattedTime: prevMSS.breakoutFormattedTime,
-        
-        // Next MSS
-        NextMSSExtreme: nextMSS.extremePrice,
-        NextMSSExtremeIndex: nextMSS.extremeIndex,
-        NextMSSExtremeFormattedTime: nextMSS.extremeFormattedTime,
-        NextMSSbreakout: nextMSS.breakoutPrice,
-        NextMSSbreakoutIndex: nextMSS.breakoutIndex,
-        NextMSSbreakoutFormattedTime: nextMSS.breakoutFormattedTime,
+  // Next Final Retest
+  NextFinalRetest: nextFinalRetest.Status,
+  NextFinalRetestIndex: nextFinalRetest.Index,
+  NextFinalRetestFormattedTime: nextFinalRetest.FormattedTime,
 
-        // Next Final Retest
-        NextFinalRetest: nextFinalRetest.Status,
-        NextFinalRetestIndex: nextFinalRetest.Index,
-        NextFinalRetestFormattedTime: nextFinalRetest.FormattedTime,
+  // Previous Final Retest
+  PreviousFinalRetest: prevFinalRetest.Status,
+  PreviousFinalRetestIndex: prevFinalRetest.Index,
+  PreviousFinalRetestFormattedTime: prevFinalRetest.FormattedTime,
+  
+  NextStatus: nextStatus,
+  PreviousStatus: previousStatus,
 
-        // Previous Final Retest
-        PreviousFinalRetest: prevFinalRetest.Status,
-        PreviousFinalRetestIndex: prevFinalRetest.Index,
-        PreviousFinalRetestFormattedTime: prevFinalRetest.FormattedTime,
-        
-        NextStatus: nextStatus,
-        PreviousStatus: previousStatus,
+  NextRetestStatus: nextRetestStatus,
+  PreviousRetestStatus: prevRetestStatus,
 
-        NextRetestStatus: nextRetestStatus,
-        PreviousRetestStatus: prevRetestStatus,
+  NextTradeStatus: nextTradeStatus,
+  PrevTradeStatus: prevTradeStatus,
 
-        NextTradeStatus: nextTradeStatus,
-        PrevTradeStatus: prevTradeStatus,
-
-        NextConfidenceScore,
-        PrevConfidenceScore,
-        NextConfidenceReasons,
-PrevConfidenceReasons,
-      });
+  NextConfidenceScore,
+  PrevConfidenceScore,
+  NextConfidenceReasons,
+  PrevConfidenceReasons,
+});
     }
+
+    // Update cache
+    this.retestCache[cacheKey] = retests;
+    this.lastProcessedCandle[cacheKey] = candles.length > 0 ? candles[candles.length - 1].index : null;
+    this.setupsHash[cacheKey] = this._getSetupsHash(confirmedSetups);
 
     return retests;
   }
 
-  _findRetestState(setup, candles, swings, candleIndexMap) {
+_findRetestState(setup, candles, swings, candleIndexMap) {
     const breakoutIndex = setup.ConfirmedSetupBreakoutStatusIndex;
     const invalidationLevel = setup.setupVshapeDepth;
     const breakoutLevel = setup.impulseExtremeDepth;
     const isBearish = setup.type === 'EQL';
     const targetSwingType = isBearish ? 'high' : 'low';
+
+    // Validate critical data
+    if (!candles || candles.length === 0) {
+      this._logDataWarning('_findRetestState', 'Empty candles array', { 
+        symbol: setup.symbol, 
+        granularity: setup.granularity 
+      });
+    }
+    if (!swings || swings.length === 0) {
+      this._logDataWarning('_findRetestState', 'Empty swings array', { 
+        symbol: setup.symbol, 
+        granularity: setup.granularity 
+      });
+    }
 
     // 1. Collect all candidate swings after breakout
     let candidates = [];
@@ -626,20 +846,20 @@ PrevConfidenceReasons,
    * Checks if the retest swing respects the invalidation level with tolerance.
    * Tolerance: Allowed if only wick crosses, OR max 1 candle closes beyond level.
    */
-  _checkInvalidation(swing, invalidationLevel, isBearish, candles, candleIndexMap) {
+_checkInvalidation(swing, invalidationLevel, isBearish, candles, candleIndexMap) {
     const swingPos = candleIndexMap.get(swing.index);
-    if (swingPos === undefined) return { isValid: false, reason: 'SWING_CANDLE_NOT_FOUND' };
+    if (swingPos == null) return { isValid: false, reason: 'SWING_CANDLE_NOT_FOUND' };
     
     const candle = candles[swingPos];
 
     if (isBearish) {
       // Bearish: Should stay BELOW invalidationLevel (setupVshapeDepth).
-      if (candle.high <= invalidationLevel) return { isValid: true }; // Perfect.
-      if (candle.close <= invalidationLevel) return { isValid: true }; // Valid wick.
+      if (candle.high <= invalidationLevel + this.PRICE_EPSILON) return { isValid: true }; // Perfect.
+      if (candle.close <= invalidationLevel + this.PRICE_EPSILON) return { isValid: true }; // Valid wick.
 
       // Close is ABOVE. Check for the "one candle rule".
       const nextC = candles[swingPos + 1];
-      if (nextC && nextC.close < invalidationLevel) {
+      if (nextC && nextC.close < invalidationLevel - this.PRICE_EPSILON) {
         return { isValid: true }; // Accepted as a 1-candle sweep.
       }
       
@@ -647,12 +867,12 @@ PrevConfidenceReasons,
 
     } else {
       // Bullish: Should stay ABOVE invalidationLevel.
-      if (candle.low >= invalidationLevel) return { isValid: true }; // Perfect.
-      if (candle.close >= invalidationLevel) return { isValid: true }; // Valid wick.
+      if (candle.low >= invalidationLevel - this.PRICE_EPSILON) return { isValid: true }; // Perfect.
+      if (candle.close >= invalidationLevel - this.PRICE_EPSILON) return { isValid: true }; // Valid wick.
 
       // Close is BELOW. Check "one candle rule".
       const nextC = candles[swingPos + 1];
-      if (nextC && nextC.close > invalidationLevel) {
+      if (nextC && nextC.close > invalidationLevel + this.PRICE_EPSILON) {
         return { isValid: true }; // Accepted as a 1-candle sweep.
       }
 
@@ -679,14 +899,14 @@ PrevConfidenceReasons,
         const range = highPoint - lowPoint;
         let oteLower, oteUpper;
 
-        if (isBearish) {
+   if (isBearish) {
             // Bearish: Retracement UP from Low to High (Premium)
-            oteLower = lowPoint + (range * 0.625);
-            oteUpper = lowPoint + (range * 0.79);
+            oteLower = lowPoint + (range * this.OTE_LOWER_RATIO);
+            oteUpper = lowPoint + (range * this.OTE_UPPER_RATIO);
         } else {
             // Bullish: Retracement DOWN from High to Low (Discount)
-            oteLower = highPoint - (range * 0.79);
-            oteUpper = highPoint - (range * 0.625);
+            oteLower = highPoint - (range * this.OTE_UPPER_RATIO);
+            oteUpper = highPoint - (range * this.OTE_LOWER_RATIO);
         }
 
         if (nextSwingPrice >= oteLower && nextSwingPrice <= oteUpper) {
@@ -695,8 +915,8 @@ PrevConfidenceReasons,
     }
 
     // Condition 2: Check for "DOUBLE EQ"
-    const retestCandleIndex = candleIndexMap.get(retestSwing.index);
-    if (retestCandleIndex !== undefined) {
+   const retestCandleIndex = candleIndexMap.get(retestSwing.index);
+    if (retestCandleIndex != null) {
         const retestCandle = candles[retestCandleIndex];
         const retestCandleHigh = retestCandle.high;
         const retestCandleLow = retestCandle.low;
@@ -729,8 +949,13 @@ PrevConfidenceReasons,
 
     // First, ensure the retest swing actually went past the previous swing's level at some point.
     // This is the fundamental requirement for a sweep.
-    const retestCandleIndex = candleIndexMap.get(retestSwing.index);
-    if (retestCandleIndex === undefined) return 'WRONG S SETUP';
+const retestCandleIndex = candleIndexMap.get(retestSwing.index);
+    if (retestCandleIndex == null) {
+      this._logDataWarning('_calculatePreviousStatus', 'Retest swing index not found', { 
+        retestSwingIndex: retestSwing?.index 
+      });
+      return 'WRONG S SETUP';
+    }
     const retestCandle = candles[retestCandleIndex];
 
     if (isBearish) { // EQL
@@ -740,10 +965,15 @@ PrevConfidenceReasons,
     }
     
     // Now, check for a sustained break (2+ consecutive closes) in the window leading up to and including the retest swing.
-    const startIdx = candleIndexMap.get(prevSwing.index);
+const startIdx = candleIndexMap.get(prevSwing.index);
     const endIdx = retestCandleIndex;
     
-    if (startIdx === undefined || startIdx >= endIdx) {
+    if (startIdx == null || startIdx >= endIdx) {
+      if (startIdx == null) {
+        this._logDataWarning('_calculatePreviousStatus', 'Previous swing index not found', { 
+          prevSwingIndex: prevSwing?.index 
+        });
+      }
       return 'WRONG S SETUP';
     }
 
@@ -768,23 +998,37 @@ for (let i = startIdx + 1; i <= endIdx; i++) {
         firstCandleIndex = i;
     }
 
-    // If we have a first candle, check if subsequent candles close back
+    // If we have a first candle, check for SUSTAINED close back (2+ consecutive)
     if (firstCandlePastLevel !== null && i > firstCandleIndex) {
-        if (isBearish) { // EQL
-            // Check if current candle closes below the low of the first candle
-            if (candle.close < firstCandlePastLevel.low) {
-                return 'WRONG S SETUP';
+        let consecutiveClosesBack = 0;
+        
+        // Check from current position for consecutive closes
+        for (let j = i; j <= endIdx; j++) {
+            const checkCandle = candles[j];
+            if (!checkCandle) break;
+            
+            let closedBack = false;
+            if (isBearish) { // EQL
+                // Check if candle closes below the swept level
+                closedBack = checkCandle.close < level;
+            } else { // EQH
+                // Check if candle closes above the swept level
+                closedBack = checkCandle.close > level;
             }
-        } else { // EQH
-            // Check if current candle closes above the high of the first candle
-            if (candle.close > firstCandlePastLevel.high) {
-                return 'WRONG S SETUP';
+            
+         if (closedBack) {
+                consecutiveClosesBack++;
+                if (consecutiveClosesBack >= this.CONSECUTIVE_CLOSE_THRESHOLD) {
+                    return 'WRONG S SETUP'; // Sustained close back invalidates sweep
+                }
+            } else {
+                break; // Reset if not consecutive
             }
         }
     }
 }
 
-// If the loop completes without finding a subsequent close back, it's a valid sweep.
+// If the loop completes without finding 2+ consecutive closes back, it's a valid sweep.
 return 'RIGHT S SETUP';
   }
 
@@ -808,12 +1052,12 @@ _findFinalRetest(mssExtremePrice, mssBreakoutIndex, isBearish, candles, candleIn
     FormattedTime: null,
   };
 
-  if (mssBreakoutIndex === null || mssExtremePrice === null) {
+  if (mssBreakoutIndex == null || mssExtremePrice == null) {
     return result;
   }
 
   const breakoutCandlePos = candleIndexMap.get(mssBreakoutIndex);
-  if (breakoutCandlePos === undefined) {
+  if (breakoutCandlePos == null) {
     return result;
   }
   
@@ -823,7 +1067,9 @@ _findFinalRetest(mssExtremePrice, mssBreakoutIndex, isBearish, candles, candleIn
   // Scan all candles after breakout to find the MOST EXTREME retest
   for (let i = breakoutCandlePos + 1; i < candles.length; i++) {
     const c = candles[i];
-    const retested = isBearish ? c.high >= mssExtremePrice : c.low <= mssExtremePrice;
+    const retested = isBearish 
+      ? c.high >= mssExtremePrice - this.PRICE_EPSILON 
+      : c.low <= mssExtremePrice + this.PRICE_EPSILON;
 
     if (retested) {
       // For bearish, track the HIGHEST high that retested
@@ -852,10 +1098,10 @@ _findFinalRetest(mssExtremePrice, mssBreakoutIndex, isBearish, candles, candleIn
   return result;
 }
 
-  _findExpirationTime(mssExtreme, mssBreakoutIndex, isBearish, candles, candleIndexMap) {
-    if (mssExtreme === null || mssBreakoutIndex === null) return null;
+_findExpirationTime(mssExtreme, mssBreakoutIndex, isBearish, candles, candleIndexMap) {
+    if (mssExtreme == null || mssBreakoutIndex == null) return null;
     const startPos = candleIndexMap.get(mssBreakoutIndex);
-    if (startPos === undefined) return null;
+    if (startPos == null) return null;
 
     for (let i = startPos + 1; i < candles.length; i++) {
       const c = candles[i];
@@ -866,18 +1112,18 @@ _findFinalRetest(mssExtremePrice, mssBreakoutIndex, isBearish, candles, candleIn
       // Wait, logic in getRetests: "if (currentPrice < nextMSS.extremePrice) isNextExpired = true;" for EQL.
       // So yes, break below extreme expires the retest opportunity (continuation).
       if (isBearish) {
-        if (c.close < mssExtreme) return c.formattedTime;
+        if (c.close < mssExtreme - this.PRICE_EPSILON) return c.formattedTime;
       } else {
-        if (c.close > mssExtreme) return c.formattedTime;
+        if (c.close > mssExtreme + this.PRICE_EPSILON) return c.formattedTime;
       }
     }
     return null;
   }
 
-  _findActivationTime(swingPrice, mssExtreme, mssBreakoutIndex, candles, candleIndexMap) {
-    if (swingPrice === null || mssExtreme === null || mssBreakoutIndex === null) return null;
+_findActivationTime(swingPrice, mssExtreme, mssBreakoutIndex, candles, candleIndexMap) {
+    if (swingPrice == null || mssExtreme == null || mssBreakoutIndex == null) return null;
     const startPos = candleIndexMap.get(mssBreakoutIndex);
-    if (startPos === undefined) return null;
+    if (startPos == null) return null;
 
     const minP = Math.min(swingPrice, mssExtreme);
     const maxP = Math.max(swingPrice, mssExtreme);
@@ -906,10 +1152,10 @@ _findFinalRetest(mssExtremePrice, mssBreakoutIndex, isBearish, candles, candleIn
     let extremeCandle = null;
     let extremeVal = isBearish ? Infinity : -Infinity;
 
-    const startPos = nextArrayIdx(candleIndexMap, candles, startSwing.index);
+ const startPos = nextArrayIdx(candleIndexMap, candles, startSwing.index);
     const endPos = candleIndexMap.get(endSwing.index);
     
-    if (startPos === undefined || endPos === undefined || startPos >= endPos) {
+    if (startPos == null || endPos == null || startPos >= endPos) {
       return { extremePrice: null, extremeIndex: null, extremeFormattedTime: null, breakoutPrice: null, breakoutIndex: null, breakoutFormattedTime: null };
     }
 
@@ -934,21 +1180,21 @@ _findFinalRetest(mssExtremePrice, mssBreakoutIndex, isBearish, candles, candleIn
 
     // Find Breakout of this MSS Extreme
     // Must occur AFTER the extreme candle
-    let breakoutCandle = null;
+let breakoutCandle = null;
     const mssPos = candleIndexMap.get(extremeCandle.index);
     
-    if (mssPos !== undefined) {
+    if (mssPos != null) {
       for (let i = mssPos + 1; i < candles.length; i++) {
         const c = candles[i];
         if (isBearish) {
           // Bearish MSS Breakout: Close BELOW the Low
-          if (c.close < extremeVal) {
+          if (c.close < extremeVal - this.PRICE_EPSILON) {
             breakoutCandle = c;
             break;
           }
         } else {
           // Bullish MSS Breakout: Close ABOVE the High
-          if (c.close > extremeVal) {
+          if (c.close > extremeVal + this.PRICE_EPSILON) {
             breakoutCandle = c;
             break;
           }
@@ -964,6 +1210,27 @@ _findFinalRetest(mssExtremePrice, mssBreakoutIndex, isBearish, candles, candleIn
       breakoutIndex: breakoutCandle ? breakoutCandle.index : null,
       breakoutFormattedTime: breakoutCandle ? breakoutCandle.formattedTime : null
     };
+  }
+
+  /**
+   * Manually invalidate cache for a symbol/granularity
+   * Call this when you know setups or swings have changed
+   */
+  invalidateCache(symbol, granularity) {
+    const cacheKey = this._getCacheKey(symbol, granularity);
+    delete this.retestCache[cacheKey];
+    delete this.lastProcessedCandle[cacheKey];
+    delete this.setupsHash[cacheKey];
+  }
+
+  /**
+   * Clear all caches
+   */
+  clearAllCaches() {
+    this.retestCache = {};
+    this.lastProcessedCandle = {};
+    this.setupsHash = {};
+    this.oblvCache = {};
   }
 }
 

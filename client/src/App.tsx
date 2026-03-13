@@ -1,7 +1,7 @@
 const App = () => {
   return (
     <div>
-      <h1>POP Investment System(System Under Construction)- Be Aware</h1>
+      <h1>POP Quantitative System(Under Construction)- Be Aware!</h1>
     </div>
   )
 }
