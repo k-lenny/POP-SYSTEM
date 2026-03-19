@@ -15,6 +15,7 @@ class PatternEngine extends EventEmitter {
       vShapeWickRatio: 2.0,        // V-shape wick must be 2x body size
       equalLevelTolerance: 0.002,   // 0.2% tolerance for equal highs/lows
       minCandlesBetweenSwings: 3,   // Minimum candles between swings
+      retestScanRange: 50,          // Maximum candles to scan for retest
       ...options.config
     };
   }
@@ -312,7 +313,7 @@ class PatternEngine extends EventEmitter {
 
     // Stage 5: Retest of Confirmed Setup
     const confirmedSetupRetest = this.identifyRetest(
-      { ...confirmedSetup, breakout: confirmedSetupBreakout },
+      { ...confirmedSetup, breakout: confirmedSetupBreakout, currentSwing: setup.currentSwing },
       candles,
       direction
     );
@@ -540,12 +541,31 @@ isWickSweep(currentSwing, previousSwing, candles, direction) {
       return null;
     }
 
+    // Limit scan range to configured number of candles (default 50)
+    const maxScanRange = this.config.retestScanRange;
+    const endIndex = Math.min(startIndex + maxScanRange, candles.length);
+
+    // Get currentSwing level for invalidation check (if available)
+    const currentSwing = setup.currentSwing;
+    let currentSwingLevel = null;
+    
+    if (currentSwing) {
+      currentSwingLevel = direction === 'bullish' ? currentSwing.low : currentSwing.high;
+    }
+
     let extremumCandle = null;
 
     if (direction === 'bullish') {
       let minLow = Infinity;
-      for (let i = startIndex; i < candles.length; i++) {
+      for (let i = startIndex; i < endIndex; i++) {
         const candle = candles[i];
+        
+        // Invalidate if price crosses below currentSwing low (only if currentSwing exists)
+        if (currentSwingLevel !== null && candle.low < currentSwingLevel) {
+          this.logger.debug(`[PatternEngine] Retest invalidated: price crossed below currentSwing low at candle ${i}`);
+          return null;
+        }
+        
         if (candle.low < minLow) {
           minLow = candle.low;
           extremumCandle = candle;
@@ -553,8 +573,15 @@ isWickSweep(currentSwing, previousSwing, candles, direction) {
       }
     } else { // bearish
       let maxHigh = -Infinity;
-      for (let i = startIndex; i < candles.length; i++) {
+      for (let i = startIndex; i < endIndex; i++) {
         const candle = candles[i];
+        
+        // Invalidate if price crosses above currentSwing high (only if currentSwing exists)
+        if (currentSwingLevel !== null && candle.high > currentSwingLevel) {
+          this.logger.debug(`[PatternEngine] Retest invalidated: price crossed above currentSwing high at candle ${i}`);
+          return null;
+        }
+        
         if (candle.high > maxHigh) {
           maxHigh = candle.high;
           extremumCandle = candle;
