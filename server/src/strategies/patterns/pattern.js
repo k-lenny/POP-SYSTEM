@@ -84,6 +84,9 @@ class PatternEngine extends EventEmitter {
   async detect(symbol, granularity, candles) {
     this._initStore(symbol, granularity);
 
+    // Ensure swings are detected before proceeding
+    await swingEngine.detectAll(symbol, granularity, candles.slice(0, -1), 1);
+
     const swings = swingEngine.get(symbol, granularity);
     
     // Debug logging
