@@ -15,7 +15,7 @@ class PatternEngine extends EventEmitter {
       vShapeWickRatio: 2.0,        // V-shape wick must be 2x body size
       equalLevelTolerance: 0.002,   // 0.2% tolerance for equal highs/lows
       minCandlesBetweenSwings: 3,   // Minimum candles between swings
-      retestScanRange: 50,          // Maximum candles to scan for retest
+      retestScanRange: 25,          // Maximum candles to scan for retest
       ...options.config
     };
   }
@@ -219,6 +219,23 @@ class PatternEngine extends EventEmitter {
       retestFormattedTime: this._formatTime(pattern.retest?.time),
       retestLevel: pattern.retest?.retestLevel || null,
       retestType: pattern.retest?.retestType || null,
+      
+      // Retest V-shape candle
+      retestVshapeIndex: pattern.retest?.vShapeCandle?.index || null,
+      retestVshapePrice: pattern.direction === 'bullish'
+        ? pattern.retest?.vShapeCandle?.high
+        : pattern.retest?.vShapeCandle?.low,
+      retestVshapeTime: pattern.retest?.vShapeCandle?.time || null,
+      retestVshapeFormattedTime: this._formatTime(pattern.retest?.vShapeCandle?.time),
+      retestVshapeLevel: pattern.direction === 'bullish'
+        ? pattern.retest?.vShapeCandle?.high
+        : pattern.retest?.vShapeCandle?.low,
+      
+      // Retest Breakout
+      retestBreakoutIndex: pattern.retest?.breakout?.index || null,
+      retestBreakoutPrice: pattern.retest?.breakout?.close || null,
+      retestBreakoutTime: pattern.retest?.breakout?.time || null,
+      retestBreakoutFormattedTime: this._formatTime(pattern.retest?.breakout?.time),
       
       // Stage 3: Confirmed Setup
       confirmedSetupCandle1Index: pattern.confirmedSetup?.candle1?.index || null,
@@ -541,7 +558,7 @@ isWickSweep(currentSwing, previousSwing, candles, direction) {
       return null;
     }
 
-    // Limit scan range to configured number of candles (default 50)
+    // Limit scan range to configured number of candles (default 25)
     const maxScanRange = this.config.retestScanRange;
     const endIndex = Math.min(startIndex + maxScanRange, candles.length);
 
@@ -590,14 +607,110 @@ isWickSweep(currentSwing, previousSwing, candles, direction) {
     }
 
     if (extremumCandle) {
+        // Find the V-shape candle after the retest extremum
+        const vShapeCandle = this.findRetestVShapeCandle(
+          setup.breakout,
+          extremumCandle,
+          candles,
+          direction
+        );
+
+        // Find the breakout of the V-shape level (if V-shape exists)
+        let retestBreakout = null;
+        if (vShapeCandle) {
+          const vShapeLevel = direction === 'bullish' ? vShapeCandle.high : vShapeCandle.low;
+          retestBreakout = this.findRetestBreakout(
+            vShapeLevel,
+            candles,
+            extremumCandle.index,
+            direction
+          );
+        }
+
         return {
             ...extremumCandle,
             retestLevel: direction === 'bullish' ? extremumCandle.low : extremumCandle.high,
-            retestType: direction === 'bullish' ? 'support' : 'resistance'
+            retestType: direction === 'bullish' ? 'support' : 'resistance',
+            vShapeCandle: vShapeCandle,
+            breakout: retestBreakout
         };
     }
 
     return null;
+  }
+
+  /**
+   * Find the breakout of the retest V-shape level
+   * Similar to identifyBreakoutOfLevel but specifically for the retest phase
+   */
+  findRetestBreakout(level, candles, startIndex, direction) {
+    for (let i = startIndex + 1; i < candles.length; i++) {
+      const candle = candles[i];
+      
+      if (direction === 'bullish') {
+        // Breakout happens when price closes above the V-shape level
+        if (candle.close > level) {
+          return candle;
+        }
+      } else { // bearish
+        // Breakout happens when price closes below the V-shape level
+        if (candle.close < level) {
+          return candle;
+        }
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Find the V-shape candle between breakout and retest extremum
+   * Similar to findVShapeCandle but specifically for the retest phase
+   */
+  findRetestVShapeCandle(breakoutCandle, retestCandle, candles, direction) {
+    const startIndex = breakoutCandle.index + 1;
+    const endIndex = retestCandle.index;
+
+    if (endIndex <= startIndex) {
+      return null;
+    }
+
+    let extremumCandle = null;
+    
+    if (direction === 'bullish') {
+      // For bullish retest: find highest high between breakout and retest
+      let maxHigh = -Infinity;
+      
+      for (let i = startIndex; i < endIndex; i++) {
+        const candle = candles[i];
+        if (candle.high > maxHigh) {
+          maxHigh = candle.high;
+          extremumCandle = candle;
+        }
+      }
+      
+      // Also check the breakout candle itself
+      if (breakoutCandle.high > maxHigh) {
+        extremumCandle = breakoutCandle;
+      }
+    } else { // bearish
+      // For bearish retest: find lowest low between breakout and retest
+      let minLow = Infinity;
+      
+      for (let i = startIndex; i < endIndex; i++) {
+        const candle = candles[i];
+        if (candle.low < minLow) {
+          minLow = candle.low;
+          extremumCandle = candle;
+        }
+      }
+      
+      // Also check the breakout candle itself
+      if (breakoutCandle.low < minLow) {
+        extremumCandle = breakoutCandle;
+      }
+    }
+
+    return extremumCandle;
   }
 
   identifyConfirmedSetup(retest, candles, direction) {
