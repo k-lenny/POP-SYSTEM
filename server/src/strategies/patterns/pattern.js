@@ -410,12 +410,13 @@ isWickSweep(currentSwing, previousSwing, candles, direction) {
 
   if (direction === 'bullish') {
     // Bullish: Both are LOWs
-    // Find first candle that CLOSES below previousSwing.low
+    // Find first candle that sweeps previousSwing.low (by wick or body)
     let firstSweepCandle = null;
     
     for (let i = startIndex; i <= endIndex; i++) {
       const candle = candles[i];
-      if (candle.close < previousSwing.low) {
+      // Sweep can happen by wick (low goes below) OR body (close goes below)
+      if (candle.low < previousSwing.low) {
         firstSweepCandle = candle;
         break;
       }
@@ -425,8 +426,18 @@ isWickSweep(currentSwing, previousSwing, candles, direction) {
       return result; // No sweep occurred
     }
 
-    // REMOVED THE RESTRICTIVE CHECK - price can continue lower
-    // That's actually expected as liquidity gets grabbed
+    // After finding the first sweep candle, check subsequent candles
+    // Subsequent candles can WICK below the first sweep candle's low
+    // BUT they must NOT CLOSE or OPEN below the first sweep candle's low
+    for (let i = firstSweepCandle.index + 1; i <= endIndex; i++) {
+      const candle = candles[i];
+      
+      // Invalid if close or open goes below the first sweep candle's low
+      if (candle.close < firstSweepCandle.low || candle.open < firstSweepCandle.low) {
+        this.logger.debug(`[PatternEngine] Sweep invalidated: candle ${i} close/open went below first sweep candle low (${firstSweepCandle.low})`);
+        return result;
+      }
+    }
     
     // Valid sweep
     result.isSweep = true;
@@ -435,12 +446,13 @@ isWickSweep(currentSwing, previousSwing, candles, direction) {
 
   } else {
     // Bearish: Both are HIGHs
-    // Find first candle that CLOSES above previousSwing.high
+    // Find first candle that sweeps previousSwing.high (by wick or body)
     let firstSweepCandle = null;
     
     for (let i = startIndex; i <= endIndex; i++) {
       const candle = candles[i];
-      if (candle.close > previousSwing.high) {
+      // Sweep can happen by wick (high goes above) OR body (close goes above)
+      if (candle.high > previousSwing.high) {
         firstSweepCandle = candle;
         break;
       }
@@ -450,8 +462,18 @@ isWickSweep(currentSwing, previousSwing, candles, direction) {
       return result; // No sweep occurred
     }
 
-    // REMOVED THE RESTRICTIVE CHECK - price can continue higher
-    // That's actually expected as liquidity gets grabbed
+    // After finding the first sweep candle, check subsequent candles
+    // Subsequent candles can WICK above the first sweep candle's high
+    // BUT they must NOT CLOSE or OPEN above the first sweep candle's high
+    for (let i = firstSweepCandle.index + 1; i <= endIndex; i++) {
+      const candle = candles[i];
+      
+      // Invalid if close or open goes above the first sweep candle's high
+      if (candle.close > firstSweepCandle.high || candle.open > firstSweepCandle.high) {
+        this.logger.debug(`[PatternEngine] Sweep invalidated: candle ${i} close/open went above first sweep candle high (${firstSweepCandle.high})`);
+        return result;
+      }
+    }
     
     // Valid sweep
     result.isSweep = true;
