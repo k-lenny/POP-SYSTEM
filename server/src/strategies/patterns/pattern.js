@@ -650,13 +650,17 @@ isWickSweep(currentSwing, previousSwing, candles, direction) {
         }
 
         return {
-            ...extremumCandle,
+            ...extremumCandle, // retest index itself is the OB
             retestLevel: direction === 'bullish' ? extremumCandle.low : extremumCandle.high,
             retestType: direction === 'bullish' ? 'support' : 'resistance',
             vShapeCandle: vShapeCandle,
             breakout: retestBreakout
         };
     }
+
+
+
+
 
     return null;
   }
@@ -735,38 +739,147 @@ isWickSweep(currentSwing, previousSwing, candles, direction) {
     return extremumCandle;
   }
 
+  /**
+   * Find the extreme candle after retest breakout that may cross the retest level
+   * Similar logic to isWickSweep - find the first candle to cross the retest level,
+   * then ensure no subsequent candles close or open beyond that first candle's extreme
+   */
+  findExtremeCandleAfterRetestBreakout(retest, candles, direction) {
+    if (!retest.breakout) {
+      return null;
+    }
+
+    const startIndex = retest.breakout.index + 1;
+    const retestLevel = direction === 'bullish' ? retest.low : retest.high;
+
+    if (startIndex >= candles.length) {
+      return null;
+    }
+
+    if (direction === 'bullish') {
+      // For bullish: find candle with lowest low after retest breakout
+      let extremeCandle = null;
+      let minLow = Infinity;
+      let firstCrossCandle = null;
+
+      // Find the candle with the lowest low AND track the first candle to cross retest level
+      for (let i = startIndex; i < candles.length; i++) {
+        const candle = candles[i];
+        
+        // Track first candle to cross below retest level
+        if (!firstCrossCandle && candle.low < retestLevel) {
+          firstCrossCandle = candle;
+        }
+        
+        if (candle.low < minLow) {
+          minLow = candle.low;
+          extremeCandle = candle;
+        }
+      }
+
+      if (!extremeCandle) {
+        return null;
+      }
+
+      // If a candle crossed below the retest level
+      // Check that no subsequent candles close or open below the FIRST cross candle's low
+      if (firstCrossCandle) {
+        for (let i = firstCrossCandle.index + 1; i < candles.length; i++) {
+          const candle = candles[i];
+          
+          // Invalid if close or open goes below the first cross candle's low
+          if (candle.close < firstCrossCandle.low || candle.open < firstCrossCandle.low) {
+            this.logger.debug(`[PatternEngine] Extreme candle invalidated: candle ${i} close/open went below first cross candle low (${firstCrossCandle.low})`);
+            return null;
+          }
+        }
+      }
+
+      return extremeCandle;
+
+    } else { // bearish
+      // For bearish: find candle with highest high after retest breakout
+      let extremeCandle = null;
+      let maxHigh = -Infinity;
+      let firstCrossCandle = null;
+
+      // Find the candle with the highest high AND track the first candle to cross retest level
+      for (let i = startIndex; i < candles.length; i++) {
+        const candle = candles[i];
+        
+        // Track first candle to cross above retest level
+        if (!firstCrossCandle && candle.high > retestLevel) {
+          firstCrossCandle = candle;
+        }
+        
+        if (candle.high > maxHigh) {
+          maxHigh = candle.high;
+          extremeCandle = candle;
+        }
+      }
+
+      if (!extremeCandle) {
+        return null;
+      }
+
+      // If a candle crossed above the retest level
+      // Check that no subsequent candles close or open above the FIRST cross candle's high
+      if (firstCrossCandle) {
+        for (let i = firstCrossCandle.index + 1; i < candles.length; i++) {
+          const candle = candles[i];
+          
+          // Invalid if close or open goes above the first cross candle's high
+          if (candle.close > firstCrossCandle.high || candle.open > firstCrossCandle.high) {
+            this.logger.debug(`[PatternEngine] Extreme candle invalidated: candle ${i} close/open went above first cross candle high (${firstCrossCandle.high})`);
+            return null;
+          }
+        }
+      }
+
+      return extremeCandle;
+    }
+  }
+
   identifyConfirmedSetup(retest, candles, direction) {
-    const startIndex = retest.index + 1;
+    // First, find the extreme candle after retest breakout
+    const extremeCandle = this.findExtremeCandleAfterRetestBreakout(retest, candles, direction);
     
-    for (let i = startIndex; i < candles.length - 1; i++) {
-      const candle1 = candles[i];
-      const candle2 = candles[i + 1];
+    if (!extremeCandle) {
+      this.logger.debug(`[PatternEngine] No valid extreme candle found after retest breakout`);
+      return null;
+    }
+
+    // Now look for candle2 - the next candle with equal level to extremeCandle
+    const startIndex = extremeCandle.index + 1;
+    
+    for (let i = startIndex; i < candles.length; i++) {
+      const candle2 = candles[i];
 
       if (direction === 'bullish') {
-        const lowDifference = Math.abs(candle1.low - candle2.low);
-        const tolerance = candle1.low * this.config.equalLevelTolerance;
+        const lowDifference = Math.abs(extremeCandle.low - candle2.low);
+        const tolerance = extremeCandle.low * this.config.equalLevelTolerance;
         
         if (lowDifference <= tolerance) {
           return {
             type: 'confirmedSetup',
             direction,
-            candle1,
+            candle1: extremeCandle,
             candle2,
-            level: Math.min(candle1.low, candle2.low),
+            level: Math.min(extremeCandle.low, candle2.low),
             levelType: 'support'
           };
         }
       } else {
-        const highDifference = Math.abs(candle1.high - candle2.high);
-        const tolerance = candle1.high * this.config.equalLevelTolerance;
+        const highDifference = Math.abs(extremeCandle.high - candle2.high);
+        const tolerance = extremeCandle.high * this.config.equalLevelTolerance;
         
         if (highDifference <= tolerance) {
           return {
             type: 'confirmedSetup',
             direction,
-            candle1,
+            candle1: extremeCandle,
             candle2,
-            level: Math.max(candle1.high, candle2.high),
+            level: Math.max(extremeCandle.high, candle2.high),
             levelType: 'resistance'
           };
         }
