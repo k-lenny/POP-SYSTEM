@@ -294,11 +294,35 @@ class PatternEngine extends EventEmitter {
       confirmedSetupCandle2PreviousFormattedTime: this._formatTime(pattern.confirmedSetup?.candle2Previous?.time),
       confirmedSetupCandle2PreviousStatus: pattern.confirmedSetup?.candle2PreviousStatus || null,
       
+      confirmedSetupCandle2PreviousVshapeIndex: pattern.confirmedSetup?.candle2PreviousVshape?.index || null,
+      confirmedSetupCandle2PreviousVshapePrice: pattern.direction === 'bullish'
+        ? pattern.confirmedSetup?.candle2PreviousVshape?.high
+        : pattern.confirmedSetup?.candle2PreviousVshape?.low,
+      confirmedSetupCandle2PreviousVshapeTime: pattern.confirmedSetup?.candle2PreviousVshape?.time || null,
+      confirmedSetupCandle2PreviousVshapeFormattedTime: this._formatTime(pattern.confirmedSetup?.candle2PreviousVshape?.time),
+      
+      confirmedSetupCandle2PreviousBreakoutIndex: pattern.confirmedSetup?.candle2PreviousBreakout?.index || null,
+      confirmedSetupCandle2PreviousBreakoutPrice: pattern.confirmedSetup?.candle2PreviousBreakout?.close || null,
+      confirmedSetupCandle2PreviousBreakoutTime: pattern.confirmedSetup?.candle2PreviousBreakout?.time || null,
+      confirmedSetupCandle2PreviousBreakoutFormattedTime: this._formatTime(pattern.confirmedSetup?.candle2PreviousBreakout?.time),
+      
       confirmedSetupCandle2NextIndex: pattern.confirmedSetup?.candle2Next?.index || null,
       confirmedSetupCandle2NextPrice: pattern.confirmedSetup?.candle2Next?.close || null,
       confirmedSetupCandle2NextTime: pattern.confirmedSetup?.candle2Next?.time|| null,
       confirmedSetupCandle2NextFormattedTime: this._formatTime(pattern.confirmedSetup?.candle2Next?.time),
       confirmedSetupCandle2NextStatus: pattern.confirmedSetup?.candle2NextStatus || null,
+      
+      confirmedSetupCandle2NextVshapeIndex: pattern.confirmedSetup?.candle2NextVshape?.index || null,
+      confirmedSetupCandle2NextVshapePrice: pattern.direction === 'bullish'
+        ? pattern.confirmedSetup?.candle2NextVshape?.high
+        : pattern.confirmedSetup?.candle2NextVshape?.low,
+      confirmedSetupCandle2NextVshapeTime: pattern.confirmedSetup?.candle2NextVshape?.time || null,
+      confirmedSetupCandle2NextVshapeFormattedTime: this._formatTime(pattern.confirmedSetup?.candle2NextVshape?.time),
+      
+      confirmedSetupCandle2NextBreakoutIndex: pattern.confirmedSetup?.candle2NextBreakout?.index || null,
+      confirmedSetupCandle2NextBreakoutPrice: pattern.confirmedSetup?.candle2NextBreakout?.close || null,
+      confirmedSetupCandle2NextBreakoutTime: pattern.confirmedSetup?.candle2NextBreakout?.time || null,
+      confirmedSetupCandle2NextBreakoutFormattedTime: this._formatTime(pattern.confirmedSetup?.candle2NextBreakout?.time),
       
       confirmedSetupLevel: pattern.confirmedSetup?.level || null,
       confirmedSetupLevelType: pattern.confirmedSetup?.levelType || null,
@@ -974,6 +998,32 @@ class PatternEngine extends EventEmitter {
       ? this._checkSSetup(previousSwing, extremeCandleSwing, candles, direction)
       : null;
 
+    // Find V-shape and breakout for candle2Previous (only if S SETUP is valid)
+    let candle2PreviousVshape = null;
+    let candle2PreviousBreakout = null;
+    
+    if (candle2PreviousStatus === 'S SETUP' && previousSwing) {
+      // Find V-shape between previousSwing and extremeCandle
+      candle2PreviousVshape = this.findVShapeCandle(
+        previousSwing,
+        extremeCandleSwing,
+        candles,
+        direction
+      );
+      
+      // Find breakout of the V-shape level (if V-shape exists)
+      if (candle2PreviousVshape) {
+        const vShapeLevel = direction === 'bullish' ? candle2PreviousVshape.high : candle2PreviousVshape.low;
+        candle2PreviousBreakout = this.identifyBreakoutOfLevel(
+          vShapeLevel,
+          candles,
+          extremeCandleSwing.index,
+          direction,
+          extremeCandleSwing
+        );
+      }
+    }
+
     // Find next swing of the same type (for DOUBLE EQ check)
     const swingType = direction === 'bullish' ? 'low' : 'high';
     const nextSwing = this._findNextSameTypeSwing(swings, swingIndex, swingType);
@@ -982,6 +1032,37 @@ class PatternEngine extends EventEmitter {
     const candle2NextStatus = nextSwing
       ? this._checkDoubleEq(extremeCandle, nextSwing, direction)
       : null;
+
+    // Find V-shape and breakout for candle2Next (only if DOUBLE EQ is valid)
+    let candle2NextVshape = null;
+    let candle2NextBreakout = null;
+    
+    if (candle2NextStatus === 'DOUBLE EQ' && nextSwing) {
+      // Find V-shape between extremeCandle and nextSwing
+      const extremeCandleAsSwing = extremeCandleSwing;
+      const nextSwingAsSwing = swings.find(s => s.index === nextSwing.index);
+      
+      if (nextSwingAsSwing) {
+        candle2NextVshape = this.findVShapeCandle(
+          extremeCandleAsSwing,
+          nextSwingAsSwing,
+          candles,
+          direction
+        );
+        
+        // Find breakout of the V-shape level (if V-shape exists)
+        if (candle2NextVshape) {
+          const vShapeLevel = direction === 'bullish' ? candle2NextVshape.high : candle2NextVshape.low;
+          candle2NextBreakout = this.identifyBreakoutOfLevel(
+            vShapeLevel,
+            candles,
+            nextSwingAsSwing.index,
+            direction,
+            nextSwingAsSwing
+          );
+        }
+      }
+    }
 
     // Look for candle2Next - the next swing after extremeCandle
     if (!nextSwing) {
@@ -992,8 +1073,12 @@ class PatternEngine extends EventEmitter {
         candle1: extremeCandle,
         candle2Previous: previousSwing ? candles[previousSwing.index] : null,
         candle2PreviousStatus,
+        candle2PreviousVshape,
+        candle2PreviousBreakout,
         candle2Next: null,
         candle2NextStatus: null,
+        candle2NextVshape: null,
+        candle2NextBreakout: null,
         level: direction === 'bullish' 
           ? Math.min(extremeCandle.low, extremeCandle.low) 
           : Math.max(extremeCandle.high, extremeCandle.high),
@@ -1015,8 +1100,12 @@ class PatternEngine extends EventEmitter {
           candle1: extremeCandle,
           candle2Previous: previousSwing ? candles[previousSwing.index] : null,
           candle2PreviousStatus,
+          candle2PreviousVshape,
+          candle2PreviousBreakout,
           candle2Next: nextSwingCandle,
           candle2NextStatus,
+          candle2NextVshape,
+          candle2NextBreakout,
           level: Math.min(extremeCandle.low, nextSwingCandle.low),
           levelType: 'support'
         };
@@ -1032,8 +1121,12 @@ class PatternEngine extends EventEmitter {
           candle1: extremeCandle,
           candle2Previous: previousSwing ? candles[previousSwing.index] : null,
           candle2PreviousStatus,
+          candle2PreviousVshape,
+          candle2PreviousBreakout,
           candle2Next: nextSwingCandle,
           candle2NextStatus,
+          candle2NextVshape,
+          candle2NextBreakout,
           level: Math.max(extremeCandle.high, nextSwingCandle.high),
           levelType: 'resistance'
         };
@@ -1047,8 +1140,12 @@ class PatternEngine extends EventEmitter {
       candle1: extremeCandle,
       candle2Previous: previousSwing ? candles[previousSwing.index] : null,
       candle2PreviousStatus,
+      candle2PreviousVshape,
+      candle2PreviousBreakout,
       candle2Next: null,
       candle2NextStatus: null,
+      candle2NextVshape: null,
+      candle2NextBreakout: null,
       level: direction === 'bullish' 
         ? extremeCandle.low 
         : extremeCandle.high,
