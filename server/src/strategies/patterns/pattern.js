@@ -96,14 +96,20 @@ class PatternEngine extends EventEmitter {
    * Find the previous extreme swing before a given index
    * For bullish: Find the swing low with the lowest low value (but must be ABOVE the current swing low)
    * For bearish: Find the swing high with the highest high value (but must be BELOW the current swing high)
+   * @param {number} minIndex - Optional minimum index boundary (swing must be at or after this index)
    */
-  _findPreviousExtremeSwing(swings, currentIndex, direction, currentSwingLevel) {
+  _findPreviousExtremeSwing(swings, currentIndex, direction, currentSwingLevel, minIndex = 0) {
     const type = direction === 'bullish' ? 'low' : 'high';
     let extremeSwing = null;
     let extremeValue = direction === 'bullish' ? Infinity : -Infinity;
 
     for (let i = currentIndex - 1; i >= 0; i--) {
       if (swings[i].type === type) {
+        // Skip swings that are before the minimum index boundary
+        if (swings[i].index < minIndex) {
+          continue;
+        }
+        
         if (direction === 'bullish') {
           // For bullish: find the lowest low that is ABOVE the current swing low
           if (swings[i].low > currentSwingLevel && swings[i].low < extremeValue) {
@@ -323,22 +329,6 @@ class PatternEngine extends EventEmitter {
       confirmedSetupCandle2NextBreakoutPrice: pattern.confirmedSetup?.candle2NextBreakout?.close || null,
       confirmedSetupCandle2NextBreakoutTime: pattern.confirmedSetup?.candle2NextBreakout?.time || null,
       confirmedSetupCandle2NextBreakoutFormattedTime: this._formatTime(pattern.confirmedSetup?.candle2NextBreakout?.time),
-      
-      confirmedSetupLevel: pattern.confirmedSetup?.level || null,
-      confirmedSetupLevelType: pattern.confirmedSetup?.levelType || null,
-      
-      // Stage 4: Confirmed Setup Breakout
-      confirmedSetupBreakoutIndex: pattern.confirmedSetup?.breakout?.index || null,
-      confirmedSetupBreakoutPrice: pattern.confirmedSetup?.breakout?.close || null,
-      confirmedSetupBreakoutTime: pattern.confirmedSetup?.breakout?.time || null,
-      confirmedSetupBreakoutFormattedTime: this._formatTime(pattern.confirmedSetup?.breakout?.time),
-      confirmedSetupBreakoutType: pattern.confirmedSetup?.breakout?.breakoutType || null,
-      
-      // Stage 5: Confirmed Setup Retest
-      confirmedSetupRetestIndex: pattern.confirmedSetup?.retest?.index || null,
-      confirmedSetupRetestPrice: pattern.confirmedSetup?.retest?.close || null,
-      confirmedSetupRetestTime: pattern.confirmedSetup?.retest?.time || null,
-      confirmedSetupRetestFormattedTime: this._formatTime(pattern.confirmedSetup?.retest?.time),
       
       // Stage 6: Second Confirmed Setup
       secondConfirmedSetupCandle1Index: pattern.confirmedSetup?.secondConfirmedSetup?.candle1?.index || null,
@@ -815,8 +805,10 @@ class PatternEngine extends EventEmitter {
 
   /**
    * Find the extreme candle after retest breakout that may cross the retest level
-   * Similar logic to isWickSweep - find the first candle to cross the retest level,
-   * then ensure no subsequent candles close or open beyond that first candle's extreme
+   * Rules:
+   * 1. Can cross retest level by WICK only (no body cross)
+   * 2. OR one candlestick can close/open beyond retest level
+   * 3. BUT no subsequent candlesticks can close/open beyond that first crossing candlestick
    */
   findExtremeCandleAfterRetestBreakout(retest, candles, direction) {
     if (!retest.breakout) {
@@ -834,15 +826,15 @@ class PatternEngine extends EventEmitter {
       // For bullish: find candle with lowest low after retest breakout
       let extremeCandle = null;
       let minLow = Infinity;
-      let firstCrossCandle = null;
+      let firstBodyCrossCandle = null; // First candle whose close or open crosses below retest level
 
-      // Find the candle with the lowest low AND track the first candle to cross retest level
+      // Find the candle with the lowest low AND track the first candle whose body crosses retest level
       for (let i = startIndex; i < candles.length; i++) {
         const candle = candles[i];
         
-        // Track first candle to cross below retest level
-        if (!firstCrossCandle && candle.low < retestLevel) {
-          firstCrossCandle = candle;
+        // Track first candle whose BODY (close or open) crosses below retest level
+        if (!firstBodyCrossCandle && (candle.close < retestLevel || candle.open < retestLevel)) {
+          firstBodyCrossCandle = candle;
         }
         
         if (candle.low < minLow) {
@@ -855,15 +847,15 @@ class PatternEngine extends EventEmitter {
         return null;
       }
 
-      // If a candle crossed below the retest level
-      // Check that no subsequent candles close or open below the FIRST cross candle's low
-      if (firstCrossCandle) {
-        for (let i = firstCrossCandle.index + 1; i < candles.length; i++) {
+      // If a candle's body crossed below the retest level
+      // Check that no subsequent candles close or open below the FIRST body cross candle's low
+      if (firstBodyCrossCandle) {
+        for (let i = firstBodyCrossCandle.index + 1; i < candles.length; i++) {
           const candle = candles[i];
           
-          // Invalid if close or open goes below the first cross candle's low
-          if (candle.close < firstCrossCandle.low || candle.open < firstCrossCandle.low) {
-            this.logger.debug(`[PatternEngine] Extreme candle invalidated: candle ${i} close/open went below first cross candle low (${firstCrossCandle.low})`);
+          // Invalid if close or open goes below the first body cross candle's low
+          if (candle.close < firstBodyCrossCandle.low || candle.open < firstBodyCrossCandle.low) {
+            this.logger.debug(`[PatternEngine] Extreme candle invalidated: candle ${i} close/open went below first body cross candle low (${firstBodyCrossCandle.low})`);
             return null;
           }
         }
@@ -875,15 +867,15 @@ class PatternEngine extends EventEmitter {
       // For bearish: find candle with highest high after retest breakout
       let extremeCandle = null;
       let maxHigh = -Infinity;
-      let firstCrossCandle = null;
+      let firstBodyCrossCandle = null; // First candle whose close or open crosses above retest level
 
-      // Find the candle with the highest high AND track the first candle to cross retest level
+      // Find the candle with the highest high AND track the first candle whose body crosses retest level
       for (let i = startIndex; i < candles.length; i++) {
         const candle = candles[i];
         
-        // Track first candle to cross above retest level
-        if (!firstCrossCandle && candle.high > retestLevel) {
-          firstCrossCandle = candle;
+        // Track first candle whose BODY (close or open) crosses above retest level
+        if (!firstBodyCrossCandle && (candle.close > retestLevel || candle.open > retestLevel)) {
+          firstBodyCrossCandle = candle;
         }
         
         if (candle.high > maxHigh) {
@@ -896,15 +888,15 @@ class PatternEngine extends EventEmitter {
         return null;
       }
 
-      // If a candle crossed above the retest level
-      // Check that no subsequent candles close or open above the FIRST cross candle's high
-      if (firstCrossCandle) {
-        for (let i = firstCrossCandle.index + 1; i < candles.length; i++) {
+      // If a candle's body crossed above the retest level
+      // Check that no subsequent candles close or open above the FIRST body cross candle's high
+      if (firstBodyCrossCandle) {
+        for (let i = firstBodyCrossCandle.index + 1; i < candles.length; i++) {
           const candle = candles[i];
           
-          // Invalid if close or open goes above the first cross candle's high
-          if (candle.close > firstCrossCandle.high || candle.open > firstCrossCandle.high) {
-            this.logger.debug(`[PatternEngine] Extreme candle invalidated: candle ${i} close/open went above first cross candle high (${firstCrossCandle.high})`);
+          // Invalid if close or open goes above the first body cross candle's high
+          if (candle.close > firstBodyCrossCandle.high || candle.open > firstBodyCrossCandle.high) {
+            this.logger.debug(`[PatternEngine] Extreme candle invalidated: candle ${i} close/open went above first body cross candle high (${firstBodyCrossCandle.high})`);
             return null;
           }
         }
@@ -971,7 +963,13 @@ class PatternEngine extends EventEmitter {
   }
 
   identifyConfirmedSetup(retest, candles, direction, swings) {
-    // First, find the extreme candle after retest breakout
+    // First, validate that retest has both vShapeCandle and breakout
+    if (!retest.vShapeCandle || !retest.breakout) {
+      this.logger.debug(`[PatternEngine] Retest must have vShapeCandle and breakout before confirmed setup can be identified`);
+      return null;
+    }
+
+    // Find the extreme candle after retest breakout
     const extremeCandle = this.findExtremeCandleAfterRetestBreakout(retest, candles, direction);
     
     if (!extremeCandle) {
@@ -989,9 +987,16 @@ class PatternEngine extends EventEmitter {
 
     // Find previous EXTREME swing (lowest low for bullish, highest high for bearish)
     // But only consider swings that are ABOVE candle1 for bullish (BELOW for bearish)
+    // AND only consider swings that occur AT OR AFTER retestBreakout.index
     const swingIndex = swings.findIndex(s => s.index === extremeCandleSwing.index);
     const currentSwingLevel = direction === 'bullish' ? extremeCandle.low : extremeCandle.high;
-    const previousSwing = this._findPreviousExtremeSwing(swings, swingIndex, direction, currentSwingLevel);
+    const previousSwing = this._findPreviousExtremeSwing(
+      swings, 
+      swingIndex, 
+      direction, 
+      currentSwingLevel,
+      retest.breakout.index  // Only search for swings at or after retestBreakout
+    );
     
     // Check S SETUP status
     const candle2PreviousStatus = previousSwing 
