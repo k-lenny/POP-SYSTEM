@@ -312,6 +312,12 @@ class PatternEngine extends EventEmitter {
       confirmedSetupCandle2PreviousBreakoutTime: pattern.confirmedSetup?.candle2PreviousBreakout?.time || null,
       confirmedSetupCandle2PreviousBreakoutFormattedTime: this._formatTime(pattern.confirmedSetup?.candle2PreviousBreakout?.time),
       
+      confirmedSetupCandle2PreviousRetestIndex: pattern.confirmedSetup?.candle2PreviousRetest?.index || null,
+      confirmedSetupCandle2PreviousRetestPrice: pattern.confirmedSetup?.candle2PreviousRetest?.close || null,
+      confirmedSetupCandle2PreviousRetestTime: pattern.confirmedSetup?.candle2PreviousRetest?.time || null,
+      confirmedSetupCandle2PreviousRetestFormattedTime: this._formatTime(pattern.confirmedSetup?.candle2PreviousRetest?.time),
+      confirmedSetupCandle2PreviousRetestLevel: pattern.confirmedSetup?.candle2PreviousRetest?.retestLevel || null,
+      
       confirmedSetupCandle2NextIndex: pattern.confirmedSetup?.candle2Next?.index || null,
       confirmedSetupCandle2NextPrice: pattern.confirmedSetup?.candle2Next?.close || null,
       confirmedSetupCandle2NextTime: pattern.confirmedSetup?.candle2Next?.time|| null,
@@ -329,6 +335,12 @@ class PatternEngine extends EventEmitter {
       confirmedSetupCandle2NextBreakoutPrice: pattern.confirmedSetup?.candle2NextBreakout?.close || null,
       confirmedSetupCandle2NextBreakoutTime: pattern.confirmedSetup?.candle2NextBreakout?.time || null,
       confirmedSetupCandle2NextBreakoutFormattedTime: this._formatTime(pattern.confirmedSetup?.candle2NextBreakout?.time),
+      
+      confirmedSetupCandle2NextRetestIndex: pattern.confirmedSetup?.candle2NextRetest?.index || null,
+      confirmedSetupCandle2NextRetestPrice: pattern.confirmedSetup?.candle2NextRetest?.close || null,
+      confirmedSetupCandle2NextRetestTime: pattern.confirmedSetup?.candle2NextRetest?.time || null,
+      confirmedSetupCandle2NextRetestFormattedTime: this._formatTime(pattern.confirmedSetup?.candle2NextRetest?.time),
+      confirmedSetupCandle2NextRetestLevel: pattern.confirmedSetup?.candle2NextRetest?.retestLevel || null,
       
       // Stage 6: Second Confirmed Setup
       secondConfirmedSetupCandle1Index: pattern.confirmedSetup?.secondConfirmedSetup?.candle1?.index || null,
@@ -380,7 +392,11 @@ class PatternEngine extends EventEmitter {
    */
   _buildPatternStages(setup, candles, direction, swings) {
     // Stage 2: Retest
-    const retest = this.identifyRetest(setup, candles, direction);
+  const retest = this.identifyRetest(
+  { ...setup, context: 'primary' },
+  candles,
+  direction
+);
     if (!retest) return;
     setup.retest = retest;
 
@@ -717,13 +733,14 @@ class PatternEngine extends EventEmitter {
           );
         }
 
-        return {
-            ...extremumCandle, // retest index itself is the OB
-            retestLevel: direction === 'bullish' ? extremumCandle.low : extremumCandle.high,
-            retestType: direction === 'bullish' ? 'support' : 'resistance',
-            vShapeCandle: vShapeCandle,
-            breakout: retestBreakout
-        };
+   return {
+    ...extremumCandle,
+    retestLevel: direction === 'bullish' ? extremumCandle.low : extremumCandle.high,
+    retestType: direction === 'bullish' ? 'support' : 'resistance',
+    vShapeCandle: vShapeCandle,
+    breakout: retestBreakout,
+    context: setup.context || 'unknown' // 🔥 CRITICAL ADD
+};
     }
 
     return null;
@@ -802,6 +819,60 @@ class PatternEngine extends EventEmitter {
 
     return extremumCandle;
   }
+
+  /**
+ * Find the extreme retest candle BETWEEN breakout and target candle (candle1)
+ * This overrides the generic identifyRetest behavior for confirmed setups
+ */
+findInternalRetest(breakoutCandle, targetCandle, candles, direction) {
+  const startIndex = breakoutCandle.index + 1;
+  const endIndex = targetCandle.index;
+
+  if (endIndex <= startIndex) {
+    return null;
+  }
+
+  let extremumCandle = null;
+
+  if (direction === 'bullish') {
+    let minLow = Infinity;
+
+    for (let i = startIndex; i < endIndex; i++) {
+      const candle = candles[i];
+      if (candle.low < minLow) {
+        minLow = candle.low;
+        extremumCandle = candle;
+      }
+    }
+
+    if (!extremumCandle) return null;
+
+    return {
+      ...extremumCandle,
+      retestLevel: extremumCandle.low,
+      retestType: 'support'
+    };
+
+  } else {
+    let maxHigh = -Infinity;
+
+    for (let i = startIndex; i < endIndex; i++) {
+      const candle = candles[i];
+      if (candle.high > maxHigh) {
+        maxHigh = candle.high;
+        extremumCandle = candle;
+      }
+    }
+
+    if (!extremumCandle) return null;
+
+    return {
+      ...extremumCandle,
+      retestLevel: extremumCandle.high,
+      retestType: 'resistance'
+    };
+  }
+}
 
   /**
    * Find the extreme candle after retest breakout that may cross the retest level
@@ -1006,6 +1077,7 @@ class PatternEngine extends EventEmitter {
     // Find V-shape and breakout for candle2Previous (only if S SETUP is valid)
     let candle2PreviousVshape = null;
     let candle2PreviousBreakout = null;
+    let candle2PreviousRetest = null;
     
     if (candle2PreviousStatus === 'S SETUP' && previousSwing) {
       // Find V-shape between previousSwing and extremeCandle
@@ -1026,6 +1098,18 @@ class PatternEngine extends EventEmitter {
           direction,
           extremeCandleSwing
         );
+        
+        // Find retest after the breakout (if breakout exists)
+if (candle2PreviousBreakout) {
+  candle2PreviousRetest = this.findInternalRetest(
+    candle2PreviousBreakout,
+    extremeCandle,
+    candles,
+    direction
+  );
+} else {
+  candle2PreviousRetest = null;
+}
       }
     }
 
@@ -1041,6 +1125,7 @@ class PatternEngine extends EventEmitter {
     // Find V-shape and breakout for candle2Next (only if DOUBLE EQ is valid)
     let candle2NextVshape = null;
     let candle2NextBreakout = null;
+    let candle2NextRetest = null;
     
     if (candle2NextStatus === 'DOUBLE EQ' && nextSwing) {
       // Find V-shape between extremeCandle and nextSwing
@@ -1065,6 +1150,18 @@ class PatternEngine extends EventEmitter {
             direction,
             nextSwingAsSwing
           );
+          
+          // Find retest after the breakout (if breakout exists)
+if (candle2NextBreakout) {
+  candle2NextRetest = this.findInternalRetest(
+    candle2NextBreakout,
+    extremeCandle,
+    candles,
+    direction
+  );
+} else {
+  candle2NextRetest = null;
+}
         }
       }
     }
@@ -1080,10 +1177,12 @@ class PatternEngine extends EventEmitter {
         candle2PreviousStatus,
         candle2PreviousVshape,
         candle2PreviousBreakout,
+        candle2PreviousRetest,
         candle2Next: null,
         candle2NextStatus: null,
         candle2NextVshape: null,
         candle2NextBreakout: null,
+        candle2NextRetest: null,
         level: direction === 'bullish' 
           ? Math.min(extremeCandle.low, extremeCandle.low) 
           : Math.max(extremeCandle.high, extremeCandle.high),
@@ -1107,10 +1206,12 @@ class PatternEngine extends EventEmitter {
           candle2PreviousStatus,
           candle2PreviousVshape,
           candle2PreviousBreakout,
+          candle2PreviousRetest,
           candle2Next: nextSwingCandle,
           candle2NextStatus,
           candle2NextVshape,
           candle2NextBreakout,
+          candle2NextRetest,
           level: Math.min(extremeCandle.low, nextSwingCandle.low),
           levelType: 'support'
         };
@@ -1128,10 +1229,12 @@ class PatternEngine extends EventEmitter {
           candle2PreviousStatus,
           candle2PreviousVshape,
           candle2PreviousBreakout,
+          candle2PreviousRetest,
           candle2Next: nextSwingCandle,
           candle2NextStatus,
           candle2NextVshape,
           candle2NextBreakout,
+          candle2NextRetest,
           level: Math.max(extremeCandle.high, nextSwingCandle.high),
           levelType: 'resistance'
         };
@@ -1147,10 +1250,12 @@ class PatternEngine extends EventEmitter {
       candle2PreviousStatus,
       candle2PreviousVshape,
       candle2PreviousBreakout,
+      candle2PreviousRetest,
       candle2Next: null,
       candle2NextStatus: null,
       candle2NextVshape: null,
       candle2NextBreakout: null,
+      candle2NextRetest: null,
       level: direction === 'bullish' 
         ? extremeCandle.low 
         : extremeCandle.high,
