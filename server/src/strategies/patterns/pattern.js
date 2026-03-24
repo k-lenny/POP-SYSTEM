@@ -15,7 +15,7 @@ class PatternEngine extends EventEmitter {
       vShapeWickRatio: 2.0,        // V-shape wick must be 2x body size
       equalLevelTolerance: 0.002,   // 0.2% tolerance for equal highs/lows
       minCandlesBetweenSwings: 3,   // Minimum candles between swings
-      retestScanRange: 25,          // Maximum candles to scan for retest
+      retestScanRange: 30,          // Maximum candles to scan for retest
       ...options.config
     };
   }
@@ -880,7 +880,7 @@ if (candle.low < minLow) {
  */
 findInternalRetest(breakoutCandle, targetCandle, candles, direction) {
   const startIndex = breakoutCandle.index + 1;
-  const endIndex = targetCandle.index;
+  const endIndex = targetCandle.index; // Target is candle1
 
   if (endIndex <= startIndex) {
     return null;
@@ -889,10 +889,13 @@ findInternalRetest(breakoutCandle, targetCandle, candles, direction) {
   let extremumCandle = null;
 
   if (direction === 'bullish') {
+    // For bullish: find the lowest low between breakout and candle1
     let minLow = Infinity;
 
     for (let i = startIndex; i < endIndex; i++) {
       const candle = candles[i];
+      if (!candle) continue;
+      
       if (candle.low < minLow) {
         minLow = candle.low;
         extremumCandle = candle;
@@ -904,14 +907,18 @@ findInternalRetest(breakoutCandle, targetCandle, candles, direction) {
     return {
       ...extremumCandle,
       retestLevel: extremumCandle.low,
-      retestType: 'support'
+      retestType: 'support',
+      context: 'internal_retest'
     };
 
   } else {
+    // For bearish: find the highest high between breakout and candle1
     let maxHigh = -Infinity;
 
     for (let i = startIndex; i < endIndex; i++) {
       const candle = candles[i];
+      if (!candle) continue;
+      
       if (candle.high > maxHigh) {
         maxHigh = candle.high;
         extremumCandle = candle;
@@ -923,7 +930,8 @@ findInternalRetest(breakoutCandle, targetCandle, candles, direction) {
     return {
       ...extremumCandle,
       retestLevel: extremumCandle.high,
-      retestType: 'resistance'
+      retestType: 'resistance',
+      context: 'internal_retest'
     };
   }
 }
@@ -1164,19 +1172,28 @@ identifyConfirmedSetup(retest, candles, direction, swings, swingIndex) {
       }
     }
 
-    // Get the next swing of the same type using the swingIndex map
+    // Find the EXTREME swing after extremeCandle (candle1)
+    // For bullish: find the swing with the LOWEST low after candle1
+    // For bearish: find the swing with the HIGHEST high after candle1
     const swingType = direction === 'bullish' ? 'low' : 'high';
     
-    // CRITICAL FIX: Check if swingIndex exists and has nextSameType
     let nextSwing = null;
-    if (swingIndex && swingIndex.nextSameType) {
-      nextSwing = swingIndex.nextSameType.get(swingPosition);
-    } else {
-      // Fallback: find next swing manually if the map is not available
-      for (let i = swingPosition + 1; i < swings.length; i++) {
-        if (swings[i].type === swingType) {
-          nextSwing = swings[i];
-          break;
+    let extremeValue = direction === 'bullish' ? Infinity : -Infinity;
+    
+    for (let i = swingPosition + 1; i < swings.length; i++) {
+      if (swings[i].type === swingType) {
+        if (direction === 'bullish') {
+          // Find the lowest low
+          if (swings[i].low < extremeValue) {
+            extremeValue = swings[i].low;
+            nextSwing = swings[i];
+          }
+        } else {
+          // Find the highest high
+          if (swings[i].high > extremeValue) {
+            extremeValue = swings[i].high;
+            nextSwing = swings[i];
+          }
         }
       }
     }
