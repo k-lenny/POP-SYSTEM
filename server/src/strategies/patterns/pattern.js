@@ -15,7 +15,7 @@ class PatternEngine extends EventEmitter {
       vShapeWickRatio: 2.0,        // V-shape wick must be 2x body size
       equalLevelTolerance: 0.002,   // 0.2% tolerance for equal highs/lows
       minCandlesBetweenSwings: 3,   // Minimum candles between swings
-      retestScanRange: 30,          // Maximum candles to scan for retest
+      retestScanRange: 7,          // Maximum candles to scan for retest
       ...options.config
     };
   }
@@ -238,7 +238,7 @@ class PatternEngine extends EventEmitter {
       );
       
       if (setup) {
-        // Build the full pattern with all stages
+        // Build the full pattern with all stages (up to stage 3)
         this._buildPatternStages(setup, enrichedCandles, direction, swings, swingIndex);
         
         // Add rich metadata
@@ -358,12 +358,6 @@ class PatternEngine extends EventEmitter {
       confirmedSetupCandle2PreviousBreakoutTime: pattern.confirmedSetup?.candle2PreviousBreakout?.time || null,
       confirmedSetupCandle2PreviousBreakoutFormattedTime: this._formatTime(pattern.confirmedSetup?.candle2PreviousBreakout?.time),
       
-      confirmedSetupCandle2PreviousRetestIndex: pattern.confirmedSetup?.candle2PreviousRetest?.index || null,
-      confirmedSetupCandle2PreviousRetestPrice: pattern.confirmedSetup?.candle2PreviousRetest?.close || null,
-      confirmedSetupCandle2PreviousRetestTime: pattern.confirmedSetup?.candle2PreviousRetest?.time || null,
-      confirmedSetupCandle2PreviousRetestFormattedTime: this._formatTime(pattern.confirmedSetup?.candle2PreviousRetest?.time),
-      confirmedSetupCandle2PreviousRetestLevel: pattern.confirmedSetup?.candle2PreviousRetest?.retestLevel || null,
-      
       confirmedSetupCandle2NextIndex: pattern.confirmedSetup?.candle2Next?.index || null,
       confirmedSetupCandle2NextPrice: pattern.confirmedSetup?.candle2Next?.close || null,
       confirmedSetupCandle2NextTime: pattern.confirmedSetup?.candle2Next?.time|| null,
@@ -382,34 +376,9 @@ class PatternEngine extends EventEmitter {
       confirmedSetupCandle2NextBreakoutTime: pattern.confirmedSetup?.candle2NextBreakout?.time || null,
       confirmedSetupCandle2NextBreakoutFormattedTime: this._formatTime(pattern.confirmedSetup?.candle2NextBreakout?.time),
       
-      confirmedSetupCandle2NextRetestIndex: pattern.confirmedSetup?.candle2NextRetest?.index || null,
-      confirmedSetupCandle2NextRetestPrice: pattern.confirmedSetup?.candle2NextRetest?.close || null,
-      confirmedSetupCandle2NextRetestTime: pattern.confirmedSetup?.candle2NextRetest?.time || null,
-      confirmedSetupCandle2NextRetestFormattedTime: this._formatTime(pattern.confirmedSetup?.candle2NextRetest?.time),
-      confirmedSetupCandle2NextRetestLevel: pattern.confirmedSetup?.candle2NextRetest?.retestLevel || null,
-      
-      // Stage 6: Second Confirmed Setup
-      secondConfirmedSetupCandle1Index: pattern.confirmedSetup?.secondConfirmedSetup?.candle1?.index || null,
-      secondConfirmedSetupCandle1Price: pattern.confirmedSetup?.secondConfirmedSetup?.candle1?.close || null,
-      secondConfirmedSetupCandle1Time: pattern.confirmedSetup?.secondConfirmedSetup?.candle1?.time || null,
-      secondConfirmedSetupCandle1FormattedTime: this._formatTime(pattern.confirmedSetup?.secondConfirmedSetup?.candle1?.time),
-      
-      secondConfirmedSetupCandle2Index: pattern.confirmedSetup?.secondConfirmedSetup?.candle2?.index || null,
-      secondConfirmedSetupCandle2Price: pattern.confirmedSetup?.secondConfirmedSetup?.candle2?.close || null,
-      secondConfirmedSetupCandle2Time: pattern.confirmedSetup?.secondConfirmedSetup?.candle2?.time || null,
-      secondConfirmedSetupCandle2FormattedTime: this._formatTime(pattern.confirmedSetup?.secondConfirmedSetup?.candle2?.time),
-      
-      secondConfirmedSetupLevel: pattern.confirmedSetup?.secondConfirmedSetup?.level || null,
-      
-      // Stage 7: Final Breakout
-      finalBreakoutIndex: pattern.confirmedSetup?.secondConfirmedSetup?.breakout?.index || null,
-      finalBreakoutPrice: pattern.confirmedSetup?.secondConfirmedSetup?.breakout?.close || null,
-      finalBreakoutTime: pattern.confirmedSetup?.secondConfirmedSetup?.breakout?.time || null,
-      finalBreakoutFormattedTime: this._formatTime(pattern.confirmedSetup?.secondConfirmedSetup?.breakout?.time),
-      
-      // Pattern completion status
+      // Pattern completion status (now stage 3 is considered complete)
       stage: this._getPatternStage(pattern),
-      isComplete: !!(pattern.confirmedSetup?.secondConfirmedSetup?.breakout),
+      isComplete: !!(pattern.confirmedSetup),
       
       // Timestamps for sorting/filtering
       formattedTime: this._formatTime(pattern.currentSwing?.time),
@@ -421,20 +390,16 @@ class PatternEngine extends EventEmitter {
   }
 
   /**
-   * Determine which stage the pattern has reached
+   * Determine which stage the pattern has reached (max stage 3 now)
    */
   _getPatternStage(pattern) {
-    if (pattern.confirmedSetup?.secondConfirmedSetup?.breakout) return 7;
-    if (pattern.confirmedSetup?.secondConfirmedSetup) return 6;
-    if (pattern.confirmedSetup?.retest) return 5;
-    if (pattern.confirmedSetup?.breakout) return 4;
     if (pattern.confirmedSetup) return 3;
     if (pattern.retest) return 2;
     return 1;
   }
 
   /**
-   * Recursively builds all pattern stages
+   * Recursively builds all pattern stages (up to stage 3)
    */
   _buildPatternStages(setup, candles, direction, swings, swingIndex) {
     // Stage 2: Retest
@@ -450,36 +415,6 @@ class PatternEngine extends EventEmitter {
     const confirmedSetup = this.identifyConfirmedSetup(retest, candles, direction, swings, swingIndex);
     if (!confirmedSetup) return;
     setup.confirmedSetup = confirmedSetup;
-
-    // Stage 4: Breakout of Confirmed Setup
-    const confirmedSetupBreakout = this.identifyBreakout(confirmedSetup, candles, direction);
-    if (!confirmedSetupBreakout) return;
-    confirmedSetup.breakout = confirmedSetupBreakout;
-
-    // Stage 5: Retest of Confirmed Setup
-    const confirmedSetupRetest = this.identifyRetest(
-      { ...confirmedSetup, breakout: confirmedSetupBreakout, currentSwing: setup.currentSwing },
-      candles,
-      direction
-    );
-    if (!confirmedSetupRetest) return;
-    confirmedSetup.retest = confirmedSetupRetest;
-
-    // Stage 6: Second Confirmed Setup
-    const secondConfirmedSetup = this.identifyConfirmedSetup(
-      confirmedSetupRetest,
-      candles,
-      direction,
-      swings
-    );
-    if (!secondConfirmedSetup) return;
-    confirmedSetup.secondConfirmedSetup = secondConfirmedSetup;
-
-    // Stage 7: Final Breakout
-    const finalBreakout = this.identifyBreakout(secondConfirmedSetup, candles, direction);
-    if (finalBreakout) {
-      secondConfirmedSetup.breakout = finalBreakout;
-    }
   }
 
   identifySetup(currentSwing, previousSwing, candles, direction, swings, swingIndex) {
@@ -873,132 +808,6 @@ class PatternEngine extends EventEmitter {
     return extremumCandle;
   }
 
-/**
- * Find retest that returns to V-shape level after breakout
- * Simplified version with no body cross invalidation
- * @param {Object} breakoutCandle - The breakout candle
- * @param {Object} vShapeCandle - The V-shape candle with the level to retest
- * @param {Array} candles - All candles
- * @param {string} direction - 'bullish' or 'bearish'
- * @returns {Object|null} Retest candle or null if never returns to level
- */
-findRetestAfterBreakout(breakoutCandle, vShapeCandle, candles, direction) {
-  if (!breakoutCandle || !vShapeCandle) {
-    return null;
-  }
-
-  const startIndex = breakoutCandle.index + 1;
-  const retestLevel = direction === 'bullish' ? vShapeCandle.high : vShapeCandle.low;
-  
-  if (startIndex >= candles.length) {
-    return null;
-  }
-
-  // Use the same scan range as primary retest
-  const maxScanRange = this.config.retestScanRange;
-  const endIndex = Math.min(startIndex + maxScanRange, candles.length);
-
-  if (direction === 'bullish') {
-    // For bullish: find the first candle that retests the high level (V-shape high)
-    for (let i = startIndex; i < endIndex; i++) {
-      const candle = candles[i];
-      if (!candle) continue;
-      
-      // Retest happens when price touches or exceeds the V-shape high
-      if (candle.high >= retestLevel) {
-        return {
-          ...candle,
-          retestLevel: retestLevel,
-          retestType: 'resistance_retest',
-          context: 'confirmed_setup_retest'
-        };
-      }
-    }
-    
-  } else { // bearish
-    // For bearish: find the first candle that retests the low level (V-shape low)
-    for (let i = startIndex; i < endIndex; i++) {
-      const candle = candles[i];
-      if (!candle) continue;
-      
-      // Retest happens when price touches or goes below the V-shape low
-      if (candle.low <= retestLevel) {
-        return {
-          ...candle,
-          retestLevel: retestLevel,
-          retestType: 'support_retest',
-          context: 'confirmed_setup_retest'
-        };
-      }
-    }
-  }
-
-  // No retest found within scan range
-  return null;
-}
-
-  /**
-   * Find the extreme retest candle BETWEEN breakout and target candle (candle1)
-   * This overrides the generic identifyRetest behavior for confirmed setups
-   */
-  findInternalRetest(breakoutCandle, targetCandle, candles, direction) {
-    const startIndex = breakoutCandle.index + 1;
-    const endIndex = targetCandle.index; // Target is candle1
-
-    if (endIndex <= startIndex) {
-      return null;
-    }
-
-    let extremumCandle = null;
-
-    if (direction === 'bullish') {
-      // For bullish: find the lowest low between breakout and candle1
-      let minLow = Infinity;
-
-      for (let i = startIndex; i < endIndex; i++) {
-        const candle = candles[i];
-        if (!candle) continue;
-        
-        if (candle.low < minLow) {
-          minLow = candle.low;
-          extremumCandle = candle;
-        }
-      }
-
-      if (!extremumCandle) return null;
-
-      return {
-        ...extremumCandle,
-        retestLevel: extremumCandle.low,
-        retestType: 'support',
-        context: 'internal_retest'
-      };
-
-    } else {
-      // For bearish: find the highest high between breakout and candle1
-      let maxHigh = -Infinity;
-
-      for (let i = startIndex; i < endIndex; i++) {
-        const candle = candles[i];
-        if (!candle) continue;
-        
-        if (candle.high > maxHigh) {
-          maxHigh = candle.high;
-          extremumCandle = candle;
-        }
-      }
-
-      if (!extremumCandle) return null;
-
-      return {
-        ...extremumCandle,
-        retestLevel: extremumCandle.high,
-        retestType: 'resistance',
-        context: 'internal_retest'
-      };
-    }
-  }
-
   /**
    * Find the extreme candle after retest breakout that may cross the retest level
    * Rules:
@@ -1204,7 +1013,6 @@ findRetestAfterBreakout(breakoutCandle, vShapeCandle, candles, direction) {
     // Find V-shape and breakout for candle2Previous
     let candle2PreviousVshape = null;
     let candle2PreviousBreakout = null;
-    let candle2PreviousRetest = null;
     
     if (candle2PreviousStatus === 'S SETUP' && previousSwing) {
       candle2PreviousVshape = this.findVShapeCandle(
@@ -1223,22 +1031,10 @@ findRetestAfterBreakout(breakoutCandle, vShapeCandle, candles, direction) {
           direction,
           extremeCandleSwing
         );
-        
-        // UPDATED: Find retest that returns to V-shape level after breakout
-        if (candle2PreviousBreakout) {
-          candle2PreviousRetest = this.findRetestAfterBreakout(
-            candle2PreviousBreakout,
-            candle2PreviousVshape,
-            candles,
-            direction
-          );
-        }
       }
     }
 
     // Find the EXTREME swing after extremeCandle (candle1)
-    // For bullish: find the swing with the LOWEST low after candle1
-    // For bearish: find the swing with the HIGHEST high after candle1
     const swingType = direction === 'bullish' ? 'low' : 'high';
     
     let nextSwing = null;
@@ -1247,13 +1043,11 @@ findRetestAfterBreakout(breakoutCandle, vShapeCandle, candles, direction) {
     for (let i = swingPosition + 1; i < swings.length; i++) {
       if (swings[i].type === swingType) {
         if (direction === 'bullish') {
-          // Find the lowest low
           if (swings[i].low < extremeValue) {
             extremeValue = swings[i].low;
             nextSwing = swings[i];
           }
         } else {
-          // Find the highest high
           if (swings[i].high > extremeValue) {
             extremeValue = swings[i].high;
             nextSwing = swings[i];
@@ -1270,7 +1064,6 @@ findRetestAfterBreakout(breakoutCandle, vShapeCandle, candles, direction) {
     // Find V-shape and breakout for candle2Next
     let candle2NextVshape = null;
     let candle2NextBreakout = null;
-    let candle2NextRetest = null;
     
     if (candle2NextStatus === 'DOUBLE EQ' && nextSwing) {
       const extremeCandleAsSwing = extremeCandleSwing;
@@ -1293,16 +1086,6 @@ findRetestAfterBreakout(breakoutCandle, vShapeCandle, candles, direction) {
             direction,
             nextSwingAsSwing
           );
-          
-          // UPDATED: Find retest that returns to V-shape level after breakout
-          if (candle2NextBreakout) {
-            candle2NextRetest = this.findRetestAfterBreakout(
-              candle2NextBreakout,
-              candle2NextVshape,
-              candles,
-              direction
-            );
-          }
         }
       }
     }
@@ -1318,12 +1101,10 @@ findRetestAfterBreakout(breakoutCandle, vShapeCandle, candles, direction) {
         candle2PreviousStatus,
         candle2PreviousVshape,
         candle2PreviousBreakout,
-        candle2PreviousRetest,
         candle2Next: null,
         candle2NextStatus: null,
         candle2NextVshape: null,
         candle2NextBreakout: null,
-        candle2NextRetest: null,
         level: direction === 'bullish' 
           ? extremeCandle.low 
           : extremeCandle.high,
@@ -1347,12 +1128,10 @@ findRetestAfterBreakout(breakoutCandle, vShapeCandle, candles, direction) {
           candle2PreviousStatus,
           candle2PreviousVshape,
           candle2PreviousBreakout,
-          candle2PreviousRetest,
           candle2Next: nextSwingCandle,
           candle2NextStatus,
           candle2NextVshape,
           candle2NextBreakout,
-          candle2NextRetest,
           level: Math.min(extremeCandle.low, nextSwingCandle.low),
           levelType: 'support'
         };
@@ -1370,12 +1149,10 @@ findRetestAfterBreakout(breakoutCandle, vShapeCandle, candles, direction) {
           candle2PreviousStatus,
           candle2PreviousVshape,
           candle2PreviousBreakout,
-          candle2PreviousRetest,
           candle2Next: nextSwingCandle,
           candle2NextStatus,
           candle2NextVshape,
           candle2NextBreakout,
-          candle2NextRetest,
           level: Math.max(extremeCandle.high, nextSwingCandle.high),
           levelType: 'resistance'
         };
@@ -1391,55 +1168,15 @@ findRetestAfterBreakout(breakoutCandle, vShapeCandle, candles, direction) {
       candle2PreviousStatus,
       candle2PreviousVshape,
       candle2PreviousBreakout,
-      candle2PreviousRetest,
       candle2Next: null,
       candle2NextStatus: null,
       candle2NextVshape: null,
       candle2NextBreakout: null,
-      candle2NextRetest: null,
       level: direction === 'bullish' 
         ? extremeCandle.low 
         : extremeCandle.high,
       levelType: direction === 'bullish' ? 'support' : 'resistance'
     };
-  }
-
-  identifyBreakout(setup, candles, direction) {
-    if (!setup.candle1) return null;
-    
-    const level = direction === 'bullish'
-      ? setup.candle1.low
-      : setup.candle1.high;
-    
-    // If candle2Next exists and forms equal level, use it as the reference
-    let startIndex = setup.candle1.index + 1;
-    if (setup.candle2Next) {
-      startIndex = setup.candle2Next.index + 1;
-    }
-
-    for (let i = startIndex; i < candles.length; i++) {
-      const candle = candles[i];
-      if (!candle) continue;
-      
-      if (direction === 'bullish') {
-        if (candle.close > level) {
-          return {
-            ...candle,
-            breakoutLevel: level,
-            breakoutType: 'bullish'
-          };
-        }
-      } else {
-        if (candle.close < level) {
-          return {
-            ...candle,
-            breakoutLevel: level,
-            breakoutType: 'bearish'
-          };
-        }
-      }
-    }
-    return null;
   }
 
   get(symbol, granularity) {
@@ -1457,10 +1194,6 @@ findRetestAfterBreakout(breakoutCandle, vShapeCandle, candles, direction) {
         stage1: patterns.filter(p => p.stage === 1).length,
         stage2: patterns.filter(p => p.stage === 2).length,
         stage3: patterns.filter(p => p.stage === 3).length,
-        stage4: patterns.filter(p => p.stage === 4).length,
-        stage5: patterns.filter(p => p.stage === 5).length,
-        stage6: patterns.filter(p => p.stage === 6).length,
-        stage7: patterns.filter(p => p.stage === 7).length,
       },
       complete: patterns.filter(p => p.isComplete).length
     };
