@@ -14,6 +14,7 @@ const majorSwingsRoutes = require('./routes/majorSwingsRoutes')
 const mitigationBlockRoutes = require('./routes/mitigationBlockRoutes');
 const OBLVRoutes = require('./routes/OBLVRoutes');
 const LogicRoutes = require('./routes/LogicRoutes');
+const pattern2Routes = require('./routes/pattern2Routes'); // Import the new route
 
 const { startSignalEngine, isFullyLoaded, getCandles, volatilitySymbols, timeframes, subscribeToAllSymbols } = require('./signals/signalEngine')
 
@@ -50,6 +51,7 @@ app.use('/major-swings', majorSwingsRoutes)
 app.use('/mitigation-blocks', mitigationBlockRoutes);
 app.use('/oblv', OBLVRoutes);
 app.use('/logic', LogicRoutes);
+app.use('/patterns2', pattern2Routes); // Add the new route
 app.use('/patterns', require('./routes/patternRoutes'));
 
 const symbols = Object.values(volatilitySymbols)
