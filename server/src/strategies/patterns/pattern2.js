@@ -414,7 +414,7 @@ class Pattern2Engine extends EventEmitter {
           formattedTime: breakoutFormattedTime
         },
         level: percentRounded,
-        isOTE: true,
+        status: 'OTE',
         timestamp: enrichedCandles[candidateSwing.index]?.timestampMs || Date.now()
       };
 
@@ -462,7 +462,7 @@ class Pattern2Engine extends EventEmitter {
         formattedTime: pattern.breakoutData?.formattedTime ?? null
       },
       level: pattern.level ?? null,
-      isOTE: pattern.isOTE ?? false,
+      status: pattern.status ?? null,
       timestamp: pattern.timestamp ?? null
     };
   }
