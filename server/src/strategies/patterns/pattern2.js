@@ -439,7 +439,7 @@ class Pattern2Engine extends EventEmitter {
 
   _enrichPatternMetadata(pattern) {
     return {
-      type: 'PATTERN',
+      type: 'PATTERN2',
       direction: pattern.direction,
       firstSwingPrice: pattern.firstSwingPrice ?? null,
       firstSwingIndex: pattern.firstSwingIndex ?? null,
