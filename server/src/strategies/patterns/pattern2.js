@@ -142,6 +142,58 @@ class Pattern2Engine extends EventEmitter {
   }
 
   /**
+   * Find retest candle after breakout
+   * Bullish: extreme low between vShapeData and secondSwing after breakout
+   * Bearish: extreme high between vShapeData and secondSwing after breakout
+   * Returns null if no valid retest found
+   */
+  _findRetest(vshape, secondSwing, breakout, candles, direction) {
+    if (!breakout || !vshape || !secondSwing) return null;
+    
+    const startIdx = breakout.index + 1;
+    if (startIdx >= candles.length) return null;
+
+    const vshapePrice = direction === 'bullish' ? vshape.high : vshape.low;
+    const secondSwingPrice = secondSwing.price;
+
+    let retestCandle = null;
+
+    if (direction === 'bullish') {
+      // Find extreme low between vshapePrice and secondSwingPrice
+      let extremeLow = Infinity;
+      for (let i = startIdx; i < candles.length; i++) {
+        const c = candles[i];
+        if (!c) continue;
+        
+        // Check if low is between secondSwing and vShape
+        if (c.low >= secondSwingPrice && c.low <= vshapePrice) {
+          if (c.low < extremeLow) {
+            extremeLow = c.low;
+            retestCandle = c;
+          }
+        }
+      }
+    } else {
+      // Bearish: Find extreme high between secondSwingPrice and vshapePrice
+      let extremeHigh = -Infinity;
+      for (let i = startIdx; i < candles.length; i++) {
+        const c = candles[i];
+        if (!c) continue;
+        
+        // Check if high is between vShape and secondSwing
+        if (c.high <= secondSwingPrice && c.high >= vshapePrice) {
+          if (c.high > extremeHigh) {
+            extremeHigh = c.high;
+            retestCandle = c;
+          }
+        }
+      }
+    }
+
+    return retestCandle;
+  }
+
+  /**
    * Helper: ensure there is no intervening same-type swing between firstIdx and candidateIdx
    * that is more extreme than firstSwing. For highs: no intervening high > firstSwing.price.
    * For lows: no intervening low < firstSwing.price.
@@ -412,6 +464,17 @@ class Pattern2Engine extends EventEmitter {
         ?? breakout?.formattedTime
         ?? null;
 
+      // Find retest after breakout
+      const retest = this._findRetest(vshape, candidateSwing, breakout, enrichedCandles, direction);
+      const retestIndex = retest?.index ?? null;
+      const retestPrice = direction === 'bullish' ? retest?.low : retest?.high;
+      const retestFormattedTime = retest
+        ? (enrichedCandles[retestIndex]?.formattedTime
+          ?? this._formatTimeFromMs(enrichedCandles[retestIndex]?.timestampMs)
+          ?? retest?.formattedTime
+          ?? null)
+        : null;
+
       const percentRounded = Math.round(percentValue) + '%';
 
       const firstFormattedTime =
@@ -454,6 +517,11 @@ class Pattern2Engine extends EventEmitter {
           price: breakoutPrice,
           index: breakoutIndex,
           formattedTime: breakoutFormattedTime
+        },
+        retestData: {
+          price: retestPrice ?? null,
+          index: retestIndex,
+          formattedTime: retestFormattedTime
         },
         level: percentRounded,
         status: status,
@@ -502,6 +570,11 @@ class Pattern2Engine extends EventEmitter {
         price: pattern.breakoutData?.price ?? null,
         index: pattern.breakoutData?.index ?? null,
         formattedTime: pattern.breakoutData?.formattedTime ?? null
+      },
+      retestData: {
+        price: pattern.retestData?.price ?? null,
+        index: pattern.retestData?.index ?? null,
+        formattedTime: pattern.retestData?.formattedTime ?? null
       },
       level: pattern.level ?? null,
       status: pattern.status ?? null,

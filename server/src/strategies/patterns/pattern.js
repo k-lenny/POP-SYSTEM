@@ -15,7 +15,7 @@ class PatternEngine extends EventEmitter {
       vShapeWickRatio: 2.0,        // V-shape wick must be 2x body size
       equalLevelTolerance: 0.002,   // 0.2% tolerance for equal highs/lows
       minCandlesBetweenSwings: 3,   // Minimum candles between swings
-      retestScanRange: 7,          // Maximum candles to scan for retest
+      retestScanRange: 10,          // Maximum candles to scan for retest
       ...options.config
     };
   }
@@ -171,6 +171,57 @@ class PatternEngine extends EventEmitter {
     }
 
     return extremeSwing;
+  }
+
+  /**
+   * Find retest after breakout for confirmed setup
+   * Bullish: extreme low between currentSwingPrice and vshapePrice after breakout
+   * Bearish: extreme high between vshapePrice and currentSwingPrice after breakout
+   */
+  _findConfirmedSetupRetest(vshape, currentSwing, breakout, candles, direction) {
+    if (!breakout || !vshape || !currentSwing) return null;
+    
+    const startIdx = breakout.index + 1;
+    if (startIdx >= candles.length) return null;
+
+    const vshapePrice = direction === 'bullish' ? vshape.high : vshape.low;
+    const currentSwingPrice = direction === 'bullish' ? currentSwing.low : currentSwing.high;
+
+    let retestCandle = null;
+
+    if (direction === 'bullish') {
+      // Find extreme low between currentSwingPrice and vshapePrice
+      let extremeLow = Infinity;
+      for (let i = startIdx; i < candles.length; i++) {
+        const c = candles[i];
+        if (!c) continue;
+        
+        // Check if low is between currentSwing and vShape
+        if (c.low >= currentSwingPrice && c.low <= vshapePrice) {
+          if (c.low < extremeLow) {
+            extremeLow = c.low;
+            retestCandle = c;
+          }
+        }
+      }
+    } else {
+      // Bearish: Find extreme high between vshapePrice and currentSwingPrice
+      let extremeHigh = -Infinity;
+      for (let i = startIdx; i < candles.length; i++) {
+        const c = candles[i];
+        if (!c) continue;
+        
+        // Check if high is between vShape and currentSwing
+        if (c.high <= currentSwingPrice && c.high >= vshapePrice) {
+          if (c.high > extremeHigh) {
+            extremeHigh = c.high;
+            retestCandle = c;
+          }
+        }
+      }
+    }
+
+    return retestCandle;
   }
 
   /**
@@ -358,6 +409,13 @@ class PatternEngine extends EventEmitter {
       confirmedSetupCandle2PreviousBreakoutTime: pattern.confirmedSetup?.candle2PreviousBreakout?.time || null,
       confirmedSetupCandle2PreviousBreakoutFormattedTime: this._formatTime(pattern.confirmedSetup?.candle2PreviousBreakout?.time),
       
+      confirmedSetupCandle2PreviousRetestIndex: pattern.confirmedSetup?.candle2PreviousRetest?.index || null,
+      confirmedSetupCandle2PreviousRetestPrice: pattern.direction === 'bullish'
+        ? pattern.confirmedSetup?.candle2PreviousRetest?.low
+        : pattern.confirmedSetup?.candle2PreviousRetest?.high,
+      confirmedSetupCandle2PreviousRetestTime: pattern.confirmedSetup?.candle2PreviousRetest?.time || null,
+      confirmedSetupCandle2PreviousRetestFormattedTime: this._formatTime(pattern.confirmedSetup?.candle2PreviousRetest?.time),
+      
       confirmedSetupCandle2NextIndex: pattern.confirmedSetup?.candle2Next?.index || null,
       confirmedSetupCandle2NextPrice: pattern.confirmedSetup?.candle2Next?.close || null,
       confirmedSetupCandle2NextTime: pattern.confirmedSetup?.candle2Next?.time|| null,
@@ -375,6 +433,13 @@ class PatternEngine extends EventEmitter {
       confirmedSetupCandle2NextBreakoutPrice: pattern.confirmedSetup?.candle2NextBreakout?.close || null,
       confirmedSetupCandle2NextBreakoutTime: pattern.confirmedSetup?.candle2NextBreakout?.time || null,
       confirmedSetupCandle2NextBreakoutFormattedTime: this._formatTime(pattern.confirmedSetup?.candle2NextBreakout?.time),
+      
+      confirmedSetupCandle2NextRetestIndex: pattern.confirmedSetup?.candle2NextRetest?.index || null,
+      confirmedSetupCandle2NextRetestPrice: pattern.direction === 'bullish'
+        ? pattern.confirmedSetup?.candle2NextRetest?.low
+        : pattern.confirmedSetup?.candle2NextRetest?.high,
+      confirmedSetupCandle2NextRetestTime: pattern.confirmedSetup?.candle2NextRetest?.time || null,
+      confirmedSetupCandle2NextRetestFormattedTime: this._formatTime(pattern.confirmedSetup?.candle2NextRetest?.time),
       
       // Pattern completion status (now stage 3 is considered complete)
       stage: this._getPatternStage(pattern),
@@ -1013,6 +1078,7 @@ class PatternEngine extends EventEmitter {
     // Find V-shape and breakout for candle2Previous
     let candle2PreviousVshape = null;
     let candle2PreviousBreakout = null;
+    let candle2PreviousRetest = null;
     
     if (candle2PreviousStatus === 'S SETUP' && previousSwing) {
       candle2PreviousVshape = this.findVShapeCandle(
@@ -1031,6 +1097,17 @@ class PatternEngine extends EventEmitter {
           direction,
           extremeCandleSwing
         );
+        
+        // Find retest for candle2Previous
+        if (candle2PreviousBreakout) {
+          candle2PreviousRetest = this._findConfirmedSetupRetest(
+            candle2PreviousVshape,
+            extremeCandleSwing,
+            candle2PreviousBreakout,
+            candles,
+            direction
+          );
+        }
       }
     }
 
@@ -1064,6 +1141,7 @@ class PatternEngine extends EventEmitter {
     // Find V-shape and breakout for candle2Next
     let candle2NextVshape = null;
     let candle2NextBreakout = null;
+    let candle2NextRetest = null;
     
     if (candle2NextStatus === 'DOUBLE EQ' && nextSwing) {
       const extremeCandleAsSwing = extremeCandleSwing;
@@ -1086,6 +1164,17 @@ class PatternEngine extends EventEmitter {
             direction,
             nextSwingAsSwing
           );
+          
+          // Find retest for candle2Next
+          if (candle2NextBreakout) {
+            candle2NextRetest = this._findConfirmedSetupRetest(
+              candle2NextVshape,
+              nextSwingAsSwing,
+              candle2NextBreakout,
+              candles,
+              direction
+            );
+          }
         }
       }
     }
@@ -1101,10 +1190,12 @@ class PatternEngine extends EventEmitter {
         candle2PreviousStatus,
         candle2PreviousVshape,
         candle2PreviousBreakout,
+        candle2PreviousRetest,
         candle2Next: null,
         candle2NextStatus: null,
         candle2NextVshape: null,
         candle2NextBreakout: null,
+        candle2NextRetest: null,
         level: direction === 'bullish' 
           ? extremeCandle.low 
           : extremeCandle.high,
@@ -1128,10 +1219,12 @@ class PatternEngine extends EventEmitter {
           candle2PreviousStatus,
           candle2PreviousVshape,
           candle2PreviousBreakout,
+          candle2PreviousRetest,
           candle2Next: nextSwingCandle,
           candle2NextStatus,
           candle2NextVshape,
           candle2NextBreakout,
+          candle2NextRetest,
           level: Math.min(extremeCandle.low, nextSwingCandle.low),
           levelType: 'support'
         };
@@ -1149,10 +1242,12 @@ class PatternEngine extends EventEmitter {
           candle2PreviousStatus,
           candle2PreviousVshape,
           candle2PreviousBreakout,
+          candle2PreviousRetest,
           candle2Next: nextSwingCandle,
           candle2NextStatus,
           candle2NextVshape,
           candle2NextBreakout,
+          candle2NextRetest,
           level: Math.max(extremeCandle.high, nextSwingCandle.high),
           levelType: 'resistance'
         };
@@ -1168,10 +1263,12 @@ class PatternEngine extends EventEmitter {
       candle2PreviousStatus,
       candle2PreviousVshape,
       candle2PreviousBreakout,
+      candle2PreviousRetest,
       candle2Next: null,
       candle2NextStatus: null,
       candle2NextVshape: null,
       candle2NextBreakout: null,
+      candle2NextRetest: null,
       level: direction === 'bullish' 
         ? extremeCandle.low 
         : extremeCandle.high,
