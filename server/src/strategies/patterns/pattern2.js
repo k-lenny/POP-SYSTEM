@@ -116,6 +116,32 @@ class Pattern2Engine extends EventEmitter {
   }
 
   /**
+   * Check if pattern qualifies as DOUBLE EQ
+   * Bullish: secondSwing.low is between min(firstSwing.close, firstSwing.open) and firstSwing.low
+   * Bearish: secondSwing.high is between max(firstSwing.close, firstSwing.open) and firstSwing.high
+   */
+  _isDoubleEQ(firstSwing, secondSwing, enrichedCandles, direction) {
+    const firstCandle = enrichedCandles[firstSwing.index];
+    const secondCandle = enrichedCandles[secondSwing.index];
+    
+    if (!firstCandle || !secondCandle) return false;
+
+    if (direction === 'bullish') {
+      const bodyBottom = Math.min(firstCandle.open, firstCandle.close);
+      const candleLow = firstCandle.low;
+      const secondLow = secondCandle.low;
+      
+      return secondLow >= candleLow && secondLow <= bodyBottom;
+    } else {
+      const bodyTop = Math.max(firstCandle.open, firstCandle.close);
+      const candleHigh = firstCandle.high;
+      const secondHigh = secondCandle.high;
+      
+      return secondHigh <= candleHigh && secondHigh >= bodyTop;
+    }
+  }
+
+  /**
    * Helper: ensure there is no intervening same-type swing between firstIdx and candidateIdx
    * that is more extreme than firstSwing. For highs: no intervening high > firstSwing.price.
    * For lows: no intervening low < firstSwing.price.
@@ -148,6 +174,7 @@ class Pattern2Engine extends EventEmitter {
    *   100 (first), 104 (intervening higher high), 99 (candidate)  -> invalid (104 invalidates first=100)
    *
    * The returned pattern includes breakoutData with price, index and formattedTime.
+   * Status is either 'OTE' or 'DOUBLE EQ' based on qualification.
    */
   async detect(symbol, granularity, candles) {
     this._initStore(symbol, granularity);
@@ -239,10 +266,16 @@ class Pattern2Engine extends EventEmitter {
 
         if (!Number.isFinite(percentValue)) continue;
 
+        // Check if this is DOUBLE EQ (independent of OTE percentage)
+        const isDoubleEQ = this._isDoubleEQ(firstSwing, candidateSwing, enrichedCandles, direction);
+
+        // Check OTE range only if NOT DOUBLE EQ
         const lowerPct = this.OTE_LOWER_RATIO * 100;
         const upperPct = this.OTE_UPPER_RATIO * 100;
-        if (percentValue + 1e-9 < lowerPct || percentValue - 1e-9 > upperPct) {
-          // candidate not in OTE band
+        const inOTERange = percentValue + 1e-9 >= lowerPct && percentValue - 1e-9 <= upperPct;
+
+        if (!isDoubleEQ && !inOTERange) {
+          // candidate not DOUBLE EQ and not in OTE band
           continue;
         }
 
@@ -257,7 +290,7 @@ class Pattern2Engine extends EventEmitter {
 
         if (breakout) {
           // This chronological candidate qualifies and has a breakout after it — accept it.
-          acceptedCandidate = { candidateSwing, vshape, percentValue, breakout, candidateIdx };
+          acceptedCandidate = { candidateSwing, vshape, percentValue, breakout, candidateIdx, isDoubleEQ };
           break;
         }
         // else continue scanning candidates
@@ -323,9 +356,15 @@ class Pattern2Engine extends EventEmitter {
           continue;
         }
 
+        // Check if this is DOUBLE EQ (independent of OTE percentage)
+        const isDoubleEQ = this._isDoubleEQ(firstSwing, candidateSwing, enrichedCandles, direction);
+
+        // Check OTE range only if NOT DOUBLE EQ
         const lowerPct = this.OTE_LOWER_RATIO * 100;
         const upperPct = this.OTE_UPPER_RATIO * 100;
-        if (percentValue + 1e-9 < lowerPct || percentValue - 1e-9 > upperPct) {
+        const inOTERange = percentValue + 1e-9 >= lowerPct && percentValue - 1e-9 <= upperPct;
+
+        if (!isDoubleEQ && !inOTERange) {
           failedOTE++;
           continue;
         }
@@ -343,14 +382,14 @@ class Pattern2Engine extends EventEmitter {
           continue;
         }
 
-        acceptedCandidate = { candidateSwing, vshape, percentValue, breakout, candidateIdx };
+        acceptedCandidate = { candidateSwing, vshape, percentValue, breakout, candidateIdx, isDoubleEQ };
       }
 
       // If still no accepted candidate, continue
       if (!acceptedCandidate) continue;
 
       // Build pattern from acceptedCandidate
-      const { candidateSwing, vshape, percentValue, breakout } = acceptedCandidate;
+      const { candidateSwing, vshape, percentValue, breakout, isDoubleEQ } = acceptedCandidate;
       const direction = this._getPatternDirection(firstSwing, candidateSwing);
       const isBullish = direction === 'bullish';
       const firstPrice = firstSwing.price;
@@ -387,6 +426,9 @@ class Pattern2Engine extends EventEmitter {
         ?? candidateSwing.formattedTime
         ?? null;
 
+      // Determine status: DOUBLE EQ or OTE (isDoubleEQ already computed)
+      const status = isDoubleEQ ? 'DOUBLE EQ' : 'OTE';
+
       const pattern = {
         type: 'PATTERN',
         direction,
@@ -414,7 +456,7 @@ class Pattern2Engine extends EventEmitter {
           formattedTime: breakoutFormattedTime
         },
         level: percentRounded,
-        status: 'OTE',
+        status: status,
         timestamp: enrichedCandles[candidateSwing.index]?.timestampMs || Date.now()
       };
 
