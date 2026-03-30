@@ -265,6 +265,76 @@ class PatternEngine extends EventEmitter {
   }
 
   /**
+   * Find mitigation candle for candle2Previous
+   * For bullish: First green candle between vshape and candle1
+   * For bearish: First red candle between vshape and candle1
+   */
+  _findCandle2PreviousMitigation(vShapeIndex, candle1Index, candles, direction) {
+    if (!vShapeIndex || !candle1Index) return null;
+    
+    let mitigationCandle = null;
+    
+    if (direction === 'bullish') {
+      // First green candle between vshape and candle1
+      for (let i = vShapeIndex; i < candle1Index; i++) {
+        const candle = candles[i];
+        if (!candle) continue;
+        if (candle.close >= candle.open) {
+          mitigationCandle = candle;
+          break;
+        }
+      }
+    } else {
+      // First red candle between vshape and candle1
+      for (let i = vShapeIndex; i < candle1Index; i++) {
+        const candle = candles[i];
+        if (!candle) continue;
+        if (candle.close < candle.open) {
+          mitigationCandle = candle;
+          break;
+        }
+      }
+    }
+    
+    return mitigationCandle;
+  }
+
+  /**
+   * Find mitigation candle for candle2Next
+   * For bullish: First green candle between vshape and candle2Next
+   * For bearish: First red candle between vshape and candle2Next
+   */
+  _findCandle2NextMitigation(vShapeIndex, candle2NextIndex, candles, direction) {
+    if (!vShapeIndex || !candle2NextIndex) return null;
+    
+    let mitigationCandle = null;
+    
+    if (direction === 'bullish') {
+      // First green candle between vshape and candle2Next
+      for (let i = vShapeIndex; i < candle2NextIndex; i++) {
+        const candle = candles[i];
+        if (!candle) continue;
+        if (candle.close >= candle.open) {
+          mitigationCandle = candle;
+          break;
+        }
+      }
+    } else {
+      // First red candle between vshape and candle2Next
+      for (let i = vShapeIndex; i < candle2NextIndex; i++) {
+        const candle = candles[i];
+        if (!candle) continue;
+        if (candle.close < candle.open) {
+          mitigationCandle = candle;
+          break;
+        }
+      }
+    }
+    
+    return mitigationCandle;
+  }
+
+  /**
    * Main detection method with detailed metadata
    */
   async detect(symbol, granularity, candles) {
@@ -474,6 +544,14 @@ class PatternEngine extends EventEmitter {
       confirmedSetupCandle2PreviousRetestTime: pattern.confirmedSetup?.candle2PreviousRetest?.time || null,
       confirmedSetupCandle2PreviousRetestFormattedTime: this._formatTime(pattern.confirmedSetup?.candle2PreviousRetest?.time),
       
+      confirmedSetupCandle2PreviousMitigationIndex: pattern.confirmedSetup?.candle2PreviousMitigationIndex || null,
+      confirmedSetupCandle2PreviousMitigationFormattedTime: pattern.confirmedSetup?.candle2PreviousMitigationFormattedTime || null,
+      confirmedSetupCandle2PreviousMitigationStatus: pattern.confirmedSetup?.candle2PreviousMitigationStatus ?? false,
+      
+      confirmedSetupCandle2PreviousOBIndex: pattern.confirmedSetup?.candle2PreviousOBIndex || null,
+      confirmedSetupCandle2PreviousOBFormattedTime: pattern.confirmedSetup?.candle2PreviousOBFormattedTime || null,
+      confirmedSetupCandle2PreviousOBStatus: pattern.confirmedSetup?.candle2PreviousOBStatus ?? false,
+      
       confirmedSetupCandle2NextIndex: pattern.confirmedSetup?.candle2Next?.index || null,
       confirmedSetupCandle2NextPrice: pattern.confirmedSetup?.candle2Next?.close || null,
       confirmedSetupCandle2NextTime: pattern.confirmedSetup?.candle2Next?.time|| null,
@@ -499,10 +577,10 @@ class PatternEngine extends EventEmitter {
       confirmedSetupCandle2NextRetestTime: pattern.confirmedSetup?.candle2NextRetest?.time || null,
       confirmedSetupCandle2NextRetestFormattedTime: this._formatTime(pattern.confirmedSetup?.candle2NextRetest?.time),
 
-      // OB fields
-      confirmedSetupCandle2PreviousOBIndex: pattern.confirmedSetup?.candle2PreviousOBIndex || null,
-      confirmedSetupCandle2PreviousOBFormattedTime: pattern.confirmedSetup?.candle2PreviousOBFormattedTime || null,
-      confirmedSetupCandle2PreviousOBStatus: pattern.confirmedSetup?.candle2PreviousOBStatus ?? false,
+      confirmedSetupCandle2NextMitigationIndex: pattern.confirmedSetup?.candle2NextMitigationIndex || null,
+      confirmedSetupCandle2NextMitigationFormattedTime: pattern.confirmedSetup?.candle2NextMitigationFormattedTime || null,
+      confirmedSetupCandle2NextMitigationStatus: pattern.confirmedSetup?.candle2NextMitigationStatus ?? false,
+      
       confirmedSetupCandle2NextOBIndex: pattern.confirmedSetup?.candle2NextOBIndex || null,
       confirmedSetupCandle2NextOBFormattedTime: pattern.confirmedSetup?.candle2NextOBFormattedTime || null,
       confirmedSetupCandle2NextOBStatus: pattern.confirmedSetup?.candle2NextOBStatus ?? false,
@@ -1177,6 +1255,24 @@ class PatternEngine extends EventEmitter {
       }
     }
 
+    // Find Mitigation for candle2Previous
+    let candle2PreviousMitigation = null;
+    if (candle2PreviousVshape) {
+      candle2PreviousMitigation = this._findCandle2PreviousMitigation(
+        candle2PreviousVshape.index,
+        extremeCandle.index,
+        candles,
+        direction
+      );
+    }
+
+    // Compute candle2PreviousMitigationStatus
+    let candle2PreviousMitigationStatus = false;
+    if (candle2PreviousMitigation && candle2PreviousRetest) {
+      const retestPrice = direction === 'bullish' ? candle2PreviousRetest.low : candle2PreviousRetest.high;
+      candle2PreviousMitigationStatus = retestPrice >= candle2PreviousMitigation.low && retestPrice <= candle2PreviousMitigation.high;
+    }
+
     // Find Previous OB - Start scan from candle1 (extremeCandle)
     let candle2PreviousOB = null;
     let candle2PreviousOBStatus = false;
@@ -1256,6 +1352,24 @@ class PatternEngine extends EventEmitter {
       }
     }
 
+    // Find Mitigation for candle2Next
+    let candle2NextMitigation = null;
+    if (nextSwing && candle2NextVshape) {
+      candle2NextMitigation = this._findCandle2NextMitigation(
+        candle2NextVshape.index,
+        nextSwing.index,
+        candles,
+        direction
+      );
+    }
+
+    // Compute candle2NextMitigationStatus
+    let candle2NextMitigationStatus = false;
+    if (candle2NextMitigation && candle2NextRetest) {
+      const retestPrice = direction === 'bullish' ? candle2NextRetest.low : candle2NextRetest.high;
+      candle2NextMitigationStatus = retestPrice >= candle2NextMitigation.low && retestPrice <= candle2NextMitigation.high;
+    }
+
     // Find Next OB - Start scan from nextSwing (candle2Next)
     let candle2NextOB = null;
     let candle2NextOBStatus = false;
@@ -1279,11 +1393,17 @@ class PatternEngine extends EventEmitter {
         candle2PreviousVshape,
         candle2PreviousBreakout,
         candle2PreviousRetest,
+        candle2PreviousMitigationIndex: candle2PreviousMitigation ? candle2PreviousMitigation.index : null,
+        candle2PreviousMitigationFormattedTime: candle2PreviousMitigation ? this._formatTime(candle2PreviousMitigation.time) : null,
+        candle2PreviousMitigationStatus,
         candle2Next: null,
         candle2NextStatus: null,
         candle2NextVshape: null,
         candle2NextBreakout: null,
         candle2NextRetest: null,
+        candle2NextMitigationIndex: null,
+        candle2NextMitigationFormattedTime: null,
+        candle2NextMitigationStatus: false,
         candle2PreviousOBIndex: candle2PreviousOB ? candle2PreviousOB.index : null,
         candle2PreviousOBFormattedTime: candle2PreviousOB ? candle2PreviousOB.formattedTime : null,
         candle2PreviousOBStatus,
@@ -1309,11 +1429,17 @@ class PatternEngine extends EventEmitter {
       candle2PreviousVshape,
       candle2PreviousBreakout,
       candle2PreviousRetest,
+      candle2PreviousMitigationIndex: candle2PreviousMitigation ? candle2PreviousMitigation.index : null,
+      candle2PreviousMitigationFormattedTime: candle2PreviousMitigation ? this._formatTime(candle2PreviousMitigation.time) : null,
+      candle2PreviousMitigationStatus,
       candle2Next: nextSwingCandle,
       candle2NextStatus,
       candle2NextVshape,
       candle2NextBreakout,
       candle2NextRetest,
+      candle2NextMitigationIndex: candle2NextMitigation ? candle2NextMitigation.index : null,
+      candle2NextMitigationFormattedTime: candle2NextMitigation ? this._formatTime(candle2NextMitigation.time) : null,
+      candle2NextMitigationStatus,
       candle2PreviousOBIndex: candle2PreviousOB ? candle2PreviousOB.index : null,
       candle2PreviousOBFormattedTime: candle2PreviousOB ? candle2PreviousOB.formattedTime : null,
       candle2PreviousOBStatus,
