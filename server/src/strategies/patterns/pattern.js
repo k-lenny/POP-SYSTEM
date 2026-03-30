@@ -335,6 +335,60 @@ class PatternEngine extends EventEmitter {
   }
 
   /**
+   * Check if a retest of a mitigation block is valid, starting the scan from the given index.
+   * Returns:
+   *   - 'ACTIVE'   : the first crossing after startIndex is valid (no subsequent invalidating close/open).
+   *   - 'EXPIRED'  : the first crossing after startIndex was later invalidated.
+   *   - null       : no crossing of the mitigation block occurred after startIndex.
+   */
+  _checkMitigationRetest(mtCandle, startIndex, candles, direction) {
+    if (!mtCandle) return null;
+
+    const mtLow = mtCandle.low;
+    const mtHigh = mtCandle.high;
+
+    // Find the first candle at or after startIndex that crosses the mitigation block
+    let firstCrossCandle = null;
+
+    for (let i = startIndex; i < candles.length; i++) {
+      const c = candles[i];
+      if (!c) continue;
+      if (direction === 'bullish') {
+        if (c.low < mtLow) {
+          firstCrossCandle = c;
+          break;
+        }
+      } else {
+        if (c.high > mtHigh) {
+          firstCrossCandle = c;
+          break;
+        }
+      }
+    }
+
+    if (!firstCrossCandle) return null; // never reached
+
+    // Now check subsequent candles: any close/open beyond the first cross candle's extreme?
+    const refValue = direction === 'bullish' ? firstCrossCandle.low : firstCrossCandle.high;
+
+    for (let i = firstCrossCandle.index + 1; i < candles.length; i++) {
+      const c = candles[i];
+      if (!c) continue;
+      if (direction === 'bullish') {
+        if (c.close < refValue || c.open < refValue) {
+          return 'EXPIRED';
+        }
+      } else {
+        if (c.close > refValue || c.open > refValue) {
+          return 'EXPIRED';
+        }
+      }
+    }
+
+    return 'ACTIVE';
+  }
+
+  /**
    * Main detection method with detailed metadata
    */
   async detect(symbol, granularity, candles) {
@@ -546,7 +600,7 @@ class PatternEngine extends EventEmitter {
       
       confirmedSetupCandle2PreviousMitigationIndex: pattern.confirmedSetup?.candle2PreviousMitigationIndex || null,
       confirmedSetupCandle2PreviousMitigationFormattedTime: pattern.confirmedSetup?.candle2PreviousMitigationFormattedTime || null,
-      confirmedSetupCandle2PreviousMitigationStatus: pattern.confirmedSetup?.candle2PreviousMitigationStatus ?? false,
+      confirmedSetupCandle2PreviousMitigationStatus: pattern.confirmedSetup?.candle2PreviousMitigationStatus ?? null,
       
       confirmedSetupCandle2PreviousOBIndex: pattern.confirmedSetup?.candle2PreviousOBIndex || null,
       confirmedSetupCandle2PreviousOBFormattedTime: pattern.confirmedSetup?.candle2PreviousOBFormattedTime || null,
@@ -579,7 +633,7 @@ class PatternEngine extends EventEmitter {
 
       confirmedSetupCandle2NextMitigationIndex: pattern.confirmedSetup?.candle2NextMitigationIndex || null,
       confirmedSetupCandle2NextMitigationFormattedTime: pattern.confirmedSetup?.candle2NextMitigationFormattedTime || null,
-      confirmedSetupCandle2NextMitigationStatus: pattern.confirmedSetup?.candle2NextMitigationStatus ?? false,
+      confirmedSetupCandle2NextMitigationStatus: pattern.confirmedSetup?.candle2NextMitigationStatus ?? null,
       
       confirmedSetupCandle2NextOBIndex: pattern.confirmedSetup?.candle2NextOBIndex || null,
       confirmedSetupCandle2NextOBFormattedTime: pattern.confirmedSetup?.candle2NextOBFormattedTime || null,
@@ -1266,11 +1320,15 @@ class PatternEngine extends EventEmitter {
       );
     }
 
-    // Compute candle2PreviousMitigationStatus
-    let candle2PreviousMitigationStatus = false;
-    if (candle2PreviousMitigation && candle2PreviousRetest) {
-      const retestPrice = direction === 'bullish' ? candle2PreviousRetest.low : candle2PreviousRetest.high;
-      candle2PreviousMitigationStatus = retestPrice >= candle2PreviousMitigation.low && retestPrice <= candle2PreviousMitigation.high;
+    // Compute candle2PreviousMitigationStatus using the new method that starts from the V-shape index
+    let candle2PreviousMitigationStatus = null;
+    if (candle2PreviousMitigation && candle2PreviousVshape) {
+      candle2PreviousMitigationStatus = this._checkMitigationRetest(
+        candle2PreviousMitigation,
+        candle2PreviousVshape.index,
+        candles,
+        direction
+      );
     }
 
     // Find Previous OB - Start scan from candle1 (extremeCandle)
@@ -1363,11 +1421,15 @@ class PatternEngine extends EventEmitter {
       );
     }
 
-    // Compute candle2NextMitigationStatus
-    let candle2NextMitigationStatus = false;
-    if (candle2NextMitigation && candle2NextRetest) {
-      const retestPrice = direction === 'bullish' ? candle2NextRetest.low : candle2NextRetest.high;
-      candle2NextMitigationStatus = retestPrice >= candle2NextMitigation.low && retestPrice <= candle2NextMitigation.high;
+    // Compute candle2NextMitigationStatus using the new method that starts from the V-shape index
+    let candle2NextMitigationStatus = null;
+    if (candle2NextMitigation && candle2NextVshape) {
+      candle2NextMitigationStatus = this._checkMitigationRetest(
+        candle2NextMitigation,
+        candle2NextVshape.index,
+        candles,
+        direction
+      );
     }
 
     // Find Next OB - Start scan from nextSwing (candle2Next)
@@ -1403,7 +1465,7 @@ class PatternEngine extends EventEmitter {
         candle2NextRetest: null,
         candle2NextMitigationIndex: null,
         candle2NextMitigationFormattedTime: null,
-        candle2NextMitigationStatus: false,
+        candle2NextMitigationStatus: null,
         candle2PreviousOBIndex: candle2PreviousOB ? candle2PreviousOB.index : null,
         candle2PreviousOBFormattedTime: candle2PreviousOB ? candle2PreviousOB.formattedTime : null,
         candle2PreviousOBStatus,
