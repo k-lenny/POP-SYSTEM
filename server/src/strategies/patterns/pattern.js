@@ -15,7 +15,7 @@ class PatternEngine extends EventEmitter {
       vShapeWickRatio: 2.0,        // V-shape wick must be 2x body size
       equalLevelTolerance: 0.002,   // 0.2% tolerance for equal highs/lows
       minCandlesBetweenSwings: 3,   // Minimum candles between swings
-      retestScanRange: 10,          // Maximum candles to scan for retest
+      retestScanRange: 30,          // Maximum candles to scan for retest
       ...options.config
     };
   }
@@ -669,37 +669,37 @@ class PatternEngine extends EventEmitter {
     return extremumCandle;
   }
 
-  identifyBreakoutOfLevel(level, candles, startIndex, direction, currentSwing) {
-    for (let i = startIndex; i < candles.length; i++) {
-      const candle = candles[i];
-      
-      // Skip if this is the currentSwing candle itself
-      if (candle.index === currentSwing.index) {
-        continue;
+identifyBreakoutOfLevel(level, candles, startIndex, direction, currentSwing) {
+  for (let i = startIndex; i < candles.length; i++) {
+    const candle = candles[i];
+    
+    // Skip if this is the currentSwing candle itself
+    if (candle.index === currentSwing.index) {
+      continue;
+    }
+    
+    if (direction === 'bullish') {
+      // Invalid if price wick crossed below currentSwing low before breakout
+      if (candle.low < currentSwing.low) {
+        return null; // Invalid breakout
       }
-      
-      if (direction === 'bullish') {
-        // Invalid if price wick crossed below currentSwing low before breakout
-        if (candle.low < currentSwing.low) {
-          return null; // Invalid breakout
-        }
-        // Breakout happens when price closes above level
-        if (candle.close > level) {
-          return candle;
-        }
-      } else { // bearish
-        // Invalid if price wick crossed above currentSwing high before breakout
-        if (candle.high > currentSwing.high) {
-          return null; // Invalid breakout
-        }
-        // Breakout happens when price closes below level
-        if (candle.close < level) {
-          return candle;
-        }
+      // Breakout happens when price closes OR opens above level
+      if (candle.close > level || candle.open > level) {
+        return candle;
+      }
+    } else { // bearish
+      // Invalid if price wick crossed above currentSwing high before breakout
+      if (candle.high > currentSwing.high) {
+        return null; // Invalid breakout
+      }
+      // Breakout happens when price closes OR opens below level
+      if (candle.close < level || candle.open < level) {
+        return candle;
       }
     }
-    return null;
   }
+  return null;
+}
 
   identifyRetest(setup, candles, direction) {
     if (!setup.breakout) {
@@ -1035,226 +1035,153 @@ class PatternEngine extends EventEmitter {
     return null;
   }
 
-  identifyConfirmedSetup(retest, candles, direction, swings, swingIndex) {
-    // First, validate that retest has both vShapeCandle and breakout
-    if (!retest.vShapeCandle || !retest.breakout) {
-      this.logger.debug(`[PatternEngine] Retest must have vShapeCandle and breakout before confirmed setup can be identified`);
-      return null;
-    }
+identifyConfirmedSetup(retest, candles, direction, swings, swingIndex) {
+  // First, validate that retest has both vShapeCandle and breakout
+  if (!retest.vShapeCandle || !retest.breakout) {
+    this.logger.debug(`[PatternEngine] Retest must have vShapeCandle and breakout before confirmed setup can be identified`);
+    return null;
+  }
 
-    // Find the extreme candle after retest breakout
-    const extremeCandle = this.findExtremeCandleAfterRetestBreakout(retest, candles, direction);
-    
-    if (!extremeCandle) {
-      this.logger.debug(`[PatternEngine] No valid extreme candle found after retest breakout`);
-      return null;
-    }
+  // Find the extreme candle after retest breakout
+  const extremeCandle = this.findExtremeCandleAfterRetestBreakout(retest, candles, direction);
+  
+  if (!extremeCandle) {
+    this.logger.debug(`[PatternEngine] No valid extreme candle found after retest breakout`);
+    return null;
+  }
 
-    // Find the extreme candle as a swing
-    const extremeCandleSwing = swings.find(s => s.index === extremeCandle.index);
-    
-    if (!extremeCandleSwing) {
-      this.logger.debug(`[PatternEngine] Extreme candle at index ${extremeCandle.index} is not a swing`);
-      return null;
-    }
+  // Find the extreme candle as a swing
+  const extremeCandleSwing = swings.find(s => s.index === extremeCandle.index);
+  
+  if (!extremeCandleSwing) {
+    this.logger.debug(`[PatternEngine] Extreme candle at index ${extremeCandle.index} is not a swing`);
+    return null;
+  }
 
-    // Find previous EXTREME swing (lowest low for bullish, highest high for bearish)
-    const swingPosition = swings.findIndex(s => s.index === extremeCandleSwing.index);
-    const currentSwingLevel = direction === 'bullish' ? extremeCandle.low : extremeCandle.high;
-    
-    const previousSwing = this._findPreviousExtremeSwing(
-      swings,
-      swingPosition,
-      direction,
-      currentSwingLevel,
-      retest.breakout.index
+  // Find previous EXTREME swing (lowest low for bullish, highest high for bearish)
+  const swingPosition = swings.findIndex(s => s.index === extremeCandleSwing.index);
+  const currentSwingLevel = direction === 'bullish' ? extremeCandle.low : extremeCandle.high;
+  
+  const previousSwing = this._findPreviousExtremeSwing(
+    swings,
+    swingPosition,
+    direction,
+    currentSwingLevel,
+    retest.breakout.index
+  );
+  
+  // Check S SETUP status
+  const candle2PreviousStatus = previousSwing 
+    ? this._checkSSetup(previousSwing, extremeCandleSwing, candles, direction)
+    : null;
+
+  // Find V-shape and breakout for candle2Previous
+  let candle2PreviousVshape = null;
+  let candle2PreviousBreakout = null;
+  let candle2PreviousRetest = null;
+  
+  if (candle2PreviousStatus === 'S SETUP' && previousSwing) {
+    candle2PreviousVshape = this.findVShapeCandle(
+      previousSwing,
+      extremeCandleSwing,
+      candles,
+      direction
     );
     
-    // Check S SETUP status
-    const candle2PreviousStatus = previousSwing 
-      ? this._checkSSetup(previousSwing, extremeCandleSwing, candles, direction)
-      : null;
+    if (candle2PreviousVshape) {
+      const vShapeLevel = direction === 'bullish' ? candle2PreviousVshape.high : candle2PreviousVshape.low;
+      candle2PreviousBreakout = this.identifyBreakoutOfLevel(
+        vShapeLevel,
+        candles,
+        extremeCandleSwing.index,
+        direction,
+        extremeCandleSwing
+      );
+      
+      // Find retest for candle2Previous
+      if (candle2PreviousBreakout) {
+        candle2PreviousRetest = this._findConfirmedSetupRetest(
+          candle2PreviousVshape,
+          extremeCandleSwing,
+          candle2PreviousBreakout,
+          candles,
+          direction
+        );
+      }
+    }
+  }
 
-    // Find V-shape and breakout for candle2Previous
-    let candle2PreviousVshape = null;
-    let candle2PreviousBreakout = null;
-    let candle2PreviousRetest = null;
+  // Find the EXTREME swing after extremeCandle (candle1)
+  const swingType = direction === 'bullish' ? 'low' : 'high';
+  
+  let nextSwing = null;
+  let extremeValue = direction === 'bullish' ? Infinity : -Infinity;
+  
+  for (let i = swingPosition + 1; i < swings.length; i++) {
+    if (swings[i].type === swingType) {
+      if (direction === 'bullish') {
+        if (swings[i].low < extremeValue) {
+          extremeValue = swings[i].low;
+          nextSwing = swings[i];
+        }
+      } else {
+        if (swings[i].high > extremeValue) {
+          extremeValue = swings[i].high;
+          nextSwing = swings[i];
+        }
+      }
+    }
+  }
+  
+  // Check DOUBLE EQ status (without tolerance - pure logic only)
+  const candle2NextStatus = nextSwing
+    ? this._checkDoubleEq(extremeCandle, nextSwing, direction)
+    : null;
+
+  // Find V-shape and breakout for candle2Next
+  let candle2NextVshape = null;
+  let candle2NextBreakout = null;
+  let candle2NextRetest = null;
+  
+  if (nextSwing) {
+    const extremeCandleAsSwing = extremeCandleSwing;
+    const nextSwingAsSwing = swings.find(s => s.index === nextSwing.index);
     
-    if (candle2PreviousStatus === 'S SETUP' && previousSwing) {
-      candle2PreviousVshape = this.findVShapeCandle(
-        previousSwing,
-        extremeCandleSwing,
+    if (nextSwingAsSwing) {
+      candle2NextVshape = this.findVShapeCandle(
+        extremeCandleAsSwing,
+        nextSwingAsSwing,
         candles,
         direction
       );
       
-      if (candle2PreviousVshape) {
-        const vShapeLevel = direction === 'bullish' ? candle2PreviousVshape.high : candle2PreviousVshape.low;
-        candle2PreviousBreakout = this.identifyBreakoutOfLevel(
+      if (candle2NextVshape) {
+        const vShapeLevel = direction === 'bullish' ? candle2NextVshape.high : candle2NextVshape.low;
+        candle2NextBreakout = this.identifyBreakoutOfLevel(
           vShapeLevel,
           candles,
-          extremeCandleSwing.index,
+          nextSwingAsSwing.index,
           direction,
-          extremeCandleSwing
+          nextSwingAsSwing
         );
         
-        // Find retest for candle2Previous
-        if (candle2PreviousBreakout) {
-          candle2PreviousRetest = this._findConfirmedSetupRetest(
-            candle2PreviousVshape,
-            extremeCandleSwing,
-            candle2PreviousBreakout,
+        // Find retest for candle2Next
+        if (candle2NextBreakout) {
+          candle2NextRetest = this._findConfirmedSetupRetest(
+            candle2NextVshape,
+            nextSwingAsSwing,
+            candle2NextBreakout,
             candles,
             direction
           );
         }
       }
     }
+  }
 
-    // Find the EXTREME swing after extremeCandle (candle1)
-    const swingType = direction === 'bullish' ? 'low' : 'high';
-    
-    let nextSwing = null;
-    let extremeValue = direction === 'bullish' ? Infinity : -Infinity;
-    
-    for (let i = swingPosition + 1; i < swings.length; i++) {
-      if (swings[i].type === swingType) {
-        if (direction === 'bullish') {
-          if (swings[i].low < extremeValue) {
-            extremeValue = swings[i].low;
-            nextSwing = swings[i];
-          }
-        } else {
-          if (swings[i].high > extremeValue) {
-            extremeValue = swings[i].high;
-            nextSwing = swings[i];
-          }
-        }
-      }
-    }
-    
-    // Check DOUBLE EQ status
-    const candle2NextStatus = nextSwing
-      ? this._checkDoubleEq(extremeCandle, nextSwing, direction)
-      : null;
-
-    // Find V-shape and breakout for candle2Next
-    let candle2NextVshape = null;
-    let candle2NextBreakout = null;
-    let candle2NextRetest = null;
-    
-    if (candle2NextStatus === 'DOUBLE EQ' && nextSwing) {
-      const extremeCandleAsSwing = extremeCandleSwing;
-      const nextSwingAsSwing = swings.find(s => s.index === nextSwing.index);
-      
-      if (nextSwingAsSwing) {
-        candle2NextVshape = this.findVShapeCandle(
-          extremeCandleAsSwing,
-          nextSwingAsSwing,
-          candles,
-          direction
-        );
-        
-        if (candle2NextVshape) {
-          const vShapeLevel = direction === 'bullish' ? candle2NextVshape.high : candle2NextVshape.low;
-          candle2NextBreakout = this.identifyBreakoutOfLevel(
-            vShapeLevel,
-            candles,
-            nextSwingAsSwing.index,
-            direction,
-            nextSwingAsSwing
-          );
-          
-          // Find retest for candle2Next
-          if (candle2NextBreakout) {
-            candle2NextRetest = this._findConfirmedSetupRetest(
-              candle2NextVshape,
-              nextSwingAsSwing,
-              candle2NextBreakout,
-              candles,
-              direction
-            );
-          }
-        }
-      }
-    }
-
-    // Look for candle2Next - the next swing after extremeCandle
-    if (!nextSwing) {
-      this.logger.debug(`[PatternEngine] No next swing found after extreme candle`);
-      return {
-        type: 'confirmedSetup',
-        direction,
-        candle1: extremeCandle,
-        candle2Previous: previousSwing ? candles[previousSwing.index] : null,
-        candle2PreviousStatus,
-        candle2PreviousVshape,
-        candle2PreviousBreakout,
-        candle2PreviousRetest,
-        candle2Next: null,
-        candle2NextStatus: null,
-        candle2NextVshape: null,
-        candle2NextBreakout: null,
-        candle2NextRetest: null,
-        level: direction === 'bullish' 
-          ? extremeCandle.low 
-          : extremeCandle.high,
-        levelType: direction === 'bullish' ? 'support' : 'resistance'
-      };
-    }
-
-    // Check if nextSwing forms equal level with extremeCandle
-    const nextSwingCandle = candles[nextSwing.index];
-    
-    if (direction === 'bullish') {
-      const lowDifference = Math.abs(extremeCandle.low - nextSwingCandle.low);
-      const tolerance = extremeCandle.low * this.config.equalLevelTolerance;
-      
-      if (lowDifference <= tolerance) {
-        return {
-          type: 'confirmedSetup',
-          direction,
-          candle1: extremeCandle,
-          candle2Previous: previousSwing ? candles[previousSwing.index] : null,
-          candle2PreviousStatus,
-          candle2PreviousVshape,
-          candle2PreviousBreakout,
-          candle2PreviousRetest,
-          candle2Next: nextSwingCandle,
-          candle2NextStatus,
-          candle2NextVshape,
-          candle2NextBreakout,
-          candle2NextRetest,
-          level: Math.min(extremeCandle.low, nextSwingCandle.low),
-          levelType: 'support'
-        };
-      }
-    } else {
-      const highDifference = Math.abs(extremeCandle.high - nextSwingCandle.high);
-      const tolerance = extremeCandle.high * this.config.equalLevelTolerance;
-      
-      if (highDifference <= tolerance) {
-        return {
-          type: 'confirmedSetup',
-          direction,
-          candle1: extremeCandle,
-          candle2Previous: previousSwing ? candles[previousSwing.index] : null,
-          candle2PreviousStatus,
-          candle2PreviousVshape,
-          candle2PreviousBreakout,
-          candle2PreviousRetest,
-          candle2Next: nextSwingCandle,
-          candle2NextStatus,
-          candle2NextVshape,
-          candle2NextBreakout,
-          candle2NextRetest,
-          level: Math.max(extremeCandle.high, nextSwingCandle.high),
-          levelType: 'resistance'
-        };
-      }
-    }
-
-    // If no equal level found with nextSwing, return with just candle1
+  // If no nextSwing found, return with just candle1
+  if (!nextSwing) {
+    this.logger.debug(`[PatternEngine] No next swing found after extreme candle`);
     return {
       type: 'confirmedSetup',
       direction,
@@ -1275,6 +1202,30 @@ class PatternEngine extends EventEmitter {
       levelType: direction === 'bullish' ? 'support' : 'resistance'
     };
   }
+
+  // Always return candle2Next if found (no tolerance check)
+  const nextSwingCandle = candles[nextSwing.index];
+  
+  return {
+    type: 'confirmedSetup',
+    direction,
+    candle1: extremeCandle,
+    candle2Previous: previousSwing ? candles[previousSwing.index] : null,
+    candle2PreviousStatus,
+    candle2PreviousVshape,
+    candle2PreviousBreakout,
+    candle2PreviousRetest,
+    candle2Next: nextSwingCandle,
+    candle2NextStatus,
+    candle2NextVshape,
+    candle2NextBreakout,
+    candle2NextRetest,
+    level: direction === 'bullish' 
+      ? Math.min(extremeCandle.low, nextSwingCandle.low)
+      : Math.max(extremeCandle.high, nextSwingCandle.high),
+    levelType: direction === 'bullish' ? 'support' : 'resistance'
+  };
+}
 
   get(symbol, granularity) {
     return this.store[symbol]?.[granularity] || [];
