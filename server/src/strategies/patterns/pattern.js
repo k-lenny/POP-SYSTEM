@@ -598,6 +598,13 @@ class PatternEngine extends EventEmitter {
       confirmedSetupCandle2PreviousRetestTime: pattern.confirmedSetup?.candle2PreviousRetest?.time || null,
       confirmedSetupCandle2PreviousRetestFormattedTime: this._formatTime(pattern.confirmedSetup?.candle2PreviousRetest?.time),
       
+      confirmedSetupCandle2PreviousRetestVshapeIndex: pattern.confirmedSetup?.candle2PreviousRetestVshape?.index || null,
+      confirmedSetupCandle2PreviousRetestVshapePrice: pattern.direction === 'bullish'
+        ? pattern.confirmedSetup?.candle2PreviousRetestVshape?.high
+        : pattern.confirmedSetup?.candle2PreviousRetestVshape?.low,
+      confirmedSetupCandle2PreviousRetestVshapeTime: pattern.confirmedSetup?.candle2PreviousRetestVshape?.time || null,
+      confirmedSetupCandle2PreviousRetestVshapeFormattedTime: this._formatTime(pattern.confirmedSetup?.candle2PreviousRetestVshape?.time),
+      
       confirmedSetupCandle2PreviousMitigationIndex: pattern.confirmedSetup?.candle2PreviousMitigationIndex || null,
       confirmedSetupCandle2PreviousMitigationFormattedTime: pattern.confirmedSetup?.candle2PreviousMitigationFormattedTime || null,
       confirmedSetupCandle2PreviousMitigationStatus: pattern.confirmedSetup?.candle2PreviousMitigationStatus ?? null,
@@ -630,7 +637,14 @@ class PatternEngine extends EventEmitter {
         : pattern.confirmedSetup?.candle2NextRetest?.high,
       confirmedSetupCandle2NextRetestTime: pattern.confirmedSetup?.candle2NextRetest?.time || null,
       confirmedSetupCandle2NextRetestFormattedTime: this._formatTime(pattern.confirmedSetup?.candle2NextRetest?.time),
-
+      
+      confirmedSetupCandle2NextRetestVshapeIndex: pattern.confirmedSetup?.candle2NextRetestVshape?.index || null,
+      confirmedSetupCandle2NextRetestVshapePrice: pattern.direction === 'bullish'
+        ? pattern.confirmedSetup?.candle2NextRetestVshape?.high
+        : pattern.confirmedSetup?.candle2NextRetestVshape?.low,
+      confirmedSetupCandle2NextRetestVshapeTime: pattern.confirmedSetup?.candle2NextRetestVshape?.time || null,
+      confirmedSetupCandle2NextRetestVshapeFormattedTime: this._formatTime(pattern.confirmedSetup?.candle2NextRetestVshape?.time),
+      
       confirmedSetupCandle2NextMitigationIndex: pattern.confirmedSetup?.candle2NextMitigationIndex || null,
       confirmedSetupCandle2NextMitigationFormattedTime: pattern.confirmedSetup?.candle2NextMitigationFormattedTime || null,
       confirmedSetupCandle2NextMitigationStatus: pattern.confirmedSetup?.candle2NextMitigationStatus ?? null,
@@ -1309,6 +1323,17 @@ class PatternEngine extends EventEmitter {
       }
     }
 
+    // Compute the retest V‑shape for candle2Previous (between breakout and retest)
+    let candle2PreviousRetestVshape = null;
+    if (candle2PreviousBreakout && candle2PreviousRetest) {
+      candle2PreviousRetestVshape = this.findRetestVShapeCandle(
+        candle2PreviousBreakout,
+        candle2PreviousRetest,
+        candles,
+        direction
+      );
+    }
+
     // Find Mitigation for candle2Previous
     let candle2PreviousMitigation = null;
     if (candle2PreviousVshape) {
@@ -1410,6 +1435,17 @@ class PatternEngine extends EventEmitter {
       }
     }
 
+    // Compute the retest V‑shape for candle2Next (between breakout and retest)
+    let candle2NextRetestVshape = null;
+    if (candle2NextBreakout && candle2NextRetest) {
+      candle2NextRetestVshape = this.findRetestVShapeCandle(
+        candle2NextBreakout,
+        candle2NextRetest,
+        candles,
+        direction
+      );
+    }
+
     // Find Mitigation for candle2Next
     let candle2NextMitigation = null;
     if (nextSwing && candle2NextVshape) {
@@ -1455,6 +1491,7 @@ class PatternEngine extends EventEmitter {
         candle2PreviousVshape,
         candle2PreviousBreakout,
         candle2PreviousRetest,
+        candle2PreviousRetestVshape,
         candle2PreviousMitigationIndex: candle2PreviousMitigation ? candle2PreviousMitigation.index : null,
         candle2PreviousMitigationFormattedTime: candle2PreviousMitigation ? this._formatTime(candle2PreviousMitigation.time) : null,
         candle2PreviousMitigationStatus,
@@ -1463,6 +1500,7 @@ class PatternEngine extends EventEmitter {
         candle2NextVshape: null,
         candle2NextBreakout: null,
         candle2NextRetest: null,
+        candle2NextRetestVshape: null,
         candle2NextMitigationIndex: null,
         candle2NextMitigationFormattedTime: null,
         candle2NextMitigationStatus: null,
@@ -1491,6 +1529,7 @@ class PatternEngine extends EventEmitter {
       candle2PreviousVshape,
       candle2PreviousBreakout,
       candle2PreviousRetest,
+      candle2PreviousRetestVshape,
       candle2PreviousMitigationIndex: candle2PreviousMitigation ? candle2PreviousMitigation.index : null,
       candle2PreviousMitigationFormattedTime: candle2PreviousMitigation ? this._formatTime(candle2PreviousMitigation.time) : null,
       candle2PreviousMitigationStatus,
@@ -1499,6 +1538,7 @@ class PatternEngine extends EventEmitter {
       candle2NextVshape,
       candle2NextBreakout,
       candle2NextRetest,
+      candle2NextRetestVshape,
       candle2NextMitigationIndex: candle2NextMitigation ? candle2NextMitigation.index : null,
       candle2NextMitigationFormattedTime: candle2NextMitigation ? this._formatTime(candle2NextMitigation.time) : null,
       candle2NextMitigationStatus,
