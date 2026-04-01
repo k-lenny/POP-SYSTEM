@@ -266,32 +266,44 @@ class PatternEngine extends EventEmitter {
 
   /**
    * Find mitigation candle for candle2Previous
-   * For bullish: First green candle between vshape and candle1
-   * For bearish: First red candle between vshape and candle1
+   * For bullish: Green candle with the highest high between previousSwing and candle1
+   * For bearish: Red candle with the lowest low between previousSwing and candle1
    */
-  _findCandle2PreviousMitigation(vShapeIndex, candle1Index, candles, direction) {
-    if (!vShapeIndex || !candle1Index) return null;
+  _findCandle2PreviousMitigation(previousSwingIndex, candle1Index, candles, direction) {
+    if (previousSwingIndex === null || previousSwingIndex === undefined || !candle1Index) return null;
     
     let mitigationCandle = null;
     
     if (direction === 'bullish') {
-      // First green candle between vshape and candle1
-      for (let i = vShapeIndex; i < candle1Index; i++) {
+      // Green candle with the highest high between previousSwing and candle1
+      let maxHigh = -Infinity;
+      
+      for (let i = previousSwingIndex; i < candle1Index; i++) {
         const candle = candles[i];
         if (!candle) continue;
+        
+        // Check if it's a green candle
         if (candle.close >= candle.open) {
-          mitigationCandle = candle;
-          break;
+          if (candle.high > maxHigh) {
+            maxHigh = candle.high;
+            mitigationCandle = candle;
+          }
         }
       }
     } else {
-      // First red candle between vshape and candle1
-      for (let i = vShapeIndex; i < candle1Index; i++) {
+      // Red candle with the lowest low between previousSwing and candle1
+      let minLow = Infinity;
+      
+      for (let i = previousSwingIndex; i < candle1Index; i++) {
         const candle = candles[i];
         if (!candle) continue;
+        
+        // Check if it's a red candle
         if (candle.close < candle.open) {
-          mitigationCandle = candle;
-          break;
+          if (candle.low < minLow) {
+            minLow = candle.low;
+            mitigationCandle = candle;
+          }
         }
       }
     }
@@ -301,32 +313,44 @@ class PatternEngine extends EventEmitter {
 
   /**
    * Find mitigation candle for candle2Next
-   * For bullish: First green candle between vshape and candle2Next
-   * For bearish: First red candle between vshape and candle2Next
+   * For bullish: Green candle with the highest high between candle1 and candle2Next
+   * For bearish: Red candle with the lowest low between candle1 and candle2Next
    */
-  _findCandle2NextMitigation(vShapeIndex, candle2NextIndex, candles, direction) {
-    if (!vShapeIndex || !candle2NextIndex) return null;
+  _findCandle2NextMitigation(candle1Index, candle2NextIndex, candles, direction) {
+    if (!candle1Index || !candle2NextIndex) return null;
     
     let mitigationCandle = null;
     
     if (direction === 'bullish') {
-      // First green candle between vshape and candle2Next
-      for (let i = vShapeIndex; i < candle2NextIndex; i++) {
+      // Green candle with the highest high between candle1 and candle2Next
+      let maxHigh = -Infinity;
+      
+      for (let i = candle1Index; i < candle2NextIndex; i++) {
         const candle = candles[i];
         if (!candle) continue;
+        
+        // Check if it's a green candle
         if (candle.close >= candle.open) {
-          mitigationCandle = candle;
-          break;
+          if (candle.high > maxHigh) {
+            maxHigh = candle.high;
+            mitigationCandle = candle;
+          }
         }
       }
     } else {
-      // First red candle between vshape and candle2Next
-      for (let i = vShapeIndex; i < candle2NextIndex; i++) {
+      // Red candle with the lowest low between candle1 and candle2Next
+      let minLow = Infinity;
+      
+      for (let i = candle1Index; i < candle2NextIndex; i++) {
         const candle = candles[i];
         if (!candle) continue;
+        
+        // Check if it's a red candle
         if (candle.close < candle.open) {
-          mitigationCandle = candle;
-          break;
+          if (candle.low < minLow) {
+            minLow = candle.low;
+            mitigationCandle = candle;
+          }
         }
       }
     }
@@ -472,7 +496,7 @@ class PatternEngine extends EventEmitter {
       
       if (setup) {
         // Build the full pattern with all stages (up to stage 3)
-        this._buildPatternStages(setup, enrichedCandles, direction, swings, swingIndex, obMap);
+        this._buildPatternStages(setup, enrichedCandles, direction, swings, swingIndex, obMap, patterns);
         
         // Add rich metadata
         const enrichedPattern = this._enrichPatternMetadata(setup, enrichedCandles);
@@ -677,8 +701,15 @@ class PatternEngine extends EventEmitter {
 
   /**
    * Recursively builds all pattern stages (up to stage 3)
+   * @param {object} setup - The initial setup object
+   * @param {array} candles - Enriched candles
+   * @param {string} direction - 'bullish' or 'bearish'
+   * @param {array} swings - All swings
+   * @param {object} swingIndex - Index mapping for swings
+   * @param {Map} obMap - Order block map
+   * @param {array} patterns - Array of patterns to optionally add new ones from S setups
    */
-  _buildPatternStages(setup, candles, direction, swings, swingIndex, obMap) {
+  _buildPatternStages(setup, candles, direction, swings, swingIndex, obMap, patterns) {
     // Stage 2: Retest
     const retest = this.identifyRetest(
       { ...setup, context: 'primary' },
@@ -692,6 +723,41 @@ class PatternEngine extends EventEmitter {
     const confirmedSetup = this.identifyConfirmedSetup(retest, candles, direction, swings, swingIndex, obMap);
     if (!confirmedSetup) return;
     setup.confirmedSetup = confirmedSetup;
+
+    // Check for additional S setup pattern between candle2Previous (previous swing) and candle1 (extreme swing)
+    if (confirmedSetup.candle2PreviousStatus === 'S SETUP' && confirmedSetup.candle2PreviousVshape && confirmedSetup.candle2PreviousBreakout) {
+      // Find the swing objects for these candles
+      const prevSwing = swings.find(s => s.index === confirmedSetup.candle2Previous.index);
+      const currSwing = swings.find(s => s.index === confirmedSetup.candle1.index);
+      
+      if (prevSwing && currSwing && prevSwing.index < currSwing.index) {
+        // Check if this pair already exists as a pattern
+        const alreadyExists = patterns.some(p => 
+          p.previousSwingIndex === prevSwing.index && p.currentSwingIndex === currSwing.index
+        );
+        
+        if (!alreadyExists) {
+          // Create a new setup for this pair
+          const newSetup = this.identifySetup(
+            currSwing,
+            prevSwing,
+            candles,
+            direction,
+            swings,
+            swingIndex
+          );
+          
+          if (newSetup) {
+            // Build its stages recursively (this may in turn create further S setups)
+            this._buildPatternStages(newSetup, candles, direction, swings, swingIndex, obMap, patterns);
+            // Enrich and add to patterns
+            const enrichedNewPattern = this._enrichPatternMetadata(newSetup, candles);
+            patterns.push(enrichedNewPattern);
+            this.logger.info(`[PatternEngine] Added additional S setup pattern from swing ${prevSwing.index} to ${currSwing.index}`);
+          }
+        }
+      }
+    }
   }
 
   identifySetup(currentSwing, previousSwing, candles, direction, swings, swingIndex) {
@@ -1336,21 +1402,23 @@ class PatternEngine extends EventEmitter {
 
     // Find Mitigation for candle2Previous
     let candle2PreviousMitigation = null;
-    if (candle2PreviousVshape) {
+    if (previousSwing) {
       candle2PreviousMitigation = this._findCandle2PreviousMitigation(
-        candle2PreviousVshape.index,
+        previousSwing.index,
         extremeCandle.index,
         candles,
         direction
       );
     }
 
-    // Compute candle2PreviousMitigationStatus using the new method that starts from the V-shape index
+    // Compute candle2PreviousMitigationStatus - Check after breakout
     let candle2PreviousMitigationStatus = null;
-    if (candle2PreviousMitigation && candle2PreviousVshape) {
+    if (candle2PreviousMitigation && candle2PreviousBreakout) {
+      // Start checking from the candle AFTER the breakout
+      const startCheckIndex = candle2PreviousBreakout.index + 1;
       candle2PreviousMitigationStatus = this._checkMitigationRetest(
         candle2PreviousMitigation,
-        candle2PreviousVshape.index,
+        startCheckIndex,
         candles,
         direction
       );
@@ -1448,21 +1516,23 @@ class PatternEngine extends EventEmitter {
 
     // Find Mitigation for candle2Next
     let candle2NextMitigation = null;
-    if (nextSwing && candle2NextVshape) {
+    if (nextSwing) {
       candle2NextMitigation = this._findCandle2NextMitigation(
-        candle2NextVshape.index,
+        extremeCandle.index,
         nextSwing.index,
         candles,
         direction
       );
     }
 
-    // Compute candle2NextMitigationStatus using the new method that starts from the V-shape index
+    // Compute candle2NextMitigationStatus - Check after breakout
     let candle2NextMitigationStatus = null;
-    if (candle2NextMitigation && candle2NextVshape) {
+    if (candle2NextMitigation && candle2NextBreakout) {
+      // Start checking from the candle AFTER the breakout
+      const startCheckIndex = candle2NextBreakout.index + 1;
       candle2NextMitigationStatus = this._checkMitigationRetest(
         candle2NextMitigation,
-        candle2NextVshape.index,
+        startCheckIndex,
         candles,
         direction
       );
