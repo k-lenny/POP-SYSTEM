@@ -819,15 +819,17 @@ class PatternEngine extends EventEmitter {
     return null;
   }
 
+  // MODIFIED: Include the retest candle itself when searching for the extreme
   findRetestVShapeCandle(breakoutCandle, retestCandle, candles, direction) {
     const startIndex = breakoutCandle.index + 1;
-    const endIndex = retestCandle.index;
-    if (endIndex <= startIndex) return null;
+    const endIndex = retestCandle.index; // inclusive now – we will search up to and including retestCandle
+    if (endIndex < startIndex) return null;
 
     let extremumCandle = null;
     if (direction === 'bullish') {
       let maxHigh = -Infinity;
-      for (let i = startIndex; i < endIndex; i++) {
+      // Search from breakout+1 up to and including retest candle
+      for (let i = startIndex; i <= endIndex; i++) {
         const candle = candles[i];
         if (!candle) continue;
         if (candle.high > maxHigh) {
@@ -835,10 +837,13 @@ class PatternEngine extends EventEmitter {
           extremumCandle = candle;
         }
       }
-      if (breakoutCandle.high > maxHigh) extremumCandle = breakoutCandle;
+      // Also consider breakout candle itself (if it's higher than all between)
+      if (breakoutCandle.high > maxHigh) {
+        extremumCandle = breakoutCandle;
+      }
     } else {
       let minLow = Infinity;
-      for (let i = startIndex; i < endIndex; i++) {
+      for (let i = startIndex; i <= endIndex; i++) {
         const candle = candles[i];
         if (!candle) continue;
         if (candle.low < minLow) {
@@ -846,7 +851,9 @@ class PatternEngine extends EventEmitter {
           extremumCandle = candle;
         }
       }
-      if (breakoutCandle.low < minLow) extremumCandle = breakoutCandle;
+      if (breakoutCandle.low < minLow) {
+        extremumCandle = breakoutCandle;
+      }
     }
     return extremumCandle;
   }
