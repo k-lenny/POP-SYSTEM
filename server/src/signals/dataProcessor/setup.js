@@ -125,10 +125,6 @@ class SetupEngine {
           }
         }
     
-        // Post-verification: Ensure the found impulse extreme is more extreme than the setupVshapeDepth
-        if (impulseExtremeCandle) {
-          }
-      
       }
 
       // Create a new setup object with all original level info + the new extreme info
