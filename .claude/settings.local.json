@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//c/Users/USER/.claude/projects/c--Users-USER-Desktop-POP-SYSTEM-POP-SYSTEM/6e01e68f-8f0c-4c60-b80f-8f88c40d9359/subagents/**)"
+    ]
+  }
+}

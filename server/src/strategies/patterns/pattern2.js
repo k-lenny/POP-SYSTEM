@@ -1,5 +1,6 @@
 const EventEmitter = require('events');
 const swingEngine = require('../../signals/dataProcessor/swings');
+const { processOBLV } = require('../../signals/dataProcessor/OBLV');
 const Logger = require('../../utils/logger');
 const { getConfig } = require('../../config');
 
@@ -142,6 +143,161 @@ class Pattern2Engine extends EventEmitter {
   }
 
   /**
+   * Find mitigation block candle between firstSwingIndex and secondSwingIndex
+   * Bullish: green candle (close > open) with highest high in range
+   * Bearish: red candle (close < open) with lowest low in range
+   */
+  _findMitigationBlock(firstSwingIndex, secondSwingIndex, candles, direction) {
+    const start = Math.min(firstSwingIndex, secondSwingIndex);
+    const end = Math.max(firstSwingIndex, secondSwingIndex);
+
+    let result = null;
+
+    if (direction === 'bullish') {
+      let maxHigh = -Infinity;
+      for (let i = start; i <= end; i++) {
+        const c = candles[i];
+        if (!c) continue;
+        if (c.close > c.open && c.high > maxHigh) {
+          maxHigh = c.high;
+          result = c;
+        }
+      }
+    } else {
+      let minLow = Infinity;
+      for (let i = start; i <= end; i++) {
+        const c = candles[i];
+        if (!c) continue;
+        if (c.close < c.open && c.low < minLow) {
+          minLow = c.low;
+          result = c;
+        }
+      }
+    }
+
+    return result;
+  }
+
+  /**
+   * Compute mitigation status relative to the mitigationBlock price.
+   * Scans candles from retestData.index (or breakoutIndex+1 if no retest).
+   *
+   * Bullish — checks candles going below mitigationPrice:
+   *   false   : price never reached mitigationPrice
+   *   true    : first touch was a wick only (low < price, but open & close >= price)
+   *             OR first candle to close/open below it had NO subsequent candle
+   *             closing or opening below that candle's low
+   *   expired : first candle to close/open below mitigationPrice was followed by
+   *             a subsequent candle closing or opening below that candle's low
+   *
+   * Bearish — mirror logic above the mitigationPrice.
+   * Scan starts from retestData.index (falls back to breakoutIndex+1).
+   */
+  _resolveStartIdx(retestData, breakoutData, candles) {
+    let idx = retestData?.index ?? null;
+    if (idx == null && breakoutData?.index != null) idx = breakoutData.index + 1;
+    return (idx == null || idx >= candles.length) ? null : idx;
+  }
+
+  // Returns true if any candle from startIdx onward crossed firstPrice in the given direction
+  _hasCrossedPrice(candles, startIdx, firstPrice, direction) {
+    for (let i = startIdx; i < candles.length; i++) {
+      const c = candles[i];
+      if (!c) continue;
+      if (direction === 'bullish' && c.low < firstPrice) return true;
+      if (direction === 'bearish' && c.high > firstPrice) return true;
+    }
+    return false;
+  }
+
+  // Shared wick-touch → body-entry → expiry scan used by both status methods.
+  // reaches(c): true when a candle first interacts with the zone
+  // isWick(c): true when body stayed outside (wick-only touch)
+  // isExpired(next, firstC): true when a subsequent candle invalidates the entry
+  _scanCandleInteraction(startIdx, candles, reaches, isWick, isExpired) {
+    let wickTouched = false;
+    for (let i = startIdx; i < candles.length; i++) {
+      const c = candles[i];
+      if (!c || !reaches(c)) continue;
+      if (isWick(c)) { wickTouched = true; continue; }
+      for (let j = i + 1; j < candles.length; j++) {
+        const next = candles[j];
+        if (!next) continue;
+        if (isExpired(next, c)) return 'expired';
+      }
+      return true;
+    }
+    return wickTouched;
+  }
+
+  _computeMitigationStatus(retestData, mitigationBlockData, breakoutData, enrichedCandles, direction) {
+    const p = mitigationBlockData?.price ?? null;
+    if (p == null) return null;
+    const startIdx = this._resolveStartIdx(retestData, breakoutData, enrichedCandles);
+    if (startIdx == null) return false;
+
+    return direction === 'bullish'
+      ? this._scanCandleInteraction(startIdx, enrichedCandles,
+          c => c.low < p,
+          c => c.close >= p && c.open >= p,
+          (next, fc) => next.close < fc.low || next.open < fc.low)
+      : this._scanCandleInteraction(startIdx, enrichedCandles,
+          c => c.high > p,
+          c => c.close <= p && c.open <= p,
+          (next, fc) => next.close > fc.high || next.open > fc.high);
+  }
+
+  _computeOBStatus(retestData, obData, breakoutData, enrichedCandles, direction) {
+    if (!obData || obData.high == null || obData.low == null) return null;
+    const startIdx = this._resolveStartIdx(retestData, breakoutData, enrichedCandles);
+    if (startIdx == null) return false;
+
+    return direction === 'bullish'
+      ? this._scanCandleInteraction(startIdx, enrichedCandles,
+          c => c.low <= obData.high,
+          c => c.close > obData.high && c.open > obData.high,
+          next => next.close < obData.low || next.open < obData.low)
+      : this._scanCandleInteraction(startIdx, enrichedCandles,
+          c => c.high >= obData.low,
+          c => c.close < obData.low && c.open < obData.low,
+          next => next.close > obData.high || next.open > obData.high);
+  }
+
+  /**
+   * Find first OB (by candle index) between secondSwingIndex and breakoutIndex where:
+   *   Bullish: OB.low < vShapePrice (lowest low of OB stayed below vShape high)
+   *   Bearish: OB.high > vShapePrice (highest high of OB stayed above vShape low)
+   */
+  _findOBData(oblvData, secondSwingIndex, breakoutIndex, vShapePrice, direction, ftMap) {
+    let best = null;
+
+    for (const entry of oblvData) {
+      if (!entry.OB || !entry.OBFormattedTime) continue;
+      const obCandle = ftMap[entry.OBFormattedTime];
+      if (!obCandle) continue;
+
+      const obIndex = obCandle.index;
+      if (obIndex < secondSwingIndex) continue;
+      if (breakoutIndex != null && obIndex > breakoutIndex) continue;
+
+      if (direction === 'bullish' && entry.OB.low >= vShapePrice) continue;
+      if (direction === 'bearish' && entry.OB.high <= vShapePrice) continue;
+
+      if (best === null || obIndex < best.index) {
+        best = {
+          price: direction === 'bullish' ? entry.OB.low : entry.OB.high,
+          index: obIndex,
+          formattedTime: entry.OBFormattedTime,
+          high: entry.OB.high,
+          low: entry.OB.low
+        };
+      }
+    }
+
+    return best;
+  }
+
+  /**
    * Find retest candle after breakout
    * Bullish: extreme low between vShapeData and secondSwing after breakout
    * Bearish: extreme high between vShapeData and secondSwing after breakout
@@ -244,6 +400,18 @@ class Pattern2Engine extends EventEmitter {
     }
 
     const enrichedCandles = this._enrichCandles(candles);
+    const oblvData = processOBLV(symbol, granularity, enrichedCandles);
+
+    // Build formattedTime -> enriched candle map once for OB lookups
+    const ftMap = {};
+    for (const c of enrichedCandles) {
+      if (c.formattedTime && !(c.formattedTime in ftMap)) ftMap[c.formattedTime] = c;
+    }
+
+    // Hoist OTE band constants out of the inner loops
+    const lowerPct = this.OTE_LOWER_RATIO * 100;
+    const upperPct = this.OTE_UPPER_RATIO * 100;
+
     const patterns = [];
 
     let pairsChecked = 0;
@@ -322,14 +490,9 @@ class Pattern2Engine extends EventEmitter {
         const isDoubleEQ = this._isDoubleEQ(firstSwing, candidateSwing, enrichedCandles, direction);
 
         // Check OTE range only if NOT DOUBLE EQ
-        const lowerPct = this.OTE_LOWER_RATIO * 100;
-        const upperPct = this.OTE_UPPER_RATIO * 100;
         const inOTERange = percentValue + 1e-9 >= lowerPct && percentValue - 1e-9 <= upperPct;
 
-        if (!isDoubleEQ && !inOTERange) {
-          // candidate not DOUBLE EQ and not in OTE band
-          continue;
-        }
+        if (!isDoubleEQ && !inOTERange) continue;
 
         // check breakout AFTER this candidate (start from candidate.index)
         const breakout = this._identifyBreakoutSimple(
@@ -412,8 +575,6 @@ class Pattern2Engine extends EventEmitter {
         const isDoubleEQ = this._isDoubleEQ(firstSwing, candidateSwing, enrichedCandles, direction);
 
         // Check OTE range only if NOT DOUBLE EQ
-        const lowerPct = this.OTE_LOWER_RATIO * 100;
-        const upperPct = this.OTE_UPPER_RATIO * 100;
         const inOTERange = percentValue + 1e-9 >= lowerPct && percentValue - 1e-9 <= upperPct;
 
         if (!isDoubleEQ && !inOTERange) {
@@ -464,8 +625,25 @@ class Pattern2Engine extends EventEmitter {
         ?? breakout?.formattedTime
         ?? null;
 
-      // Find retest after breakout
-      const retest = this._findRetest(vshape, candidateSwing, breakout, enrichedCandles, direction);
+      // Find first qualifying OB scanning from secondSwingIndex
+      const obData = this._findOBData(oblvData, candidateSwing.index, breakoutIndex, vshapePrice, direction, ftMap);
+
+      // Find mitigation block between firstSwing and secondSwing
+      const mitigationBlock = this._findMitigationBlock(firstSwing.index, candidateSwing.index, enrichedCandles, direction);
+      const mitigationBlockIndex = mitigationBlock?.index ?? null;
+      const mitigationBlockPrice = direction === 'bullish' ? mitigationBlock?.low ?? null : mitigationBlock?.high ?? null;
+      const mitigationBlockFormattedTime = mitigationBlock
+        ? (enrichedCandles[mitigationBlockIndex]?.formattedTime
+          ?? this._formatTimeFromMs(enrichedCandles[mitigationBlockIndex]?.timestampMs)
+          ?? mitigationBlock?.formattedTime
+          ?? null)
+        : null;
+
+      // Check if price crossed firstSwing after breakout — if so, retest is nullified
+      const firstSwingCrossed = breakoutIndex != null &&
+        this._hasCrossedPrice(enrichedCandles, breakoutIndex + 1, firstPrice, direction);
+
+      const retest = firstSwingCrossed ? null : this._findRetest(vshape, candidateSwing, breakout, enrichedCandles, direction);
       const retestIndex = retest?.index ?? null;
       const retestPrice = direction === 'bullish' ? retest?.low : retest?.high;
       const retestFormattedTime = retest
@@ -474,6 +652,25 @@ class Pattern2Engine extends EventEmitter {
           ?? retest?.formattedTime
           ?? null)
         : null;
+
+      // Compute retest status
+      let retestStatus = null;
+      if (firstSwingCrossed) {
+        retestStatus = 'expired';
+      } else if (retestIndex != null) {
+        retestStatus = this._hasCrossedPrice(enrichedCandles, retestIndex + 1, firstPrice, direction)
+          ? 'invalid'
+          : 'valid';
+      }
+
+      // Cascade expired to status fields if retest was compromised; skip expensive scans otherwise
+      const isRetestCompromised = retestStatus === 'expired' || retestStatus === 'invalid';
+      const finalMitigationStatus = isRetestCompromised ? 'expired' : this._computeMitigationStatus(
+        { index: retestIndex }, { price: mitigationBlockPrice }, { index: breakoutIndex }, enrichedCandles, direction
+      );
+      const finalOBStatus = isRetestCompromised ? 'expired' : this._computeOBStatus(
+        { index: retestIndex }, obData, { index: breakoutIndex }, enrichedCandles, direction
+      );
 
       const percentRounded = Math.round(percentValue) + '%';
 
@@ -523,6 +720,21 @@ class Pattern2Engine extends EventEmitter {
           index: retestIndex,
           formattedTime: retestFormattedTime
         },
+        mitigationBlockData: {
+          price: mitigationBlockPrice,
+          index: mitigationBlockIndex,
+          formattedTime: mitigationBlockFormattedTime
+        },
+        OBData: {
+          price: obData?.price ?? null,
+          index: obData?.index ?? null,
+          formattedTime: obData?.formattedTime ?? null,
+          high: obData?.high ?? null,
+          low: obData?.low ?? null
+        },
+        retestStatus,
+        mitigationStatusData: finalMitigationStatus,
+        OBStatus: finalOBStatus,
         level: percentRounded,
         status: status,
         timestamp: enrichedCandles[candidateSwing.index]?.timestampMs || Date.now()
@@ -576,6 +788,21 @@ class Pattern2Engine extends EventEmitter {
         index: pattern.retestData?.index ?? null,
         formattedTime: pattern.retestData?.formattedTime ?? null
       },
+      mitigationBlockData: {
+        price: pattern.mitigationBlockData?.price ?? null,
+        index: pattern.mitigationBlockData?.index ?? null,
+        formattedTime: pattern.mitigationBlockData?.formattedTime ?? null
+      },
+      OBData: {
+        price: pattern.OBData?.price ?? null,
+        index: pattern.OBData?.index ?? null,
+        formattedTime: pattern.OBData?.formattedTime ?? null,
+        high: pattern.OBData?.high ?? null,
+        low: pattern.OBData?.low ?? null
+      },
+      retestStatus: pattern.retestStatus ?? null,
+      mitigationStatusData: pattern.mitigationStatusData ?? null,
+      OBStatus: pattern.OBStatus ?? null,
       level: pattern.level ?? null,
       status: pattern.status ?? null,
       timestamp: pattern.timestamp ?? null
