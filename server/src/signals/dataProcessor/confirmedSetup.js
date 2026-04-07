@@ -2,6 +2,7 @@
 const setupEngine = require('./setup');
 const signalEngine = require('../signalEngine');
 const { buildCandleIndexMap, nextArrayIdx } = require('../../utils/dataProcessorUtils');
+const { processOBLV } = require('./OBLV');
 
 class ConfirmedSetupEngine {
   /**
@@ -22,6 +23,13 @@ class ConfirmedSetupEngine {
     }
 
     const candleIndexMap = buildCandleIndexMap(candles);
+
+    // Build formattedTime → candle map so we can resolve OB candle indexes
+    const ftMap = new Map();
+    for (const c of candles) ftMap.set(c.formattedTime, c);
+
+    const oblvData = processOBLV(symbol, granularity, candles);
+
     const confirmedSetups = [];
 
     for (const setup of setups) {
@@ -44,6 +52,13 @@ class ConfirmedSetupEngine {
 
       const breakoutResult = this._getBreakoutStatus(setup, candles, candleIndexMap);
 
+      const setupOB = this._findSetupOB(
+        oblvData,
+        ftMap,
+        setup.setupVshapeIndex,
+        breakoutResult.index
+      );
+
       confirmedSetups.push({
         ...setup,
         setupStatus: status,
@@ -52,6 +67,7 @@ class ConfirmedSetupEngine {
         ConfirmedSetupBreakoutStatus: breakoutResult.status,
         ConfirmedSetupBreakoutStatusIndex: breakoutResult.index,
         ConfirmedSetupBreakoutStatusFormattedTime: breakoutResult.formattedTime,
+        setupOB,
       });
     }
 
@@ -203,6 +219,38 @@ class ConfirmedSetupEngine {
     }
 
     return { status: 'NO', index: null, formattedTime: null };
+  }
+
+  /**
+   * Finds the first OB (from OBLV data) whose candle index falls strictly
+   * between setupStatusIndex and breakoutStatusIndex (end of candles if no breakout).
+   * @private
+   */
+  _findSetupOB(oblvData, ftMap, setupStatusIndex, breakoutStatusIndex) {
+    for (const oblv of oblvData) {
+      if (!oblv.OB || !oblv.OBFormattedTime) continue;
+
+      const obCandle = ftMap.get(oblv.OBFormattedTime);
+      if (!obCandle) continue;
+
+      const obIdx = obCandle.index;
+
+      // Must be strictly after setup formation
+      if (obIdx <= setupStatusIndex) continue;
+
+      // Must be strictly before breakout (if one exists)
+      if (breakoutStatusIndex !== null && obIdx >= breakoutStatusIndex) continue;
+
+      return {
+        index: obCandle.index,
+        formattedTime: obCandle.formattedTime,
+        open: oblv.OB.open,
+        high: oblv.OB.high,
+        low: oblv.OB.low,
+        close: oblv.OB.close,
+      };
+    }
+    return null;
   }
 }
 

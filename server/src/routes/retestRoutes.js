@@ -131,8 +131,30 @@ router.get('/:symbol/:granularity', validateParams, async (req, res) => {
     // Ensure data is loaded before querying
     await ensureDataLoaded(symbol, Number(granularity));
 
+    const candles = signalEngine.getCandles(symbol, Number(granularity), true);
     const data = retestEngine.getRetests(symbol, Number(granularity));
-    res.json(data);
+
+    if (!candles || candles.length === 0) {
+      return res.json({
+        success: false,
+        symbol,
+        granularity: Number(granularity),
+        count: 0,
+        reason: 'No candle data available for this symbol/granularity. The market feed may not have started yet.',
+        data: []
+      });
+    }
+
+    res.json({
+      success: true,
+      symbol,
+      granularity: Number(granularity),
+      count: data.length,
+      ...(data.length === 0 && {
+        reason: 'No retest setups detected. Either no EQH/EQL levels exist yet, or price has not retested any active levels.'
+      }),
+      data
+    });
   } catch (error) {
     console.error('Error fetching retests:', error);
     res.status(500).json({ error: 'Internal server error processing retests' });
