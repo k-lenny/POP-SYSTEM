@@ -235,8 +235,8 @@ class ConfirmedSetupEngine {
 
       const obIdx = obCandle.index;
 
-      // Must be strictly after setup formation
-      if (obIdx <= setupStatusIndex) continue;
+      // The setupStatusIndex candle itself is allowed to be the OB
+      if (obIdx < setupStatusIndex) continue;
 
       // Must be strictly before breakout (if one exists)
       if (breakoutStatusIndex !== null && obIdx >= breakoutStatusIndex) continue;
