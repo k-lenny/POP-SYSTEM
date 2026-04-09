@@ -40,34 +40,40 @@ class SetupEngine {
       }
       const breakingCandle = candles[breakArrayPos];
 
-      // 2. Find the second, "confirming" candle based on the new "BOS Sustained" rule.
-      // This candle must close past the HIGH (for EQH) or LOW (for EQL) of the initial breaking candle.
-      let confirmingCandle = null;
-      let confirmingCandlePos = -1;
-      const confirmationScanStart = breakArrayPos + 1;
-      const confirmationScanEnd = Math.min(candles.length, confirmationScanStart + bosScanLimit);
+      // 2. Determine the anchor candle for V-shape scanning.
+      // BOS_CLOSE: the breaking candle itself already closed past the level, so use it directly.
+      // BOS_SUSTAINED: need a confirming candle that closes past the breaking candle's high/low.
+      let anchorCandlePos = -1;
 
-      for (let i = confirmationScanStart; i < confirmationScanEnd; i++) {
-        const c = candles[i];
-        if (level.type === 'EQH' && c.close > breakingCandle.high) {
-          confirmingCandle = c;
-          confirmingCandlePos = i;
-          break; // Found it
-        } else if (level.type === 'EQL' && c.close < breakingCandle.low) {
-          confirmingCandle = c;
-          confirmingCandlePos = i;
-          break; // Found it
+      if (level.brokenBosType === 'BOS_CLOSE') {
+        anchorCandlePos = breakArrayPos;
+      } else {
+        // BOS_SUSTAINED: find a confirming candle
+        let confirmingCandle = null;
+        const confirmationScanStart = breakArrayPos + 1;
+        const confirmationScanEnd = Math.min(candles.length, confirmationScanStart + bosScanLimit);
+
+        for (let i = confirmationScanStart; i < confirmationScanEnd; i++) {
+          const c = candles[i];
+          if (level.type === 'EQH' && c.close > breakingCandle.high) {
+            confirmingCandle = c;
+            anchorCandlePos = i;
+            break;
+          } else if (level.type === 'EQL' && c.close < breakingCandle.low) {
+            confirmingCandle = c;
+            anchorCandlePos = i;
+            break;
+          }
+        }
+
+        if (!confirmingCandle) {
+          continue;
         }
       }
 
-      // If no confirming candle is found, this is not a valid setup under the new rules. Skip it.
-      if (!confirmingCandle) {
-        continue;
-      }
-
-      // 3. Scan for the setup V-shape, starting AFTER the confirming candle.
+      // 3. Scan for the setup V-shape, starting AFTER the anchor candle.
       let extremeCandle = null;
-      const vShapeScanStart = confirmingCandlePos + 1;
+      const vShapeScanStart = anchorCandlePos + 1;
       const vShapeScanEnd = Math.min(candles.length, vShapeScanStart + scanCandles);
 
       if (level.type === 'EQH') {
