@@ -14,7 +14,8 @@ class SetupEngine {
    * @returns {Array<Object>} An array of setup objects.
    */
   getSetups(symbol, granularity) {
-    const brokenLevels = eqhEqlEngine.getBroken(symbol, granularity);
+    const brokenLevels = eqhEqlEngine.getBroken(symbol, granularity)
+      .filter(l => l.validityStatus !== 'INVALID');
     if (!brokenLevels.length) {
       return [];
     }
