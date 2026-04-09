@@ -104,6 +104,24 @@ class EqhEqlEngine extends EventEmitter {
       migrated = true;
     }
     
+    // Add missing validSwing fields
+    if (!level.hasOwnProperty('validSwingIndex')) {
+      level.validSwingIndex = null;
+      migrated = true;
+    }
+    if (!level.hasOwnProperty('validSwingPrice')) {
+      level.validSwingPrice = null;
+      migrated = true;
+    }
+    if (!level.hasOwnProperty('validSwingFormattedTime')) {
+      level.validSwingFormattedTime = null;
+      migrated = true;
+    }
+    if (!level.hasOwnProperty('validityStatus')) {
+      level.validityStatus = 'INVALID';
+      migrated = true;
+    }
+
     // Initialize preBreakoutVDepth based on type
     if (!level.hasOwnProperty('preBreakoutVDepth')) {
       level.preBreakoutVDepth = level.type === 'EQH' ? Infinity : -Infinity;
@@ -296,6 +314,9 @@ class EqhEqlEngine extends EventEmitter {
     const maxT = Math.max(firstSwing.time, secondSwing.time);
     if (!(vExtremeCandle.time > minT && vExtremeCandle.time < maxT)) return null;
 
+    // Find the valid swing (previous opposite swing before firstSwing)
+    const validSwing = this._findValidSwing(type, firstSwing.index, swingIndexMap);
+
     const level = {
       type,
       key: `${firstSwing.index}_${secondSwing.index}_${type}`,
@@ -317,6 +338,18 @@ class EqhEqlEngine extends EventEmitter {
       secondSwingDirection:     secondSwing.direction,
       secondSwingTime:          secondSwing.time,
       secondSwingFormattedTime: secondSwing.formattedTime,
+
+      // Valid swing: previous swing low (for EQH) or swing high (for EQL) before firstSwing
+      validSwingIndex:         validSwing?.index         ?? null,
+      validSwingPrice:         validSwing?.price         ?? null,
+      validSwingFormattedTime: validSwing?.formattedTime ?? null,
+      // Validity: for EQH, valid if validSwing low >= vShapeDepth; for EQL, valid if validSwing high <= vShapeDepth
+      validityStatus: (() => {
+        const vDepth = vExtreme === Infinity || vExtreme === -Infinity ? null : vExtreme;
+        if (!validSwing || vDepth === null) return 'INVALID';
+        if (type === 'EQH') return validSwing.price >= vDepth ? 'VALID' : 'INVALID';
+        return validSwing.price <= vDepth ? 'VALID' : 'INVALID';
+      })(),
 
       // V-shape that occurs BETWEEN first and second swing (original detection)
       vShapeDepth:         vExtreme === Infinity || vExtreme === -Infinity ? null : vExtreme,
@@ -610,6 +643,27 @@ class EqhEqlEngine extends EventEmitter {
     return { map, indices };
   }
 
+  /**
+   * Find the "valid swing" — the previous opposite swing before firstSwingIndex.
+   * For EQH: the previous swing low before firstSwingIndex.
+   * For EQL: the previous swing high before firstSwingIndex.
+   */
+  _findValidSwing(type, firstSwingIndex, swingIndexMap) {
+    const { map, indices } = swingIndexMap;
+    const targetType = type === 'EQH' ? 'low' : 'high';
+
+    // Scan backwards through swing indices to find the first one before firstSwingIndex
+    for (let i = indices.length - 1; i >= 0; i--) {
+      const idx = indices[i];
+      if (idx >= firstSwingIndex) continue;
+      const swing = map.get(idx);
+      if (swing.type === targetType) {
+        return swing;
+      }
+    }
+    return null;
+  }
+
   // ─────────────────────────────────────────────
   // PUBLIC API
   // ─────────────────────────────────────────────
@@ -786,7 +840,7 @@ class EqhEqlEngine extends EventEmitter {
           this._insertSorted(symbol, granularity, level);
           this._registerLevel(symbol, granularity, level);
           newLevels.push(level);
-          this.logger.info(`🔴 New EQH → ${symbol} @ ${granularity}s | Zone: ${level.zoneBottom.toFixed(2)} - ${level.zoneTop.toFixed(2)} | V-Shape (between swings): ${level.vShapeDepth?.toFixed(2) ?? 'N/A'} @ ${level.vShapeFormattedTime ?? 'N/A'} | Pre-Breakout Extreme: ${level.preBreakoutVDepth?.toFixed(2) ?? 'N/A'} @ ${level.preBreakoutVFormattedTime ?? 'N/A'} | Status: ${level.status} | Confidence: ${level.confidence.toFixed(2)} | ${level.formattedTime}`);
+          this.logger.info(`🔴 New EQH → ${symbol} @ ${granularity}s | Zone: ${level.zoneBottom.toFixed(2)} - ${level.zoneTop.toFixed(2)} | Valid Swing (prev low): ${level.validSwingPrice?.toFixed(2) ?? 'N/A'} @ idx ${level.validSwingIndex ?? 'N/A'} ${level.validSwingFormattedTime ?? ''} | Validity: ${level.validityStatus} | V-Shape (between swings): ${level.vShapeDepth?.toFixed(2) ?? 'N/A'} @ ${level.vShapeFormattedTime ?? 'N/A'} | Pre-Breakout Extreme: ${level.preBreakoutVDepth?.toFixed(2) ?? 'N/A'} @ ${level.preBreakoutVFormattedTime ?? 'N/A'} | Status: ${level.status} | Confidence: ${level.confidence.toFixed(2)} | ${level.formattedTime}`);
           if (this.emitEvents) this.emit('newLevel', { level });
           metrics.increment('new_levels');
         }
@@ -813,7 +867,7 @@ class EqhEqlEngine extends EventEmitter {
           this._insertSorted(symbol, granularity, level);
           this._registerLevel(symbol, granularity, level);
           newLevels.push(level);
-          this.logger.info(`🟢 New EQL → ${symbol} @ ${granularity}s | Zone: ${level.zoneBottom.toFixed(2)} - ${level.zoneTop.toFixed(2)} | V-Shape (between swings): ${level.vShapeDepth?.toFixed(2) ?? 'N/A'} @ ${level.vShapeFormattedTime ?? 'N/A'} | Pre-Breakout Extreme: ${level.preBreakoutVDepth?.toFixed(2) ?? 'N/A'} @ ${level.preBreakoutVFormattedTime ?? 'N/A'} | Status: ${level.status} | Confidence: ${level.confidence.toFixed(2)} | ${level.formattedTime}`);
+          this.logger.info(`🟢 New EQL → ${symbol} @ ${granularity}s | Zone: ${level.zoneBottom.toFixed(2)} - ${level.zoneTop.toFixed(2)} | Valid Swing (prev high): ${level.validSwingPrice?.toFixed(2) ?? 'N/A'} @ idx ${level.validSwingIndex ?? 'N/A'} ${level.validSwingFormattedTime ?? ''} | Validity: ${level.validityStatus} | V-Shape (between swings): ${level.vShapeDepth?.toFixed(2) ?? 'N/A'} @ ${level.vShapeFormattedTime ?? 'N/A'} | Pre-Breakout Extreme: ${level.preBreakoutVDepth?.toFixed(2) ?? 'N/A'} @ ${level.preBreakoutVFormattedTime ?? 'N/A'} | Status: ${level.status} | Confidence: ${level.confidence.toFixed(2)} | ${level.formattedTime}`);
           if (this.emitEvents) this.emit('newLevel', { level });
           metrics.increment('new_levels');
         }
@@ -922,6 +976,12 @@ class EqhEqlEngine extends EventEmitter {
       secondSwingTime: level.secondSwingTime,
       secondSwingFormattedTime: level.secondSwingFormattedTime,
       
+      // Valid swing (previous opposite swing before firstSwing)
+      validSwingIndex: level.validSwingIndex,
+      validSwingPrice: level.validSwingPrice,
+      validSwingFormattedTime: level.validSwingFormattedTime,
+      validityStatus: level.validityStatus,
+
       // V-Shape BETWEEN swings
       vShapeDepth: level.vShapeDepth,
       vShapeIndex: level.vShapeIndex,
