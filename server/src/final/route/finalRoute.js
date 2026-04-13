@@ -79,6 +79,12 @@ router.get('/all', async (req, res) => {
     const rawGranularities = getValidGranularities();
     const resultMap = {};
     let totalSetups = 0;
+    let obCrossCount = 0;
+    const obCrossSymbols = new Set();
+    let patternMatchCount = 0;
+    const patternMatchSymbols = new Set();
+    let pattern2MatchCount = 0;
+    const pattern2MatchSymbols = new Set();
 
     for (const symbol of symbols) {
       for (const rawGranularity of rawGranularities) {
@@ -92,12 +98,32 @@ router.get('/all', async (req, res) => {
           if (!resultMap[symbol]) resultMap[symbol] = {};
           resultMap[symbol][granularity] = setups;
           totalSetups += setups.length;
+          for (const s of setups) {
+            if (s.OBCross) {
+              obCrossCount++;
+              obCrossSymbols.add(symbol);
+            }
+            if (s.patternMatch) {
+              patternMatchCount++;
+              patternMatchSymbols.add(symbol);
+            }
+            if (s.pattern2Match) {
+              pattern2MatchCount++;
+              pattern2MatchSymbols.add(symbol);
+            }
+          }
         }
       }
     }
 
     return sendSuccess(res, {
       count: totalSetups,
+      obCrossTotal: obCrossCount,
+      obCrossSymbols: [...obCrossSymbols],
+      patternMatchTotal: patternMatchCount,
+      patternMatchSymbols: [...patternMatchSymbols],
+      pattern2MatchTotal: pattern2MatchCount,
+      pattern2MatchSymbols: [...pattern2MatchSymbols],
       map: resultMap,
     });
   } catch (err) {
@@ -117,6 +143,12 @@ router.get('/all/:granularity', async (req, res) => {
     const symbols = getValidSymbols().map(s => s.code);
     const results = {};
     let totalSetups = 0;
+    let obCrossCount = 0;
+    const obCrossSymbols = new Set();
+    let patternMatchCount = 0;
+    const patternMatchSymbols = new Set();
+    let pattern2MatchCount = 0;
+    const pattern2MatchSymbols = new Set();
 
     await Promise.all(symbols.map(async (symbol) => {
       await ensureDataLoaded(symbol, granularity);
@@ -124,6 +156,20 @@ router.get('/all/:granularity', async (req, res) => {
       if (setups && setups.length > 0) {
         results[symbol] = setups;
         totalSetups += setups.length;
+        for (const s of setups) {
+          if (s.OBCross) {
+            obCrossCount++;
+            obCrossSymbols.add(symbol);
+          }
+          if (s.patternMatch) {
+            patternMatchCount++;
+            patternMatchSymbols.add(symbol);
+          }
+          if (s.pattern2Match) {
+            pattern2MatchCount++;
+            pattern2MatchSymbols.add(symbol);
+          }
+        }
       }
     }));
 
@@ -131,6 +177,12 @@ router.get('/all/:granularity', async (req, res) => {
       granularity,
       totalSetups,
       symbolsWithSetups: Object.keys(results).length,
+      obCrossTotal: obCrossCount,
+      obCrossSymbols: [...obCrossSymbols],
+      patternMatchTotal: patternMatchCount,
+      patternMatchSymbols: [...patternMatchSymbols],
+      pattern2MatchTotal: pattern2MatchCount,
+      pattern2MatchSymbols: [...pattern2MatchSymbols],
       ...(totalSetups === 0 && {
         reason: 'No confirmed setups found for any symbol at this granularity.'
       }),

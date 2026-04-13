@@ -1,15 +1,37 @@
 // server/src/signals/dataProcessor/confirmedSetup.js
+const fs = require('fs');
+const path = require('path');
 const setupEngine = require('./setup');
 const signalEngine = require('../signalEngine');
-const swingEngine = require('./swings');
 const { buildCandleIndexMap, nextArrayIdx } = require('../../utils/dataProcessorUtils');
 const { processOBLV } = require('./OBLV');
+
+const LOCKED_STATUSES_PATH = path.join(__dirname, '..', '..', '..', 'data', 'lockedStatuses.json');
 
 class ConfirmedSetupEngine {
   constructor() {
     // Cache for locked setupStatus once breakout is confirmed (YES)
     // Key: `${symbol}_${granularity}_${brokenIndex}` → setupStatus string
-    this._lockedStatuses = {};
+    this._lockedStatuses = this._loadLockedStatuses();
+  }
+
+  _loadLockedStatuses() {
+    try {
+      const raw = fs.readFileSync(LOCKED_STATUSES_PATH, 'utf8');
+      return JSON.parse(raw);
+    } catch {
+      return {};
+    }
+  }
+
+  _saveLockedStatuses() {
+    try {
+      const dir = path.dirname(LOCKED_STATUSES_PATH);
+      if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+      fs.writeFileSync(LOCKED_STATUSES_PATH, JSON.stringify(this._lockedStatuses, null, 2), 'utf8');
+    } catch {
+      // Silent fail — next restart will just re-derive locks
+    }
   }
 
   _lockKey(symbol, granularity, setup) {
@@ -77,9 +99,10 @@ class ConfirmedSetupEngine {
 
       const breakoutResult = this._getBreakoutStatus(setup, candles, candleIndexMap);
 
-      // Lock the setupStatus once breakout is confirmed
+      // Lock the setupStatus once breakout is confirmed and persist to disk
       if (breakoutResult.status === 'YES' && !lockedStatus) {
         this._lockedStatuses[lockKey] = status;
+        this._saveLockedStatuses();
       }
 
       const setupOB = this._findSetupOB(
@@ -89,9 +112,27 @@ class ConfirmedSetupEngine {
         breakoutResult.index
       );
 
-      const OBSwing = breakoutResult.status === 'YES' && setupOB
-        ? this._findOBSwing(symbol, granularity, setup.type, setupOB, breakoutResult.index, candleIndexMap, candles)
-        : null;
+      let OBCross = null;
+      let OBSetupExtreme = null;
+      if (breakoutResult.status === 'YES' && setupOB) {
+        const obCrossResult = this._findOBCross(setup.type, setupOB, candleIndexMap, candles, breakoutResult.index);
+        if (obCrossResult.obCrossCandle) {
+          const cc = obCrossResult.obCrossCandle;
+          OBCross = {
+            index: cc.index,
+            formattedTime: cc.formattedTime,
+            data: {
+              open: cc.open,
+              high: cc.high,
+              low: cc.low,
+              close: cc.close,
+            },
+          };
+        }
+        if (obCrossResult.obCrossIndex !== null) {
+          OBSetupExtreme = this._findOBSetupExtreme(setup.type, obCrossResult.obCrossIndex, candleIndexMap, candles);
+        }
+      }
 
       confirmedSetups.push({
         ...setup,
@@ -102,7 +143,8 @@ class ConfirmedSetupEngine {
         ConfirmedSetupBreakoutStatusIndex: breakoutResult.index,
         ConfirmedSetupBreakoutStatusFormattedTime: breakoutResult.formattedTime,
         setupOB,
-        OBSwing,
+        OBCross,
+        OBSetupExtreme,
       });
     }
 
@@ -289,82 +331,72 @@ class ConfirmedSetupEngine {
   }
 
   /**
-   * Finds the OBSwing — the extreme swing found between the setupOB's high and low.
-   * Only called after breakout is confirmed (YES).
-   * For EQL: looks for swing highs whose price falls between setupOB.low and setupOB.high,
-   *          returns the one with the highest candle high (extreme high).
-   * For EQH: looks for swing lows whose price falls between setupOB.low and setupOB.high,
-   *          returns the one with the lowest candle low (extreme low).
+   * Finds the first candle after the breakout that crosses the setupOB.
+   * For EQL: first candle whose high crosses above setupOB.high
+   * For EQH: first candle whose low crosses below setupOB.low
    * @private
    */
-  _findOBSwing(symbol, granularity, type, setupOB, breakoutIndex, candleIndexMap, candles) {
-    const swings = swingEngine.get(symbol, granularity);
-    if (!swings.length) return null;
-
+  _findOBCross(type, setupOB, candleIndexMap, candles, breakoutIndex) {
+    const isEQL = type === 'EQL';
     const obHigh = setupOB.high;
     const obLow = setupOB.low;
-    const isEQL = type === 'EQL';
 
-    // Find the first candle after breakout that crosses the setupOB
-    // For EQL: first candle whose high crosses above obHigh
-    // For EQH: first candle whose low crosses below obLow
-    const startPos = nextArrayIdx(candleIndexMap, candles, breakoutIndex);
+    const breakoutPos = candleIndexMap.get(breakoutIndex);
+    const scanStart = breakoutPos !== undefined ? breakoutPos + 1 : nextArrayIdx(candleIndexMap, candles, setupOB.index);
     let obCrossIndex = null;
-    if (startPos !== undefined) {
-      for (let i = startPos; i < candles.length; i++) {
+    let obCrossCandle = null;
+    if (scanStart !== undefined) {
+      for (let i = scanStart; i < candles.length; i++) {
         const c = candles[i];
         if (isEQL && c.high > obHigh) {
           obCrossIndex = c.index;
+          obCrossCandle = c;
           break;
         }
         if (!isEQL && c.low < obLow) {
           obCrossIndex = c.index;
+          obCrossCandle = c;
           break;
         }
       }
     }
 
-    // OB must have been crossed; if not yet crossed, no OBSwing
-    if (obCrossIndex === null) return null;
+    return { obCrossIndex, obCrossCandle };
+  }
 
-    // Filter swings: behind (before) the first OB-crossing candle, correct type, price within OB range
-    const relevantSwings = swings.filter(s => {
-      if (isEQL && s.type !== 'high') return false;
-      if (!isEQL && s.type !== 'low') return false;
+  /**
+   * Finds the OBSetupExtreme — the extreme candle found after the first OB-crossing candle.
+   * For EQL: the candle with the lowest low after the OB cross.
+   * For EQH: the candle with the highest high after the OB cross.
+   * @private
+   */
+  _findOBSetupExtreme(type, obCrossIndex, candleIndexMap, candles) {
+    const isEQL = type === 'EQL';
 
-      // Swing price must be between setupOB low and high
-      if (s.price < obLow || s.price > obHigh) return false;
+    const crossPos = candleIndexMap.get(obCrossIndex);
+    if (crossPos === undefined) return null;
 
-      // Must be behind (before) the first candle that crossed the OB
-      if (s.candleIndex >= obCrossIndex) return false;
+    let extremeCandle = null;
 
-      return true;
-    });
-
-    if (!relevantSwings.length) return null;
-
-    // Find the extreme swing
-    let extremeSwing;
-    if (isEQL) {
-      // For EQL: highest candle high
-      extremeSwing = relevantSwings.reduce((best, s) => s.high > best.high ? s : best);
-    } else {
-      // For EQH: lowest candle low
-      extremeSwing = relevantSwings.reduce((best, s) => s.low < best.low ? s : best);
+    for (let i = crossPos + 1; i < candles.length; i++) {
+      const c = candles[i];
+      if (!extremeCandle) {
+        extremeCandle = c;
+        continue;
+      }
+      if (isEQL && c.low < extremeCandle.low) {
+        extremeCandle = c;
+      } else if (!isEQL && c.high > extremeCandle.high) {
+        extremeCandle = c;
+      }
     }
 
+    if (!extremeCandle) return null;
+
     return {
-      index: extremeSwing.candleIndex,
-      price: extremeSwing.price,
-      data: {
-        open: extremeSwing.open,
-        high: extremeSwing.high,
-        low: extremeSwing.low,
-        close: extremeSwing.close,
-        formattedTime: extremeSwing.formattedTime,
-        type: extremeSwing.type,
-        direction: extremeSwing.direction,
-      },
+      index: extremeCandle.index,
+      price: isEQL ? extremeCandle.low : extremeCandle.high,
+      formattedTime: extremeCandle.formattedTime,
     };
   }
 }

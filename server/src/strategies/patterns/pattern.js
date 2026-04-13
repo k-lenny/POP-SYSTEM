@@ -28,7 +28,6 @@ class PatternEngine extends EventEmitter {
     this.config = {
       vShapeWickRatio: 2.0,
       equalLevelTolerance: 0.002,
-      minCandlesBetweenSwings: 3,
       retestScanRange: 30,
       obScanRange: 10,
       ...options.config
@@ -379,9 +378,6 @@ class PatternEngine extends EventEmitter {
         continue;
       }
 
-      const candlesBetween = currentSwing.index - previousSwing.index;
-      if (candlesBetween < this.config.minCandlesBetweenSwings) continue;
-
       const direction = this._getPatternDirection(currentSwing, previousSwing);
       const setup = this.identifySetup(currentSwing, previousSwing, enrichedCandles, direction, swings, swingIndex);
 
@@ -431,8 +427,8 @@ class PatternEngine extends EventEmitter {
       direction: pattern.direction,
 
       previousSwingIndex: pattern.previousSwing?.index || null,
-      previousSwingPrice: pattern.previousSwing?.type === 'high' 
-        ? pattern.previousSwing?.high 
+      previousSwingPrice: pattern.previousSwing?.type === 'high'
+        ? pattern.previousSwing?.high
         : pattern.previousSwing?.low,
       previousSwingType: pattern.previousSwing?.type || null,
       previousSwingTime: pattern.previousSwing?.time || null,
@@ -450,8 +446,8 @@ class PatternEngine extends EventEmitter {
       firstSweepCandleClose: pattern.sweepData?.firstSweepCandleClose || null,
 
       vShapeCandleIndex: pattern.vShapeCandle?.index || null,
-      vShapeCandlePrice: pattern.direction === DIRECTION.BULLISH 
-        ? pattern.vShapeCandle?.high 
+      vShapeCandlePrice: pattern.direction === DIRECTION.BULLISH
+        ? pattern.vShapeCandle?.high
         : pattern.vShapeCandle?.low,
       vShapeCandleTime: pattern.vShapeCandle?.time || null,
       vShapeCandleFormattedTime: this._formatTime(pattern.vShapeCandle?.time),
@@ -468,123 +464,12 @@ class PatternEngine extends EventEmitter {
       retestPrice: pattern.retest?.close || null,
       retestTime: pattern.retest?.time || null,
       retestFormattedTime: this._formatTime(pattern.retest?.time),
-      retestLevel: pattern.retest?.retestLevel || null,
-      retestType: pattern.retest?.retestType || null,
-
-      retestVshapeIndex: pattern.retest?.vShapeCandle?.index || null,
-      retestVshapePrice: pattern.direction === DIRECTION.BULLISH
-        ? pattern.retest?.vShapeCandle?.high
-        : pattern.retest?.vShapeCandle?.low,
-      retestVshapeTime: pattern.retest?.vShapeCandle?.time || null,
-      retestVshapeFormattedTime: this._formatTime(pattern.retest?.vShapeCandle?.time),
-      retestVshapeLevel: pattern.direction === DIRECTION.BULLISH
-        ? pattern.retest?.vShapeCandle?.high
-        : pattern.retest?.vShapeCandle?.low,
-
-      retestBreakoutIndex: pattern.retest?.breakout?.index || null,
-      retestBreakoutPrice: pattern.retest?.breakout?.close || null,
-      retestBreakoutTime: pattern.retest?.breakout?.time || null,
-      retestBreakoutFormattedTime: this._formatTime(pattern.retest?.breakout?.time),
-
-      confirmedSetupCandle1Index: pattern.confirmedSetup?.candle1?.index || null,
-      confirmedSetupCandle1Price: pattern.confirmedSetup?.candle1?.close || null,
-      confirmedSetupCandle1Time: pattern.confirmedSetup?.candle1?.time|| null,
-      confirmedSetupCandle1FormattedTime: this._formatTime(pattern.confirmedSetup?.candle1?.time),
-
-      confirmedSetupCandle2PreviousIndex: pattern.confirmedSetup?.candle2Previous?.index || null,
-      confirmedSetupCandle2PreviousPrice: pattern.confirmedSetup?.candle2Previous?.close || null,
-      confirmedSetupCandle2PreviousTime: pattern.confirmedSetup?.candle2Previous?.time|| null,
-      confirmedSetupCandle2PreviousFormattedTime: this._formatTime(pattern.confirmedSetup?.candle2Previous?.time),
-      confirmedSetupCandle2PreviousStatus: pattern.confirmedSetup?.candle2PreviousStatus || null,
-
-      confirmedSetupCandle2PreviousVshapeIndex: pattern.confirmedSetup?.candle2PreviousVshape?.index || null,
-      confirmedSetupCandle2PreviousVshapePrice: pattern.direction === DIRECTION.BULLISH
-        ? pattern.confirmedSetup?.candle2PreviousVshape?.high
-        : pattern.confirmedSetup?.candle2PreviousVshape?.low,
-      confirmedSetupCandle2PreviousVshapeTime: pattern.confirmedSetup?.candle2PreviousVshape?.time || null,
-      confirmedSetupCandle2PreviousVshapeFormattedTime: this._formatTime(pattern.confirmedSetup?.candle2PreviousVshape?.time),
-
-      confirmedSetupCandle2PreviousBreakoutIndex: pattern.confirmedSetup?.candle2PreviousBreakout?.index || null,
-      confirmedSetupCandle2PreviousBreakoutPrice: pattern.confirmedSetup?.candle2PreviousBreakout?.close || null,
-      confirmedSetupCandle2PreviousBreakoutTime: pattern.confirmedSetup?.candle2PreviousBreakout?.time || null,
-      confirmedSetupCandle2PreviousBreakoutFormattedTime: this._formatTime(pattern.confirmedSetup?.candle2PreviousBreakout?.time),
-
-      confirmedSetupCandle2PreviousRetestIndex: pattern.confirmedSetup?.candle2PreviousRetest?.index || null,
-      confirmedSetupCandle2PreviousRetestPrice: pattern.direction === DIRECTION.BULLISH
-        ? pattern.confirmedSetup?.candle2PreviousRetest?.low
-        : pattern.confirmedSetup?.candle2PreviousRetest?.high,
-      confirmedSetupCandle2PreviousRetestTime: pattern.confirmedSetup?.candle2PreviousRetest?.time || null,
-      confirmedSetupCandle2PreviousRetestFormattedTime: this._formatTime(pattern.confirmedSetup?.candle2PreviousRetest?.time),
-
-      confirmedSetupCandle2PreviousRetestVshapeIndex: pattern.confirmedSetup?.candle2PreviousRetestVshape?.index || null,
-      confirmedSetupCandle2PreviousRetestVshapePrice: pattern.direction === DIRECTION.BULLISH
-        ? pattern.confirmedSetup?.candle2PreviousRetestVshape?.high
-        : pattern.confirmedSetup?.candle2PreviousRetestVshape?.low,
-      confirmedSetupCandle2PreviousRetestVshapeTime: pattern.confirmedSetup?.candle2PreviousRetestVshape?.time || null,
-      confirmedSetupCandle2PreviousRetestVshapeFormattedTime: this._formatTime(pattern.confirmedSetup?.candle2PreviousRetestVshape?.time),
-
-      confirmedSetupCandle2PreviousMitigationIndex: pattern.confirmedSetup?.candle2PreviousMitigationIndex || null,
-      confirmedSetupCandle2PreviousMitigationFormattedTime: pattern.confirmedSetup?.candle2PreviousMitigationFormattedTime || null,
-      confirmedSetupCandle2PreviousMitigationStatus: pattern.confirmedSetup?.candle2PreviousMitigationStatus ?? null,
-
-      confirmedSetupCandle2PreviousOBIndex: pattern.confirmedSetup?.candle2PreviousOBIndex || null,
-      confirmedSetupCandle2PreviousOBFormattedTime: pattern.confirmedSetup?.candle2PreviousOBFormattedTime || null,
-      confirmedSetupCandle2PreviousOBStatus: pattern.confirmedSetup?.candle2PreviousOBStatus ?? false,
-
-      confirmedSetupCandle2NextIndex: pattern.confirmedSetup?.candle2Next?.index || null,
-      confirmedSetupCandle2NextPrice: pattern.confirmedSetup?.candle2Next?.close || null,
-      confirmedSetupCandle2NextTime: pattern.confirmedSetup?.candle2Next?.time|| null,
-      confirmedSetupCandle2NextFormattedTime: this._formatTime(pattern.confirmedSetup?.candle2Next?.time),
-      confirmedSetupCandle2NextStatus: pattern.confirmedSetup?.candle2NextStatus || null,
-
-      confirmedSetupCandle2NextVshapeIndex: pattern.confirmedSetup?.candle2NextVshape?.index || null,
-      confirmedSetupCandle2NextVshapePrice: pattern.direction === DIRECTION.BULLISH
-        ? pattern.confirmedSetup?.candle2NextVshape?.high
-        : pattern.confirmedSetup?.candle2NextVshape?.low,
-      confirmedSetupCandle2NextVshapeTime: pattern.confirmedSetup?.candle2NextVshape?.time || null,
-      confirmedSetupCandle2NextVshapeFormattedTime: this._formatTime(pattern.confirmedSetup?.candle2NextVshape?.time),
-
-      confirmedSetupCandle2NextBreakoutIndex: pattern.confirmedSetup?.candle2NextBreakout?.index || null,
-      confirmedSetupCandle2NextBreakoutPrice: pattern.confirmedSetup?.candle2NextBreakout?.close || null,
-      confirmedSetupCandle2NextBreakoutTime: pattern.confirmedSetup?.candle2NextBreakout?.time || null,
-      confirmedSetupCandle2NextBreakoutFormattedTime: this._formatTime(pattern.confirmedSetup?.candle2NextBreakout?.time),
-
-      confirmedSetupCandle2NextRetestIndex: pattern.confirmedSetup?.candle2NextRetest?.index || null,
-      confirmedSetupCandle2NextRetestPrice: pattern.direction === DIRECTION.BULLISH
-        ? pattern.confirmedSetup?.candle2NextRetest?.low
-        : pattern.confirmedSetup?.candle2NextRetest?.high,
-      confirmedSetupCandle2NextRetestTime: pattern.confirmedSetup?.candle2NextRetest?.time || null,
-      confirmedSetupCandle2NextRetestFormattedTime: this._formatTime(pattern.confirmedSetup?.candle2NextRetest?.time),
-
-      confirmedSetupCandle2NextRetestVshapeIndex: pattern.confirmedSetup?.candle2NextRetestVshape?.index || null,
-      confirmedSetupCandle2NextRetestVshapePrice: pattern.direction === DIRECTION.BULLISH
-        ? pattern.confirmedSetup?.candle2NextRetestVshape?.high
-        : pattern.confirmedSetup?.candle2NextRetestVshape?.low,
-      confirmedSetupCandle2NextRetestVshapeTime: pattern.confirmedSetup?.candle2NextRetestVshape?.time || null,
-      confirmedSetupCandle2NextRetestVshapeFormattedTime: this._formatTime(pattern.confirmedSetup?.candle2NextRetestVshape?.time),
-
-      confirmedSetupCandle2NextMitigationIndex: pattern.confirmedSetup?.candle2NextMitigationIndex || null,
-      confirmedSetupCandle2NextMitigationFormattedTime: pattern.confirmedSetup?.candle2NextMitigationFormattedTime || null,
-      confirmedSetupCandle2NextMitigationStatus: pattern.confirmedSetup?.candle2NextMitigationStatus ?? null,
-
-      confirmedSetupCandle2NextOBIndex: pattern.confirmedSetup?.candle2NextOBIndex || null,
-      confirmedSetupCandle2NextOBFormattedTime: pattern.confirmedSetup?.candle2NextOBFormattedTime || null,
-      confirmedSetupCandle2NextOBStatus: pattern.confirmedSetup?.candle2NextOBStatus ?? false,
-
-      stage: this._getPatternStage(pattern),
-      isComplete: !!(pattern.confirmedSetup),
 
       formattedTime: this._formatTime(pattern.currentSwing?.time),
       time: pattern.currentSwing?.time || null,
       timestamp: pattern.timestamp || Date.now(),
     };
     return result;
-  }
-
-  _getPatternStage(pattern) {
-    if (pattern.confirmedSetup) return 3;
-    if (pattern.retest) return 2;
-    return 1;
   }
 
   _buildPatternStages(setup, candles, direction, swings, swingIndex, obMap, patterns) {
@@ -596,23 +481,40 @@ class PatternEngine extends EventEmitter {
     if (!confirmedSetup) return;
     setup.confirmedSetup = confirmedSetup;
 
-    // Check for additional S setup pattern using swingIndex map
-    if (confirmedSetup.candle2PreviousStatus === STATUS.S_SETUP && confirmedSetup.candle2PreviousVshape && confirmedSetup.candle2PreviousBreakout) {
-      const prevSwing = swingIndex.indexMap.get(confirmedSetup.candle2Previous.index);
-      const currSwing = swingIndex.indexMap.get(confirmedSetup.candle1.index);
-      if (prevSwing && currSwing && prevSwing.index < currSwing.index) {
-        const alreadyExists = patterns.some(p => 
-          p.previousSwingIndex === prevSwing.index && p.currentSwingIndex === currSwing.index
-        );
-        if (!alreadyExists) {
-          const newSetup = this.identifySetup(currSwing, prevSwing, candles, direction, swings, swingIndex);
-          if (newSetup) {
-            this._buildPatternStages(newSetup, candles, direction, swings, swingIndex, obMap, patterns);
-            const enrichedNewPattern = this._enrichPatternMetadata(newSetup, candles);
-            patterns.push(enrichedNewPattern);
-            this.logger.info(`[PatternEngine] Added additional S setup pattern from swing ${prevSwing.index} to ${currSwing.index}`);
-          }
-        }
+    // Every swing involved in this pattern is eligible to form its own S setup pattern
+    const candidateIndices = [
+      confirmedSetup.candle1?.index,
+      confirmedSetup.candle2Previous?.index,
+      confirmedSetup.candle2Next?.index,
+      retest.index,
+      retest.vShapeCandle?.index,
+      retest.breakout?.index,
+    ].filter(idx => idx != null);
+
+    for (const idx of candidateIndices) {
+      const swing = swingIndex.indexMap.get(idx);
+      if (!swing) continue;
+
+      const swingPos = swings.findIndex(s => s.index === swing.index);
+      if (swingPos < 1) continue;
+
+      const prevSwing = this._findPreviousSameTypeSwing(swings, swingPos, swing.type);
+      if (!prevSwing) continue;
+
+      const dir = this._getPatternDirection(swing, prevSwing);
+      if (!dir) continue;
+
+      const alreadyExists = patterns.some(p =>
+        p.previousSwingIndex === prevSwing.index && p.currentSwingIndex === swing.index
+      );
+      if (alreadyExists) continue;
+
+      const newSetup = this.identifySetup(swing, prevSwing, candles, dir, swings, swingIndex);
+      if (newSetup) {
+        this._buildPatternStages(newSetup, candles, dir, swings, swingIndex, obMap, patterns);
+        const enrichedNewPattern = this._enrichPatternMetadata(newSetup, candles);
+        patterns.push(enrichedNewPattern);
+        this.logger.info(`[PatternEngine] Added S setup pattern from swing ${prevSwing.index} to ${swing.index}`);
       }
     }
   }
@@ -1119,12 +1021,6 @@ class PatternEngine extends EventEmitter {
       total: patterns.length,
       bullish: patterns.filter(p => p.direction === DIRECTION.BULLISH).length,
       bearish: patterns.filter(p => p.direction === DIRECTION.BEARISH).length,
-      byStage: {
-        stage1: patterns.filter(p => p.stage === 1).length,
-        stage2: patterns.filter(p => p.stage === 2).length,
-        stage3: patterns.filter(p => p.stage === 3).length,
-      },
-      complete: patterns.filter(p => p.isComplete).length
     };
   }
 
