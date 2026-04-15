@@ -93,7 +93,7 @@ router.get('/all', async (req, res) => {
 
         await ensureDataLoaded(symbol, granularity);
 
-        const setups = finalEngine.getConfirmedSetups(symbol, granularity);
+        const setups = await finalEngine.getConfirmedSetups(symbol, granularity);
         if (setups && setups.length > 0) {
           if (!resultMap[symbol]) resultMap[symbol] = {};
           resultMap[symbol][granularity] = setups;
@@ -152,7 +152,7 @@ router.get('/all/:granularity', async (req, res) => {
 
     await Promise.all(symbols.map(async (symbol) => {
       await ensureDataLoaded(symbol, granularity);
-      const setups = finalEngine.getConfirmedSetups(symbol, granularity);
+      const setups = await finalEngine.getConfirmedSetups(symbol, granularity);
       if (setups && setups.length > 0) {
         results[symbol] = setups;
         totalSetups += setups.length;
@@ -209,7 +209,7 @@ router.get('/:symbol/:granularity', async (req, res) => {
 
     await ensureDataLoaded(symbol, granularity);
 
-    const setups = finalEngine.getConfirmedSetups(symbol, granularity);
+    const setups = await finalEngine.getConfirmedSetups(symbol, granularity);
 
     return sendSuccess(res, {
       symbol,

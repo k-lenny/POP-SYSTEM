@@ -4,6 +4,8 @@
 const confirmedSetupEngine = require('../signals/dataProcessor/confirmedSetup');
 const patternEngine = require('../strategies/patterns/pattern');
 const pattern2Engine = require('../strategies/patterns/pattern2');
+const swingEngine = require('../signals/dataProcessor/swings');
+const signalEngine = require('../signals/signalEngine');
 
 class FinalEngine {
   /**
@@ -13,8 +15,22 @@ class FinalEngine {
    * in a pattern or the firstSwingPrice in a pattern2, and if so attaches
    * the matched pattern's data.
    */
-  getConfirmedSetups(symbol, granularity) {
+  async getConfirmedSetups(symbol, granularity) {
     const setups = confirmedSetupEngine.getConfirmedSetups(symbol, granularity);
+
+    const candles = signalEngine.getCandles(symbol, granularity, true);
+    if (candles && candles.length) {
+      if (swingEngine.get(symbol, granularity).length === 0) {
+        await swingEngine.detectAll(symbol, granularity, candles);
+      }
+      if (patternEngine.get(symbol, granularity).length === 0) {
+        await patternEngine.detect(symbol, granularity, candles);
+      }
+      if (pattern2Engine.get(symbol, granularity).length === 0) {
+        await pattern2Engine.detect(symbol, granularity, candles);
+      }
+    }
+
     const pattern1Patterns = patternEngine.get(symbol, granularity);
     const pattern2Patterns = pattern2Engine.get(symbol, granularity);
 
