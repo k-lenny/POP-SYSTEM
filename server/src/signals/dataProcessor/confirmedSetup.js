@@ -74,6 +74,14 @@ class ConfirmedSetupEngine {
       const lockKey = this._lockKey(symbol, granularity, setup);
       const lockedStatus = this._lockedStatuses[lockKey];
 
+      // Compute breakout first so the S SETUP invalidation scan can be bounded by it.
+      // This makes cold-start replay and live-incremental runs produce identical results.
+      const breakoutResult = this._getBreakoutStatus(setup, candles, candleIndexMap);
+      const breakoutPos = breakoutResult.index !== null
+        ? candleIndexMap.get(breakoutResult.index)
+        : undefined;
+      const sSetupScanEnd = breakoutPos !== undefined ? breakoutPos : candles.length;
+
       let status;
       let isValid;
 
@@ -82,7 +90,7 @@ class ConfirmedSetupEngine {
         status = lockedStatus;
         isValid = true;
       } else {
-        const result = this._getSetupStatus(setup, candles, candleIndexMap);
+        const result = this._getSetupStatus(setup, candles, candleIndexMap, sSetupScanEnd);
         status = result.status;
         isValid = result.isValid;
       }
@@ -96,8 +104,6 @@ class ConfirmedSetupEngine {
       if (status === null) {
         continue;
       }
-
-      const breakoutResult = this._getBreakoutStatus(setup, candles, candleIndexMap);
 
       // Lock the setupStatus once breakout is confirmed and persist to disk
       if (breakoutResult.status === 'YES' && !lockedStatus) {
@@ -155,7 +161,7 @@ class ConfirmedSetupEngine {
    * Determines the classification (OTE, DOUBLE EQ, S SETUP) of a setup.
    * @private
    */
-  _getSetupStatus(setup, candles, candleIndexMap) {
+  _getSetupStatus(setup, candles, candleIndexMap, sSetupScanEnd = candles.length) {
     const {
       type,
       setupVshapeDepth,
@@ -199,27 +205,55 @@ class ConfirmedSetupEngine {
     // --- S SETUP (Sweep) Check ---
     const setupVPos = candleIndexMap.get(setupVshapeIndex);
     if (setupVPos !== undefined) {
-      const setupVCandle = candles[setupVPos];
       const isSweep = (type === 'EQL' && setupVshapeDepth > preBreakoutVDepth) || (type === 'EQH' && setupVshapeDepth < preBreakoutVDepth);
 
       if (isSweep) {
-        const closedBackInside = (type === 'EQL' && setupVCandle.close < preBreakoutVDepth) || (type === 'EQH' && setupVCandle.close > preBreakoutVDepth);
-        if (closedBackInside) {
-          const nextCandlePos = setupVPos + 1;
-          if (nextCandlePos < candles.length) {
-            const nextCandle = candles[nextCandlePos];
-            let isInvalidated = false;
-            if (type === 'EQL' && Math.max(nextCandle.open, nextCandle.close) > Math.max(setupVCandle.open, setupVCandle.close)) {
-              isInvalidated = true;
-            } else if (type === 'EQH' && Math.min(nextCandle.open, nextCandle.close) < Math.min(setupVCandle.open, setupVCandle.close)) {
-              isInvalidated = true;
+        // Locate the FIRST candle (from just after preBreakoutV up to setupV inclusive)
+        // whose wick or body crossed preBreakoutVDepth. That candle is the reference.
+        const preBreakoutVPos = candleIndexMap.get(preBreakoutVIndex);
+        let firstCrosser = null;
+        let firstCrosserPos = -1;
+        if (preBreakoutVPos !== undefined) {
+          for (let i = preBreakoutVPos + 1; i <= setupVPos; i++) {
+            const c = candles[i];
+            const crossed = (type === 'EQL' && c.high > preBreakoutVDepth) || (type === 'EQH' && c.low < preBreakoutVDepth);
+            if (crossed) {
+              firstCrosser = c;
+              firstCrosserPos = i;
+              break;
             }
-            if (isInvalidated) return { status: 'S SETUP FAILED', isValid: false };
           }
-          return { status: 'S SETUP', isValid: true };
-        } else {
+        }
+
+        if (!firstCrosser) {
           return { status: 'S SETUP FAILED', isValid: false };
         }
+
+        // Wick-chain rule: the reference extreme may ratchet forward as long as each
+        // subsequent candle that exceeds the current reference does so by WICK ONLY.
+        // Any candle whose open OR close pushes past the current reference is a body
+        // cross and invalidates the setup. Bounded by sSetupScanEnd so post-breakout
+        // price can never retroactively invalidate.
+        let refCandle = firstCrosser;
+        for (let i = firstCrosserPos + 1; i < sSetupScanEnd; i++) {
+          const c = candles[i];
+          if (type === 'EQL') {
+            if (c.open > refCandle.high || c.close > refCandle.high) {
+              return { status: 'S SETUP FAILED', isValid: false };
+            }
+            if (c.high > refCandle.high) {
+              refCandle = c; // wick-only chain advances the reference
+            }
+          } else {
+            if (c.open < refCandle.low || c.close < refCandle.low) {
+              return { status: 'S SETUP FAILED', isValid: false };
+            }
+            if (c.low < refCandle.low) {
+              refCandle = c;
+            }
+          }
+        }
+        return { status: 'S SETUP', isValid: true };
       }
     }
 

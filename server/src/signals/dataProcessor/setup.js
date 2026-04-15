@@ -29,7 +29,6 @@ class SetupEngine {
     const candleIndexMap = buildCandleIndexMap(candles);
     const setups = [];
 
-    const scanCandles = config.MAX_SETUP_SCAN_CANDLES || 1000;
     const bosScanLimit = config.MAX_BOS_SCAN_CANDLES || 10;
 
     for (const level of brokenLevels) {
@@ -72,9 +71,13 @@ class SetupEngine {
       }
 
       // 3. Scan for the setup V-shape, starting AFTER the anchor candle.
+      // End bound is fixed at 70 candles after the original breaking candle.
       let extremeCandle = null;
       const vShapeScanStart = anchorCandlePos + 1;
-      const vShapeScanEnd = Math.min(candles.length, vShapeScanStart + scanCandles);
+      const vShapeScanEnd = Math.min(candles.length, breakArrayPos + 1 + 70);
+      if (vShapeScanStart >= vShapeScanEnd) {
+        continue;
+      }
 
       if (level.type === 'EQH') {
         // For a broken EQH, the "setup V-shape" is the lowest low (pullback) after the sustained break.
