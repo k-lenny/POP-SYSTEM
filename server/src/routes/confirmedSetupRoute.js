@@ -22,12 +22,21 @@ const {
  * Helper to ensure all necessary data (candles, swings, breakouts, eqh/eql) is loaded
  * before trying to find setups. This is crucial for on-demand API calls.
  */
-async function ensureDataLoaded(symbol, granularity) {
+async function ensureDataLoaded(symbol, granularity, { waitForCandles = true } = {}) {
   try {
     // First, ensure we have candles to work with.
     let candles = signalEngine.getCandles(symbol, granularity, true);
 
     if (!candles || candles.length === 0) {
+      if (!waitForCandles) {
+        // Bulk route: trigger a subscription so the symbol populates for next time,
+        // but don't block the response waiting for it.
+        try {
+          signalEngine.subscribeSymbol(symbol, granularity);
+        } catch (e) { /* Ignore if already subscribed */ }
+        return;
+      }
+
       console.log(`[ConfirmedSetupRoute] No candles for ${symbol} @ ${granularity}s, subscribing and waiting...`);
       try {
         signalEngine.subscribeSymbol(symbol, granularity);
@@ -97,8 +106,8 @@ router.get('/all', async (req, res) => {
         const granularity = resolveGranularity(rawGranularity);
         if (!granularity) continue;
 
-        // Ensure all prerequisite data is loaded before getting setups
-        await ensureDataLoaded(symbol, granularity);
+        // Bulk route: skip symbols that haven't populated candles yet rather than blocking.
+        await ensureDataLoaded(symbol, granularity, { waitForCandles: false });
 
         const setups = confirmedSetupEngine.getConfirmedSetups(symbol, granularity);
         if (setups && setups.length > 0) {
@@ -151,7 +160,7 @@ router.get('/all/:granularity', async (req, res) => {
     const pattern2MatchSymbols = new Set();
 
     await Promise.all(symbols.map(async (symbol) => {
-      await ensureDataLoaded(symbol, granularity);
+      await ensureDataLoaded(symbol, granularity, { waitForCandles: false });
       const setups = confirmedSetupEngine.getConfirmedSetups(symbol, granularity);
       if (setups && setups.length > 0) {
         results[symbol] = setups;
