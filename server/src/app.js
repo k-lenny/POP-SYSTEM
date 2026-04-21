@@ -15,6 +15,7 @@ const mitigationBlockRoutes = require('./routes/mitigationBlockRoutes');
 const OBLVRoutes = require('./routes/OBLVRoutes');
 const LogicRoutes = require('./routes/LogicRoutes');
 const ConsolidationRoutes = require('./routes/ConsolidationRoutes');
+const candleRoutes = require('./routes/CandleRoutes');
 const pattern2Routes = require('./routes/pattern2Routes'); // Import the new route
 const finalRoutes = require('./final/route/finalRoute');
 
@@ -54,6 +55,7 @@ app.use('/mitigation-blocks', mitigationBlockRoutes);
 app.use('/oblv', OBLVRoutes);
 app.use('/logic', LogicRoutes);
 app.use('/consolidations', ConsolidationRoutes);
+app.use('/candles', candleRoutes);
 app.use('/patterns2', pattern2Routes); // Add the new route
 app.use('/patterns', require('./routes/patternRoutes'));
 app.use('/final', finalRoutes);

@@ -13,8 +13,8 @@ function resolveFormattedTime(candle) {
   return candle.formattedTime || formatTime(candle.time);
 }
 
-// Returns 'high' | 'low' | 'both' | null
-function classify(B, A, C) {
+// Middle-pivot rule: B (middle) wick pokes through A/C bodies but stays inside A/C wicks.
+function classifyMiddle(B, A, C) {
   const highSide =
     B.high > bodyTop(A)    && B.high > bodyTop(C) &&
     B.high < A.high        && B.high < C.high;
@@ -27,6 +27,32 @@ function classify(B, A, C) {
   if (highSide)            return 'high';
   if (lowSide)             return 'low';
   return null;
+}
+
+// Forward-pivot rule: A (first) wick pokes above B/C bodies but stays below B's wick.
+// Low-side is the mirror using bodyBottom / B.low.
+function classifyForward(A, B, C) {
+  const highSide =
+    A.high > bodyTop(B)    && A.high < B.high &&
+    A.high > bodyTop(C);
+
+  const lowSide =
+    A.low  < bodyBottom(B) && A.low  > B.low &&
+    A.low  < bodyBottom(C);
+
+  if (highSide && lowSide) return 'both';
+  if (highSide)            return 'high';
+  if (lowSide)             return 'low';
+  return null;
+}
+
+// Combined check on 3-candle window [s, s+1, s+2].
+function classifyWindow(A, B, C) {
+  const m = classifyMiddle(B, A, C);
+  const f = classifyForward(A, B, C);
+  if (!m && !f) return null;
+  if (m && f)   return m === f ? m : 'both';
+  return m || f;
 }
 
 function candleRef(candle, fallbackIndex) {
@@ -93,42 +119,29 @@ function mergeZones(candles, chain) {
 function findConsolidations(candles) {
   if (!Array.isArray(candles) || candles.length < 3) return [];
 
-  const raw = [];
-  let i = 1;
+  const raw  = [];
+  const last = candles.length - 3; // max valid window start
 
-  while (i < candles.length - 1) {
-    const type = classify(candles[i], candles[i - 1], candles[i + 1]);
-    if (!type) { i++; continue; }
+  for (let s = 0; s <= last; s++) {
+    const type = classifyWindow(candles[s], candles[s + 1], candles[s + 2]);
+    if (!type) continue;
 
-    const firstMid = i;
-    const types    = [type];
-    let j = i + 1;
-    while (j < candles.length - 1) {
-      const t = classify(candles[j], candles[j - 1], candles[j + 1]);
-      if (!t) break;
-      types.push(t);
-      j++;
-    }
-    const lastMid = j - 1;
-
-    const uniq = Array.from(new Set(types));
     raw.push({
-      type:     uniq.length === 1 ? uniq[0] : 'both',
-      startIdx: firstMid - 1,
-      endIdx:   lastMid + 1,
+      type,
+      startIdx: s,         // A
+      endIdx:   s + 2,     // C
     });
-
-    i = j + 1;
   }
 
-  // ── chain zones where end of one is start of next ──
+  // ── chain zones whose end falls inside the span of the next zone ──
   const zones = [];
   let k = 0;
   while (k < raw.length) {
     const chain = [raw[k]];
     while (
       k + 1 < raw.length &&
-      raw[k].endIdx === raw[k + 1].startIdx
+      raw[k].endIdx >= raw[k + 1].startIdx &&
+      raw[k].endIdx <= raw[k + 1].endIdx
     ) {
       chain.push(raw[k + 1]);
       k++;
