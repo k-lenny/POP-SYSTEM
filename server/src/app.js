@@ -13,6 +13,7 @@ const retestRoutes = require('./routes/retestRoutes');
 const majorSwingsRoutes = require('./routes/majorSwingsRoutes')
 const mitigationBlockRoutes = require('./routes/mitigationBlockRoutes');
 const OBLVRoutes = require('./routes/OBLVRoutes');
+const LVRoutes = require('./routes/LVRoutes');
 const LogicRoutes = require('./routes/LogicRoutes');
 const ConsolidationRoutes = require('./routes/ConsolidationRoutes');
 const candleRoutes = require('./routes/CandleRoutes');
@@ -53,6 +54,7 @@ app.use('/confirmed-setups', confirmedSetupRoutes)
 app.use('/major-swings', majorSwingsRoutes)
 app.use('/mitigation-blocks', mitigationBlockRoutes);
 app.use('/oblv', OBLVRoutes);
+app.use('/lv', LVRoutes);
 app.use('/logic', LogicRoutes);
 app.use('/consolidations', ConsolidationRoutes);
 app.use('/candles', candleRoutes);

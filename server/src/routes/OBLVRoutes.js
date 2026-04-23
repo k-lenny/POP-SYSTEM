@@ -1,7 +1,7 @@
 // server/src/routes/OBLVRoutes.js
 const express = require('express');
 const router = express.Router();
-const { processOBLV } = require('../signals/dataProcessor/OBLV');
+const { processOBLVWithSummary } = require('../signals/dataProcessor/OBLV');
 const signalEngine = require('../signals/signalEngine');
 const swingEngine = require('../signals/dataProcessor/swings');
 
@@ -48,7 +48,7 @@ router.get('/:symbol/:granularity', async (req, res) => {
             return res.status(404).json({ message: 'No OHLC data found for the given symbol and granularity.' });
         }
 
-        const oblvResults = processOBLV(symbol.toUpperCase(), granularity, ohlcData);
+        const oblvResults = processOBLVWithSummary(symbol.toUpperCase(), granularity, ohlcData);
         res.json(oblvResults);
     } catch (error) {
         console.error('Failed to process OBLV data:', error);

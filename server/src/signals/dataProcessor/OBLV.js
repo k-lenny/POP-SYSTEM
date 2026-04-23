@@ -63,6 +63,22 @@ const processOBLV = (symbol, granularity, ohlcData) => {
         const firstLVBundleIndex = bundleData[0].bundle - 1;
         const obCandle = segment[firstLVBundleIndex];
 
+        let obRetest = 'no';
+        if (obCandle) {
+          const lastBundle = bundleData[bundleData.length - 1];
+          const lastBundleEndTime = Math.floor(new Date(lastBundle.endTime).getTime() / 1000);
+          const lastBundleEndIndex = ohlcData.findIndex(c => c.time === lastBundleEndTime);
+          if (lastBundleEndIndex !== -1) {
+            for (let k = lastBundleEndIndex + 1; k < ohlcData.length; k++) {
+              const c = ohlcData[k];
+              if (c.low <= obCandle.high && c.high >= obCandle.low) {
+                obRetest = 'yes';
+                break;
+              }
+            }
+          }
+        }
+
         oblvData.push({
           swingHighTime: isHighFirst
             ? new Date(swing.time * 1000).toISOString()
@@ -79,6 +95,7 @@ const processOBLV = (symbol, granularity, ohlcData) => {
               }
             : null,
           OBFormattedTime: obCandle ? obCandle.formattedTime : null,
+          OBRetest: obRetest,
           bundles: bundleData
         });
 
@@ -90,4 +107,19 @@ const processOBLV = (symbol, granularity, ohlcData) => {
   return oblvData;
 };
 
-module.exports = { processOBLV };
+const processOBLVWithSummary = (symbol, granularity, ohlcData) => {
+  const oblvData = processOBLV(symbol, granularity, ohlcData);
+  const totalLVs = oblvData.reduce((sum, entry) => sum + (entry.bundles ? entry.bundles.length : 0), 0);
+
+  return {
+    success: true,
+    symbol,
+    granularity,
+    totalCandles: ohlcData ? ohlcData.length : 0,
+    totalOBLV: oblvData.length,
+    totalLVs,
+    data: oblvData
+  };
+};
+
+module.exports = { processOBLV, processOBLVWithSummary };
