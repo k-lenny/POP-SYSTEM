@@ -200,7 +200,8 @@ class Pattern3Engine extends EventEmitter {
       const vShapeTime = vShape.time ?? vShape.timestamp ?? null;
 
       const breakout = this._findBreakoutCandle(vShape, candles, direction);
-      const breakoutTime = breakout ? (breakout.time ?? breakout.timestamp ?? null) : null;
+      if (!breakout) continue;
+      const breakoutTime = breakout.time ?? breakout.timestamp ?? null;
 
       // Only feed LV detection the candles strictly between vShape and secondSwing.
       const vIdx = vShape.index ?? null;
