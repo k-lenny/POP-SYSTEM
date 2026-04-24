@@ -5,6 +5,9 @@ const setupEngine = require('./setup');
 const signalEngine = require('../signalEngine');
 const { buildCandleIndexMap, nextArrayIdx } = require('../../utils/dataProcessorUtils');
 const { processOBLV } = require('./OBLV');
+const patternEngine = require('../../strategies/patterns/pattern');
+const pattern2Engine = require('../../strategies/patterns/pattern2');
+const pattern3Engine = require('../../strategies/patterns/pattern3');
 
 const LOCKED_STATUSES_PATH = path.join(__dirname, '..', '..', '..', 'data', 'lockedStatuses.json');
 
@@ -63,6 +66,23 @@ class ConfirmedSetupEngine {
 
     const oblvData = processOBLV(symbol, granularity, candles);
 
+    // Precompute pattern price sets for O(1) lookup when identifying OBSetupExtreme.
+    const p1Prices = new Set(
+      (patternEngine.get(symbol, granularity) || [])
+        .map(p => p.currentSwingPrice)
+        .filter(v => v != null)
+    );
+    const p2Prices = new Set(
+      (pattern2Engine.get(symbol, granularity) || [])
+        .map(p => p.firstSwingPrice)
+        .filter(v => v != null)
+    );
+    const p3Prices = new Set(
+      (pattern3Engine.get(symbol, granularity) || [])
+        .map(p => p.firstSwingPrice)
+        .filter(v => v != null)
+    );
+
     const confirmedSetups = [];
 
     for (const setup of setups) {
@@ -115,7 +135,10 @@ class ConfirmedSetupEngine {
         oblvData,
         ftMap,
         setup.setupVshapeIndex,
-        breakoutResult.index
+        breakoutResult.index,
+        candles,
+        candleIndexMap,
+        setup.type
       );
 
       let OBCross = null;
@@ -136,7 +159,15 @@ class ConfirmedSetupEngine {
           };
         }
         if (obCrossResult.obCrossIndex !== null) {
-          OBSetupExtreme = this._findOBSetupExtreme(setup.type, obCrossResult.obCrossIndex, candleIndexMap, candles);
+          OBSetupExtreme = this._findOBSetupExtreme(
+            setup.type,
+            obCrossResult.obCrossIndex,
+            candleIndexMap,
+            candles,
+            p1Prices,
+            p2Prices,
+            p3Prices
+          );
         }
       }
 
@@ -335,9 +366,14 @@ class ConfirmedSetupEngine {
   /**
    * Finds the first OB (from OBLV data) whose candle index falls strictly
    * between setupStatusIndex and breakoutStatusIndex (end of candles if no breakout).
+   * An OB that was retested AND fully crossed is invalidated and we look at the next one:
+   *   - EQH: any post-OB candle with low < OB.low
+   *   - EQL: any post-OB candle with high > OB.high
    * @private
    */
-  _findSetupOB(oblvData, ftMap, setupStatusIndex, breakoutStatusIndex) {
+  _findSetupOB(oblvData, ftMap, setupStatusIndex, breakoutStatusIndex, candles, candleIndexMap, type) {
+    const isEQH = type === 'EQH';
+
     for (const oblv of oblvData) {
       if (!oblv.OB || !oblv.OBFormattedTime) continue;
 
@@ -351,6 +387,27 @@ class ConfirmedSetupEngine {
 
       // Must be strictly before breakout (if one exists)
       if (breakoutStatusIndex !== null && obIdx >= breakoutStatusIndex) continue;
+
+      // If this OB has been retested and price then crossed fully past it,
+      // treat it as invalidated and move to the next candidate.
+      if (oblv.OBRetest === 'yes' && candles && candleIndexMap) {
+        const obArrPos = candleIndexMap.get(obIdx);
+        const breakoutArrPos = breakoutStatusIndex !== null
+          ? candleIndexMap.get(breakoutStatusIndex)
+          : undefined;
+        const scanEnd = breakoutArrPos !== undefined ? breakoutArrPos : candles.length;
+
+        if (obArrPos !== undefined) {
+          let crossedPast = false;
+          for (let i = obArrPos + 1; i < scanEnd; i++) {
+            const c = candles[i];
+            if (!c) continue;
+            if (isEQH && c.low < oblv.OB.low) { crossedPast = true; break; }
+            if (!isEQH && c.high > oblv.OB.high) { crossedPast = true; break; }
+          }
+          if (crossedPast) continue;
+        }
+      }
 
       return {
         index: obCandle.index,
@@ -399,39 +456,41 @@ class ConfirmedSetupEngine {
   }
 
   /**
-   * Finds the OBSetupExtreme — the extreme candle found after the first OB-crossing candle.
-   * For EQL: the candle with the lowest low after the OB cross.
-   * For EQH: the candle with the highest high after the OB cross.
+   * Finds the OBSetupExtreme — scans forward from just after the OB-crossing candle,
+   * maintaining a running extreme (lowest low for EQL, highest high for EQH). The
+   * first running-extreme candle whose price matches any pattern/pattern2/pattern3
+   * swing price is returned. Returns null if no running extreme matches before
+   * candles end.
    * @private
    */
-  _findOBSetupExtreme(type, obCrossIndex, candleIndexMap, candles) {
+  _findOBSetupExtreme(type, obCrossIndex, candleIndexMap, candles, p1Prices, p2Prices, p3Prices) {
     const isEQL = type === 'EQL';
 
     const crossPos = candleIndexMap.get(obCrossIndex);
     if (crossPos === undefined) return null;
 
+    let extremePrice = isEQL ? Infinity : -Infinity;
     let extremeCandle = null;
 
     for (let i = crossPos + 1; i < candles.length; i++) {
       const c = candles[i];
-      if (!extremeCandle) {
-        extremeCandle = c;
-        continue;
-      }
-      if (isEQL && c.low < extremeCandle.low) {
-        extremeCandle = c;
-      } else if (!isEQL && c.high > extremeCandle.high) {
-        extremeCandle = c;
+      const candlePrice = isEQL ? c.low : c.high;
+      const isNewExtreme = isEQL ? candlePrice < extremePrice : candlePrice > extremePrice;
+      if (!isNewExtreme) continue;
+
+      extremePrice = candlePrice;
+      extremeCandle = c;
+
+      if (p1Prices.has(candlePrice) || p2Prices.has(candlePrice) || p3Prices.has(candlePrice)) {
+        return {
+          index: extremeCandle.index,
+          price: candlePrice,
+          formattedTime: extremeCandle.formattedTime,
+        };
       }
     }
 
-    if (!extremeCandle) return null;
-
-    return {
-      index: extremeCandle.index,
-      price: isEQL ? extremeCandle.low : extremeCandle.high,
-      formattedTime: extremeCandle.formattedTime,
-    };
+    return null;
   }
 }
 

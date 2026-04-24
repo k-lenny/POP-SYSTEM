@@ -18,8 +18,6 @@ class FinalEngine {
    * the matched pattern's data.
    */
   async getConfirmedSetups(symbol, granularity) {
-    const setups = confirmedSetupEngine.getConfirmedSetups(symbol, granularity);
-
     const candles = signalEngine.getCandles(symbol, granularity, true);
     if (candles && candles.length) {
       if (swingEngine.get(symbol, granularity).length === 0) {
@@ -36,6 +34,10 @@ class FinalEngine {
       }
     }
 
+    // Patterns must be detected BEFORE this call — confirmedSetupEngine reads
+    // them to identify the pattern-matched OBSetupExtreme.
+    const setups = confirmedSetupEngine.getConfirmedSetups(symbol, granularity);
+
     const pattern1Patterns = patternEngine.get(symbol, granularity);
     const pattern2Patterns = pattern2Engine.get(symbol, granularity);
     const pattern3Patterns = pattern3Engine.get(symbol, granularity);
@@ -43,12 +45,24 @@ class FinalEngine {
     const candleIndexMap = candles && candles.length ? buildCandleIndexMap(candles) : null;
 
     return setups.map(setup => {
-      const patternMatch =
-        this._findPatternByCurrentSwing(pattern1Patterns, setup.OBSetupExtreme?.price);
+      const extremePrice = setup.OBSetupExtreme?.price;
+      let patternMatch =
+        this._findPatternByCurrentSwing(pattern1Patterns, extremePrice);
+      // Invalidate patternMatch if its previousSwing formed before OBCross —
+      // the pattern must be discovered after the OB was crossed.
+      const obCrossFT = setup.OBCross?.formattedTime;
+      if (
+        patternMatch &&
+        obCrossFT &&
+        patternMatch.previousSwing?.formattedTime &&
+        patternMatch.previousSwing.formattedTime < obCrossFT
+      ) {
+        patternMatch = null;
+      }
       const pattern2Match =
-        this._findPattern2ByFirstSwing(pattern2Patterns, setup.OBSetupExtreme?.price);
+        this._findPattern2ByFirstSwing(pattern2Patterns, extremePrice);
       const pattern3Match =
-        this._findPattern3ByFirstSwing(pattern3Patterns, setup.OBSetupExtreme?.price);
+        this._findPattern3ByFirstSwing(pattern3Patterns, extremePrice);
 
       const OBOppositeExtreme = this._findOBOppositeExtreme(
         setup.type,
@@ -120,6 +134,7 @@ class FinalEngine {
             close: p.breakoutCandleClose ?? null,
             formattedTime: p.breakoutCandleFormattedTime ?? null,
           },
+          retest: p.retest ?? null,
           NumberOfNoLv: p.NumberOfNoLv ?? null,
           OBFound: p.OBFound ?? null,
         };
@@ -142,10 +157,16 @@ class FinalEngine {
     if (startPos === undefined) return null;
 
     const isEQL = type === 'EQL';
+    const setupPrice = OBSetupExtreme.price;
     let extremeCandle = null;
 
     for (let i = startPos + 1; i < candles.length; i++) {
       const c = candles[i];
+      // Stop scanning once price crosses back through the OBSetupExtreme —
+      // the opposite extreme must be found before that cross.
+      if (isEQL && setupPrice != null && c.low < setupPrice) break;
+      if (!isEQL && setupPrice != null && c.high > setupPrice) break;
+
       if (!extremeCandle) {
         extremeCandle = c;
         continue;
@@ -192,6 +213,12 @@ class FinalEngine {
             index: p.previousSwingIndex ?? null,
             formattedTime: p.previousSwingFormattedTime ?? null,
           },
+          retest: {
+            price: p.retestPrice ?? null,
+            index: p.retestIndex ?? null,
+            time: p.retestTime ?? null,
+            formattedTime: p.retestFormattedTime ?? null,
+          },
         };
       }
     }
@@ -220,6 +247,8 @@ class FinalEngine {
             index: p.secondSwingIndex ?? null,
             formattedTime: p.secondSwingFormattedTime ?? null,
           },
+          retestData: p.retestData ?? null,
+          retestStatus: p.retestStatus ?? null,
         };
       }
     }

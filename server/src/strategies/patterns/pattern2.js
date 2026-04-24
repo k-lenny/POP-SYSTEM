@@ -101,16 +101,33 @@ class Pattern2Engine extends EventEmitter {
   }
 
   _identifyBreakoutSimple(level, candles, startIndex, direction, currentSwing) {
+    let firstCrossCandle = null;
+
     for (let i = startIndex; i < candles.length; i++) {
       const c = candles[i];
       if (!c) continue;
       if (c.index === currentSwing.index) continue;
+
       if (direction === 'bullish') {
         if (c.low < currentSwing.low) return null;
-        if (c.close > level) return c;
+
+        if (!firstCrossCandle) {
+          if (c.close > level || c.open > level) return c;
+          if (c.high > level) { firstCrossCandle = c; continue; }
+        } else {
+          if (c.close > firstCrossCandle.high || c.open > firstCrossCandle.high) return c;
+          if (c.high > firstCrossCandle.high) firstCrossCandle = c;
+        }
       } else {
         if (c.high > currentSwing.high) return null;
-        if (c.close < level) return c;
+
+        if (!firstCrossCandle) {
+          if (c.close < level || c.open < level) return c;
+          if (c.low < level) { firstCrossCandle = c; continue; }
+        } else {
+          if (c.close < firstCrossCandle.low || c.open < firstCrossCandle.low) return c;
+          if (c.low < firstCrossCandle.low) firstCrossCandle = c;
+        }
       }
     }
     return null;
@@ -305,23 +322,34 @@ class Pattern2Engine extends EventEmitter {
    */
   _findRetest(vshape, secondSwing, breakout, candles, direction) {
     if (!breakout || !vshape || !secondSwing) return null;
-    
-    const startIdx = breakout.index + 1;
-    if (startIdx >= candles.length) return null;
+
+    const breakoutStartIdx = breakout.index + 1;
+    if (breakoutStartIdx >= candles.length) return null;
 
     const vshapePrice = direction === 'bullish' ? vshape.high : vshape.low;
     const secondSwingPrice = secondSwing.price;
+    const breakoutExtreme = direction === 'bullish' ? breakout.high : breakout.low;
 
+    let crossCandleIdx = null;
+    for (let i = breakoutStartIdx; i < candles.length; i++) {
+      const c = candles[i];
+      if (!c) continue;
+      if (direction === 'bullish') {
+        if (c.high > breakoutExtreme) { crossCandleIdx = i; break; }
+      } else {
+        if (c.low < breakoutExtreme) { crossCandleIdx = i; break; }
+      }
+    }
+    if (crossCandleIdx === null) return null;
+
+    const startIdx = crossCandleIdx + 1;
     let retestCandle = null;
 
     if (direction === 'bullish') {
-      // Find extreme low between vshapePrice and secondSwingPrice
       let extremeLow = Infinity;
       for (let i = startIdx; i < candles.length; i++) {
         const c = candles[i];
         if (!c) continue;
-        
-        // Check if low is between secondSwing and vShape
         if (c.low >= secondSwingPrice && c.low <= vshapePrice) {
           if (c.low < extremeLow) {
             extremeLow = c.low;
@@ -330,13 +358,10 @@ class Pattern2Engine extends EventEmitter {
         }
       }
     } else {
-      // Bearish: Find extreme high between secondSwingPrice and vshapePrice
       let extremeHigh = -Infinity;
       for (let i = startIdx; i < candles.length; i++) {
         const c = candles[i];
         if (!c) continue;
-        
-        // Check if high is between vShape and secondSwing
         if (c.high <= secondSwingPrice && c.high >= vshapePrice) {
           if (c.high > extremeHigh) {
             extremeHigh = c.high;

@@ -648,16 +648,32 @@ class PatternEngine extends EventEmitter {
   }
 
   identifyBreakoutOfLevel(level, candles, startIndex, direction, currentSwing) {
+    let firstCrossCandle = null;
+
     for (let i = startIndex; i < candles.length; i++) {
       const candle = candles[i];
       if (candle.index === currentSwing.index) continue;
 
       if (direction === DIRECTION.BULLISH) {
         if (candle.low < currentSwing.low) return null;
-        if (candle.close > level || candle.open > level) return candle;
+
+        if (!firstCrossCandle) {
+          if (candle.close > level || candle.open > level) return candle;
+          if (candle.high > level) { firstCrossCandle = candle; continue; }
+        } else {
+          if (candle.close > firstCrossCandle.high || candle.open > firstCrossCandle.high) return candle;
+          if (candle.high > firstCrossCandle.high) firstCrossCandle = candle;
+        }
       } else {
         if (candle.high > currentSwing.high) return null;
-        if (candle.close < level || candle.open < level) return candle;
+
+        if (!firstCrossCandle) {
+          if (candle.close < level || candle.open < level) return candle;
+          if (candle.low < level) { firstCrossCandle = candle; continue; }
+        } else {
+          if (candle.close < firstCrossCandle.low || candle.open < firstCrossCandle.low) return candle;
+          if (candle.low < firstCrossCandle.low) firstCrossCandle = candle;
+        }
       }
     }
     return null;
@@ -665,16 +681,33 @@ class PatternEngine extends EventEmitter {
 
   // ---------- Retest ----------
   identifyRetest(setup, candles, direction) {
-    if (!setup.breakout) return null;
+    if (!setup.breakout || !setup.vShapeCandle || !setup.currentSwing) return null;
 
-    const startIndex = setup.breakout.index + 1;
-    if (startIndex >= candles.length) return null;
+    const breakoutStartIndex = setup.breakout.index + 1;
+    if (breakoutStartIndex >= candles.length) return null;
 
+    const vShapePrice = direction === DIRECTION.BULLISH ? setup.vShapeCandle.high : setup.vShapeCandle.low;
+    const currentSwingPrice = direction === DIRECTION.BULLISH ? setup.currentSwing.low : setup.currentSwing.high;
+    const breakoutExtreme = direction === DIRECTION.BULLISH ? setup.breakout.high : setup.breakout.low;
+
+    let crossCandleIndex = null;
+    for (let i = breakoutStartIndex; i < candles.length; i++) {
+      const candle = candles[i];
+      if (!candle) continue;
+      if (direction === DIRECTION.BULLISH) {
+        if (candle.high > breakoutExtreme) { crossCandleIndex = i; break; }
+      } else {
+        if (candle.low < breakoutExtreme) { crossCandleIndex = i; break; }
+      }
+    }
+    if (crossCandleIndex === null) {
+      this._debugLog(`[identifyRetest] No candle crossed beyond breakout extreme`);
+      return null;
+    }
+
+    const startIndex = crossCandleIndex + 1;
     const maxScanRange = this.config.retestScanRange;
     const endIndex = Math.min(startIndex + maxScanRange, candles.length);
-
-    const currentSwing = setup.currentSwing;
-    let currentSwingLevel = currentSwing ? (direction === DIRECTION.BULLISH ? currentSwing.low : currentSwing.high) : null;
     let extremumCandle = null;
 
     if (direction === DIRECTION.BULLISH) {
@@ -682,11 +715,11 @@ class PatternEngine extends EventEmitter {
       for (let i = startIndex; i < endIndex; i++) {
         const candle = candles[i];
         if (!candle) continue;
-        if (currentSwingLevel !== null && candle.low < currentSwingLevel) {
+        if (candle.low < currentSwingPrice) {
           this._debugLog(`[identifyRetest] Retest invalidated: price crossed below currentSwing low at candle ${i}`);
           return null;
         }
-        if (candle.low < minLow) {
+        if (candle.low >= currentSwingPrice && candle.low <= vShapePrice && candle.low < minLow) {
           minLow = candle.low;
           extremumCandle = candle;
         }
@@ -696,11 +729,11 @@ class PatternEngine extends EventEmitter {
       for (let i = startIndex; i < endIndex; i++) {
         const candle = candles[i];
         if (!candle) continue;
-        if (currentSwingLevel !== null && candle.high > currentSwingLevel) {
+        if (candle.high > currentSwingPrice) {
           this._debugLog(`[identifyRetest] Retest invalidated: price crossed above currentSwing high at candle ${i}`);
           return null;
         }
-        if (candle.high > maxHigh) {
+        if (candle.high <= currentSwingPrice && candle.high >= vShapePrice && candle.high > maxHigh) {
           maxHigh = candle.high;
           extremumCandle = candle;
         }

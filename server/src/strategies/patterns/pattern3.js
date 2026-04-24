@@ -13,6 +13,7 @@ class Pattern3Engine extends EventEmitter {
     this.logger = options.logger || new Logger('Pattern3Engine');
     this.emitEvents = options.emitEvents ?? getConfig().ENABLE_EVENTS;
     this.lookaheadLimit = options.lookaheadLimit ?? 200;
+    this.retestLookahead = options.retestLookahead ?? 30;
   }
 
   _initStore(symbol, granularity) {
@@ -83,6 +84,7 @@ class Pattern3Engine extends EventEmitter {
     if (startIdx <= 0 || startIdx >= candles.length) return null;
 
     const firstPrice = firstSwing.price;
+    let firstCrossCandle = null;
 
     if (direction === 'bearish') {
       const level = vShapeCandle.low;
@@ -90,7 +92,14 @@ class Pattern3Engine extends EventEmitter {
         const c = candles[i];
         if (!c) continue;
         if (c.high > firstPrice) return null;
-        if (c.close < level || c.open < level) return c;
+
+        if (!firstCrossCandle) {
+          if (c.close < level || c.open < level) return c;
+          if (c.low < level) { firstCrossCandle = c; continue; }
+        } else {
+          if (c.close < firstCrossCandle.low || c.open < firstCrossCandle.low) return c;
+          if (c.low < firstCrossCandle.low) firstCrossCandle = c;
+        }
       }
     } else {
       const level = vShapeCandle.high;
@@ -98,7 +107,14 @@ class Pattern3Engine extends EventEmitter {
         const c = candles[i];
         if (!c) continue;
         if (c.low < firstPrice) return null;
-        if (c.close > level || c.open > level) return c;
+
+        if (!firstCrossCandle) {
+          if (c.close > level || c.open > level) return c;
+          if (c.high > level) { firstCrossCandle = c; continue; }
+        } else {
+          if (c.close > firstCrossCandle.high || c.open > firstCrossCandle.high) return c;
+          if (c.high > firstCrossCandle.high) firstCrossCandle = c;
+        }
       }
     }
     return null;
@@ -182,6 +198,100 @@ class Pattern3Engine extends EventEmitter {
       if (!retested) count++;
     }
     return count;
+  }
+
+  // Retest: after breakout, a confirmation candle must first cross the
+  // breakout candle's low (bearish) / high (bullish). Once confirmed, scan
+  // forward for the extreme candle whose wick falls inside the zone bounded
+  // by vShapeCandlePrice and secondSwingPrice.
+  //
+  //  - bearish → highest high candle with high ∈ [vShapePrice, secondSwingPrice]
+  //  - bullish → lowest  low  candle with low  ∈ [secondSwingPrice, vShapePrice]
+  //
+  // Stops once a candle pierces beyond secondSwingPrice on the retrace side
+  // (invalidation) or after lookaheadLimit candles.
+  _findRetestCandle(breakout, vShapePrice, secondSwingPrice, firstSwingPrice, candles, direction) {
+    if (!breakout || breakout.index == null) return null;
+    const startIdx = breakout.index + 1;
+    if (startIdx >= candles.length) return null;
+
+    let confirmedIdx = -1;
+    if (direction === 'bearish') {
+      for (let i = startIdx; i < candles.length; i++) {
+        const c = candles[i];
+        if (!c) continue;
+        if (c.low < breakout.low) { confirmedIdx = i; break; }
+      }
+    } else {
+      for (let i = startIdx; i < candles.length; i++) {
+        const c = candles[i];
+        if (!c) continue;
+        if (c.high > breakout.high) { confirmedIdx = i; break; }
+      }
+    }
+    if (confirmedIdx === -1) return null;
+
+    const zoneLow = Math.min(vShapePrice, secondSwingPrice);
+    const zoneHigh = Math.max(vShapePrice, secondSwingPrice);
+
+    const scanStart = confirmedIdx + 1;
+    const scanEnd = Math.min(candles.length - 1, scanStart + this.retestLookahead);
+
+    let extreme = null;
+    let extremeIdx = -1;
+
+    if (direction === 'bearish') {
+      let maxHigh = -Infinity;
+      for (let i = scanStart; i <= scanEnd; i++) {
+        const c = candles[i];
+        if (!c) continue;
+        if (c.high > zoneHigh) break;
+        if (c.high >= zoneLow && c.high <= zoneHigh && c.high > maxHigh) {
+          maxHigh = c.high;
+          extreme = c;
+          extremeIdx = i;
+        }
+      }
+    } else {
+      let minLow = Infinity;
+      for (let i = scanStart; i <= scanEnd; i++) {
+        const c = candles[i];
+        if (!c) continue;
+        if (c.low < zoneLow) break;
+        if (c.low >= zoneLow && c.low <= zoneHigh && c.low < minLow) {
+          minLow = c.low;
+          extreme = c;
+          extremeIdx = i;
+        }
+      }
+    }
+
+    if (!extreme) return null;
+
+    // Post-retest validation: price must continue in the breakout direction
+    // by crossing the retest candle's extreme before it invalidates by
+    // crossing firstSwing. If firstSwing is crossed first (or reached without
+    // continuation), the retest is nullified.
+    const postStart = extremeIdx + 1;
+    const postEnd = Math.min(candles.length - 1, postStart + this.retestLookahead);
+
+    if (direction === 'bearish') {
+      for (let i = postStart; i <= postEnd; i++) {
+        const c = candles[i];
+        if (!c) continue;
+        if (c.high > firstSwingPrice) return null;
+        if (c.low < extreme.low) return { candle: extreme, index: extremeIdx };
+      }
+      return null;
+    } else {
+      for (let i = postStart; i <= postEnd; i++) {
+        const c = candles[i];
+        if (!c) continue;
+        if (c.low < firstSwingPrice) return null;
+        if (c.high > extreme.high) return { candle: extreme, index: extremeIdx };
+      }
+      return null;
+    }
   }
 
   // Extreme candle between the two swings forming the V-shape:
@@ -283,6 +393,21 @@ class Pattern3Engine extends EventEmitter {
         );
       }
 
+      const retestFound = this._findRetestCandle(
+        breakout,
+        vShapePrice,
+        secondSwing.price,
+        firstSwing.price,
+        candles,
+        direction
+      );
+      const retestCandle = retestFound?.candle ?? null;
+      const retestIndex = retestFound?.index ?? null;
+      const retestPrice = retestCandle
+        ? (direction === 'bearish' ? retestCandle.high : retestCandle.low)
+        : null;
+      const retestTime = retestCandle?.time ?? retestCandle?.timestamp ?? null;
+
       const pattern = {
         type: 'PATTERN3',
         direction,
@@ -320,6 +445,17 @@ class Pattern3Engine extends EventEmitter {
         NumberOfNoLv: numberOfNoLv,
 
         OBFound: obFound,
+
+        retest: retestCandle ? {
+          index: retestIndex,
+          price: retestPrice,
+          open: retestCandle.open ?? null,
+          close: retestCandle.close ?? null,
+          high: retestCandle.high ?? null,
+          low: retestCandle.low ?? null,
+          time: retestTime,
+          formattedTime: retestCandle.formattedTime || this._formatTime(retestTime),
+        } : null,
 
         timestamp: candles[secondSwing.index]?.timestamp || Date.now(),
       };
