@@ -85,6 +85,16 @@ router.get('/all', async (req, res) => {
     const patternMatchSymbols = new Set();
     let pattern2MatchCount = 0;
     const pattern2MatchSymbols = new Set();
+    let pattern3MatchCount = 0;
+    const pattern3MatchSymbols = new Set();
+    let obOppositeExtremeCount = 0;
+    const obOppositeExtremeSymbols = new Set();
+    let obOppositeExtremePatternMatchCount = 0;
+    const obOppositeExtremePatternMatchSymbols = new Set();
+    let obOppositeExtremePattern2MatchCount = 0;
+    const obOppositeExtremePattern2MatchSymbols = new Set();
+    let obOppositeExtremePattern3MatchCount = 0;
+    const obOppositeExtremePattern3MatchSymbols = new Set();
 
     for (const symbol of symbols) {
       for (const rawGranularity of rawGranularities) {
@@ -111,6 +121,26 @@ router.get('/all', async (req, res) => {
               pattern2MatchCount++;
               pattern2MatchSymbols.add(symbol);
             }
+            if (s.pattern3Match) {
+              pattern3MatchCount++;
+              pattern3MatchSymbols.add(symbol);
+            }
+            if (s.OBOppositeExtreme) {
+              obOppositeExtremeCount++;
+              obOppositeExtremeSymbols.add(symbol);
+            }
+            if (s.OBOppositeExtremePatternMatch) {
+              obOppositeExtremePatternMatchCount++;
+              obOppositeExtremePatternMatchSymbols.add(symbol);
+            }
+            if (s.OBOppositeExtremePattern2Match) {
+              obOppositeExtremePattern2MatchCount++;
+              obOppositeExtremePattern2MatchSymbols.add(symbol);
+            }
+            if (s.OBOppositeExtremePattern3Match) {
+              obOppositeExtremePattern3MatchCount++;
+              obOppositeExtremePattern3MatchSymbols.add(symbol);
+            }
           }
         }
       }
@@ -124,6 +154,16 @@ router.get('/all', async (req, res) => {
       patternMatchSymbols: [...patternMatchSymbols],
       pattern2MatchTotal: pattern2MatchCount,
       pattern2MatchSymbols: [...pattern2MatchSymbols],
+      pattern3MatchTotal: pattern3MatchCount,
+      pattern3MatchSymbols: [...pattern3MatchSymbols],
+      OBOppositeExtremeTotal: obOppositeExtremeCount,
+      OBOppositeExtremeSymbols: [...obOppositeExtremeSymbols],
+      OBOppositeExtremePatternMatchTotal: obOppositeExtremePatternMatchCount,
+      OBOppositeExtremePatternMatchSymbols: [...obOppositeExtremePatternMatchSymbols],
+      OBOppositeExtremePattern2MatchTotal: obOppositeExtremePattern2MatchCount,
+      OBOppositeExtremePattern2MatchSymbols: [...obOppositeExtremePattern2MatchSymbols],
+      OBOppositeExtremePattern3MatchTotal: obOppositeExtremePattern3MatchCount,
+      OBOppositeExtremePattern3MatchSymbols: [...obOppositeExtremePattern3MatchSymbols],
       map: resultMap,
     });
   } catch (err) {
@@ -149,6 +189,16 @@ router.get('/all/:granularity', async (req, res) => {
     const patternMatchSymbols = new Set();
     let pattern2MatchCount = 0;
     const pattern2MatchSymbols = new Set();
+    let pattern3MatchCount = 0;
+    const pattern3MatchSymbols = new Set();
+    let obOppositeExtremeCount = 0;
+    const obOppositeExtremeSymbols = new Set();
+    let obOppositeExtremePatternMatchCount = 0;
+    const obOppositeExtremePatternMatchSymbols = new Set();
+    let obOppositeExtremePattern2MatchCount = 0;
+    const obOppositeExtremePattern2MatchSymbols = new Set();
+    let obOppositeExtremePattern3MatchCount = 0;
+    const obOppositeExtremePattern3MatchSymbols = new Set();
 
     await Promise.all(symbols.map(async (symbol) => {
       await ensureDataLoaded(symbol, granularity);
@@ -169,6 +219,26 @@ router.get('/all/:granularity', async (req, res) => {
             pattern2MatchCount++;
             pattern2MatchSymbols.add(symbol);
           }
+          if (s.pattern3Match) {
+            pattern3MatchCount++;
+            pattern3MatchSymbols.add(symbol);
+          }
+          if (s.OBOppositeExtreme) {
+            obOppositeExtremeCount++;
+            obOppositeExtremeSymbols.add(symbol);
+          }
+          if (s.OBOppositeExtremePatternMatch) {
+            obOppositeExtremePatternMatchCount++;
+            obOppositeExtremePatternMatchSymbols.add(symbol);
+          }
+          if (s.OBOppositeExtremePattern2Match) {
+            obOppositeExtremePattern2MatchCount++;
+            obOppositeExtremePattern2MatchSymbols.add(symbol);
+          }
+          if (s.OBOppositeExtremePattern3Match) {
+            obOppositeExtremePattern3MatchCount++;
+            obOppositeExtremePattern3MatchSymbols.add(symbol);
+          }
         }
       }
     }));
@@ -183,6 +253,16 @@ router.get('/all/:granularity', async (req, res) => {
       patternMatchSymbols: [...patternMatchSymbols],
       pattern2MatchTotal: pattern2MatchCount,
       pattern2MatchSymbols: [...pattern2MatchSymbols],
+      pattern3MatchTotal: pattern3MatchCount,
+      pattern3MatchSymbols: [...pattern3MatchSymbols],
+      OBOppositeExtremeTotal: obOppositeExtremeCount,
+      OBOppositeExtremeSymbols: [...obOppositeExtremeSymbols],
+      OBOppositeExtremePatternMatchTotal: obOppositeExtremePatternMatchCount,
+      OBOppositeExtremePatternMatchSymbols: [...obOppositeExtremePatternMatchSymbols],
+      OBOppositeExtremePattern2MatchTotal: obOppositeExtremePattern2MatchCount,
+      OBOppositeExtremePattern2MatchSymbols: [...obOppositeExtremePattern2MatchSymbols],
+      OBOppositeExtremePattern3MatchTotal: obOppositeExtremePattern3MatchCount,
+      OBOppositeExtremePattern3MatchSymbols: [...obOppositeExtremePattern3MatchSymbols],
       ...(totalSetups === 0 && {
         reason: 'No confirmed setups found for any symbol at this granularity.'
       }),

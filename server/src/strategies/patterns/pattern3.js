@@ -2,6 +2,7 @@
 const EventEmitter = require('events');
 const swingEngine = require('../../signals/dataProcessor/swings');
 const { processLV } = require('../../signals/dataProcessor/LV');
+const { processOBLV } = require('../../signals/dataProcessor/OBLV');
 const Logger = require('../../utils/logger');
 const { getConfig } = require('../../config');
 
@@ -67,20 +68,28 @@ class Pattern3Engine extends EventEmitter {
     return best ? { swing: best, idx: bestIdx } : null;
   }
 
-  // Breakout: first candle after the V-shape whose body (open or close) closes
-  // beyond the V-shape extreme.
-  //  - bearish → body closes/opens below vShapeCandle.low
-  //  - bullish → body closes/opens above vShapeCandle.high
-  _findBreakoutCandle(vShapeCandle, candles, direction) {
-    if (!vShapeCandle) return null;
-    const startIdx = (vShapeCandle.index ?? -1) + 1;
+  // Breakout: first candle AFTER secondSwing whose body (open or close) closes
+  // beyond the V-shape extreme — but ONLY if price hasn't crossed firstSwing
+  // between secondSwing and that candle. If firstSwing is crossed first, the
+  // pattern is invalid (returns null).
+  //
+  //  - bearish → body closes/opens below vShapeCandle.low,
+  //              invalid if any candle's high > firstSwing.price before then.
+  //  - bullish → body closes/opens above vShapeCandle.high,
+  //              invalid if any candle's low  < firstSwing.price before then.
+  _findBreakoutCandle(vShapeCandle, firstSwing, secondSwing, candles, direction) {
+    if (!vShapeCandle || !firstSwing || !secondSwing) return null;
+    const startIdx = (secondSwing.index ?? -1) + 1;
     if (startIdx <= 0 || startIdx >= candles.length) return null;
+
+    const firstPrice = firstSwing.price;
 
     if (direction === 'bearish') {
       const level = vShapeCandle.low;
       for (let i = startIdx; i < candles.length; i++) {
         const c = candles[i];
         if (!c) continue;
+        if (c.high > firstPrice) return null;
         if (c.close < level || c.open < level) return c;
       }
     } else {
@@ -88,10 +97,50 @@ class Pattern3Engine extends EventEmitter {
       for (let i = startIdx; i < candles.length; i++) {
         const c = candles[i];
         if (!c) continue;
+        if (c.low < firstPrice) return null;
         if (c.close > level || c.open > level) return c;
       }
     }
     return null;
+  }
+
+  // Find the first OB (by candle index) within [secondSwingIndex, breakoutIndex].
+  // OBRetest status ('yes' or 'no') is included on the result but no longer filters.
+  _findFirstOBNoRetest(obEntries, candles, secondSwingIndex, breakoutIndex) {
+    if (!Array.isArray(obEntries) || obEntries.length === 0) return null;
+    if (secondSwingIndex == null || breakoutIndex == null) return null;
+
+    const lo = Math.min(secondSwingIndex, breakoutIndex);
+    const hi = Math.max(secondSwingIndex, breakoutIndex);
+
+    const candidates = [];
+    for (const entry of obEntries) {
+      if (!entry?.OB) continue;
+
+      const obStartTime = entry.bundles?.[0]?.startTime;
+      if (!obStartTime) continue;
+      const obTimeSec = Math.floor(new Date(obStartTime).getTime() / 1000);
+      if (!Number.isFinite(obTimeSec)) continue;
+
+      const obIdx = candles.findIndex(c => c.time === obTimeSec);
+      if (obIdx === -1) continue;
+      if (obIdx < lo || obIdx > hi) continue;
+
+      candidates.push({ obIdx, entry });
+    }
+
+    if (candidates.length === 0) return null;
+    candidates.sort((a, b) => a.obIdx - b.obIdx);
+    const { obIdx, entry } = candidates[0];
+    return {
+      index: obIdx,
+      formattedTime: entry.OBFormattedTime || candles[obIdx]?.formattedTime || null,
+      high: entry.OB.high,
+      low: entry.OB.low,
+      open: entry.OB.open,
+      close: entry.OB.close,
+      OBRetest: entry.OBRetest,
+    };
   }
 
   // Count LVs that formed between vShapeIndex and secondSwingIndex AND were NOT
@@ -199,7 +248,7 @@ class Pattern3Engine extends EventEmitter {
       const vShapePrice = firstSwing.type === 'high' ? vShape.low : vShape.high;
       const vShapeTime = vShape.time ?? vShape.timestamp ?? null;
 
-      const breakout = this._findBreakoutCandle(vShape, candles, direction);
+      const breakout = this._findBreakoutCandle(vShape, firstSwing, secondSwing, candles, direction);
       if (!breakout) continue;
       const breakoutTime = breakout.time ?? breakout.timestamp ?? null;
 
@@ -215,6 +264,22 @@ class Pattern3Engine extends EventEmitter {
           windowCandles,
           0,
           windowCandles.length - 1
+        );
+      }
+
+      if (numberOfNoLv !== 0 && numberOfNoLv !== 1) continue;
+
+      // Feed OB detection only the candles from secondSwing through breakout — so
+      // OBRetest is computed as if price never continued past the breakout.
+      let obFound = null;
+      if (breakout.index > secondSwing.index) {
+        const obWindowCandles = candles.slice(secondSwing.index, breakout.index + 1);
+        const obEntries = processOBLV(symbol, granularity, obWindowCandles) || [];
+        obFound = this._findFirstOBNoRetest(
+          obEntries,
+          candles,
+          secondSwing.index,
+          breakout.index
         );
       }
 
@@ -253,6 +318,8 @@ class Pattern3Engine extends EventEmitter {
         breakoutCandleFormattedTime: breakout?.formattedTime || this._formatTime(breakoutTime),
 
         NumberOfNoLv: numberOfNoLv,
+
+        OBFound: obFound,
 
         timestamp: candles[secondSwing.index]?.timestamp || Date.now(),
       };
