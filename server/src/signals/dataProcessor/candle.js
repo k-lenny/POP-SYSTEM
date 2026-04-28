@@ -50,6 +50,29 @@
 //   • Three Black Crows — three consecutive bearish candles, each
 //              opening within the prior body and closing progressively
 //              lower. Sustained downtrend signal.
+//
+// Breakout field:
+//   Every describe* function now includes a `breakout` object attached
+//   to each detection result:
+//
+//   {
+//     level:            the price level a follow-through candle must breach.
+//                       Bullish patterns → highest `high` across all pattern
+//                       candles. Bearish patterns → lowest `low`.
+//     direction:        'above' (bullish) | 'below' (bearish)
+//     confirmed:        true   — the very next candle after the pattern
+//                                opens OR closes beyond the level.
+//                       false  — next candle is present but did not breach.
+//                       null   — no next candle available yet (live/last bar).
+//     confirmingCandle: candleRef of the candle that confirmed the breakout,
+//                       or null when unconfirmed / not yet available.
+//   }
+//
+//   Neutral patterns (Doji, Spinning Top) expose BOTH levels because the
+//   directional resolution is unknown. In addition to the fields above
+//   they carry:
+//     altLevel: the opposite-side breakout price to watch
+//                (below this → bearish resolution for a Doji / Spinning Top)
 
 const signalEngine = require('../signalEngine');
 
@@ -87,24 +110,141 @@ function candleRef(candle, fallbackIndex) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────
-// Doji
+// Breakout helpers
 //
-// Rules (configurable via opts):
-//   1. The candle has a real range (high > low) — guards against flat candles.
-//   2. Body is tiny relative to the full range:
-//         bodySize / range  <=  bodyRatio       (default 0.1 → 10 %)
-//   3. Both wicks exist and neither wick dominates the candle entirely:
-//         upperWick  >  0
-//         lowerWick  >  0
-//      (optional) each wick is at least `minWickRatio` of the range
-//         (default 0.2 → 20 %). This filters out dragonfly / gravestone
-//         variants where one wick is effectively absent and keeps only
-//         the "classic" indecision Doji.
+// buildBreakout(patternCandles, direction, allCandles, firstIdx)
+//
+//   patternCandles  Array of the 1–3 OHLC candles that form the pattern.
+//   direction       'bullish' | 'bearish'
+//   allCandles      The full candle array being scanned (may be null when
+//                   describe* is called outside of findPatterns, e.g. directly
+//                   by a caller that only has a single candle reference).
+//   firstIdx        Index of the first candle AFTER the pattern in allCandles.
+//
+// The helper walks forward from firstIdx through allCandles one candle at a
+// time.  For each candidate candle it checks:
+//
+//   Bullish  →  candidate.open > level  OR  candidate.close > level
+//   Bearish  →  candidate.open < level  OR  candidate.close < level
+//
+// The breakout level itself is fixed at pattern completion:
+//   Bullish  →  highest high  across all pattern candles
+//   Bearish  →  lowest  low   across all pattern candles
+//
+// Result shape:
+//   {
+//     level             — the fixed price level to breach
+//     direction         — 'above' | 'below'
+//     confirmed         — true  : a subsequent candle broke out
+//                         false : all subsequent candles scanned, none broke
+//                         null  : pattern is on the last bar (no data yet)
+//     confirmingCandle  — candleRef of the first candle that confirmed,
+//                         or null when not yet confirmed / no data
+//     candlesChecked    — how many candles were inspected before a result
+//   }
+// ─────────────────────────────────────────────────────────────────────────
+
+function buildBreakout(patternCandles, direction, allCandles, firstIdx) {
+  const level = direction === 'bullish'
+    ? Math.max(...patternCandles.map(c => c.high))
+    : Math.min(...patternCandles.map(c => c.low));
+
+  const breakoutDirection = direction === 'bullish' ? 'above' : 'below';
+
+  // No subsequent candle data available at all (live last bar).
+  if (!Array.isArray(allCandles) || firstIdx >= allCandles.length) {
+    return {
+      level:            +level.toFixed(6),
+      direction:        breakoutDirection,
+      confirmed:        null,
+      confirmingCandle: null,
+      candlesChecked:   0,
+    };
+  }
+
+  // Walk every candle from firstIdx onward until a breakout fires.
+  for (let k = firstIdx; k < allCandles.length; k++) {
+    const c = allCandles[k];
+    const broke = direction === 'bullish'
+      ? (c.open > level || c.close > level)
+      : (c.open < level || c.close < level);
+
+    if (broke) {
+      return {
+        level:            +level.toFixed(6),
+        direction:        breakoutDirection,
+        confirmed:        true,
+        confirmingCandle: candleRef(c, k),
+        candlesChecked:   k - firstIdx + 1,
+      };
+    }
+  }
+
+  // Exhausted all subsequent candles without a breakout.
+  return {
+    level:            +level.toFixed(6),
+    direction:        breakoutDirection,
+    confirmed:        false,
+    confirmingCandle: null,
+    candlesChecked:   allCandles.length - firstIdx,
+  };
+}
+
+// Builds the dual-watch breakout object used by neutral (indecision) patterns
+// (Doji, Spinning Top).  Walks forward checking BOTH sides simultaneously —
+// whichever level is broken first wins.  If the series ends without either
+// side breaking, both levels are surfaced so the caller can watch them live.
+function buildNeutralBreakout(patternCandles, allCandles, firstIdx) {
+  const bullLevel = Math.max(...patternCandles.map(c => c.high));
+  const bearLevel = Math.min(...patternCandles.map(c => c.low));
+
+  if (!Array.isArray(allCandles) || firstIdx >= allCandles.length) {
+    return {
+      level:            +bullLevel.toFixed(6),
+      direction:        'above',
+      confirmed:        null,
+      confirmingCandle: null,
+      candlesChecked:   0,
+      altLevel:         +bearLevel.toFixed(6),
+    };
+  }
+
+  for (let k = firstIdx; k < allCandles.length; k++) {
+    const c = allCandles[k];
+    const brokeUp   = c.open > bullLevel || c.close > bullLevel;
+    const brokeDown = c.open < bearLevel || c.close < bearLevel;
+
+    if (brokeUp || brokeDown) {
+      const direction = brokeUp ? 'above' : 'below';
+      const level     = brokeUp ? bullLevel : bearLevel;
+      return {
+        level:            +level.toFixed(6),
+        direction,
+        confirmed:        true,
+        confirmingCandle: candleRef(c, k),
+        candlesChecked:   k - firstIdx + 1,
+      };
+    }
+  }
+
+  // Neither side broke — surface both levels for live monitoring.
+  return {
+    level:            +bullLevel.toFixed(6),
+    direction:        'above',
+    confirmed:        false,
+    confirmingCandle: null,
+    candlesChecked:   allCandles.length - firstIdx,
+    altLevel:         +bearLevel.toFixed(6),
+  };
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Doji
 // ─────────────────────────────────────────────────────────────────────────
 
 const DOJI_DEFAULTS = {
-  bodyRatio:     0.1,   // body ≤ 10 % of total range
-  minWickRatio:  0.2,   // each wick ≥ 20 % of total range (classic doji)
+  bodyRatio:     0.1,
+  minWickRatio:  0.2,
 };
 
 function isDoji(candle, opts = {}) {
@@ -126,7 +266,7 @@ function isDoji(candle, opts = {}) {
   return true;
 }
 
-function describeDoji(candle, fallbackIndex) {
+function describeDoji(candle, fallbackIndex, allCandles, firstIdx) {
   const range = totalRange(candle);
   const body  = bodySize(candle);
   const up    = upperWick(candle);
@@ -145,38 +285,20 @@ function describeDoji(candle, fallbackIndex) {
       upperToRange:   +(up   / range).toFixed(4),
       lowerToRange:   +(lo   / range).toFixed(4),
     },
+    breakout: buildNeutralBreakout([candle], allCandles, firstIdx),
   };
 }
 
 // ─────────────────────────────────────────────────────────────────────────
 // Hammer
-//
-// Shape rules (configurable via opts):
-//   1. The candle has a real range (high > low) and a real body
-//      (body > 0 — pure Doji-like bodies are rejected here).
-//   2. Long lower wick: lowerWick >= wickToBody * body   (default 2×).
-//   3. Tiny upper wick: upperWick <= maxUpperWickRatio * range
-//      (default 0.15 → 15 %). A large upper wick turns the shape into an
-//      "inverted" / indecision candle, not a hammer.
-//   4. Body sits in the upper half of the candle:
-//         bodyBottom - low   >=  lowerBodyShareMin * range   (default 0.55)
-//      i.e. at least ~55 % of the candle's range is below the body.
-//
-// Context rule (optional, on by default):
-//   5. The candle appears at the bottom of a downtrend — over the
-//      previous `lookback` candles (default 5) the trend is down
-//      (first close > last close) and the hammer's low is the lowest
-//      low in that window (current candle included).
-//      Toggle off with opts.requireDowntrend = false to get a pure
-//      shape-only scan.
 // ─────────────────────────────────────────────────────────────────────────
 
 const HAMMER_DEFAULTS = {
-  wickToBody:         2,      // lower wick ≥ 2× body
-  maxUpperWickRatio:  0.15,   // upper wick ≤ 15 % of range
-  lowerBodyShareMin:  0.55,   // bottom of body sits ≥ 55 % up from the low
+  wickToBody:         2,
+  maxUpperWickRatio:  0.15,
+  lowerBodyShareMin:  0.55,
   requireDowntrend:   true,
-  lookback:           5,      // candles used for the downtrend check
+  lookback:           5,
 };
 
 function isDowntrendBefore(candles, i, lookback) {
@@ -185,11 +307,11 @@ function isDowntrendBefore(candles, i, lookback) {
   const start = i - lookback;
   const first = candles[start];
   const prev  = candles[i - 1];
-  if (first.close <= prev.close) return false;   // not trending down
+  if (first.close <= prev.close) return false;
 
   let lowestLow = candles[i].low;
   for (let k = start; k <= i; k++) {
-    if (candles[k].low < lowestLow) return false; // hammer must own the low
+    if (candles[k].low < lowestLow) return false;
   }
   return true;
 }
@@ -200,11 +322,11 @@ function isUptrendBefore(candles, i, lookback) {
   const start = i - lookback;
   const first = candles[start];
   const prev  = candles[i - 1];
-  if (first.close >= prev.close) return false;   // not trending up
+  if (first.close >= prev.close) return false;
 
   const candleHigh = candles[i].high;
   for (let k = start; k <= i; k++) {
-    if (candles[k].high > candleHigh) return false; // hanging man must own the high
+    if (candles[k].high > candleHigh) return false;
   }
   return true;
 }
@@ -222,7 +344,7 @@ function isHammerShape(candle, opts = {}) {
   const up = upperWick(candle);
   const lo = lowerWick(candle);
 
-  if (lo < wickToBody * body)        return false;
+  if (lo < wickToBody * body)         return false;
   if (up > maxUpperWickRatio * range) return false;
 
   const bodyBottomFromLow = Math.min(candle.open, candle.close) - candle.low;
@@ -239,7 +361,7 @@ function isHammer(candles, i, opts = {}) {
   if (!isHammerShape(candle, merged)) return false;
 
   if (merged.requireDowntrend) {
-    if (!Array.isArray(candles)) return false; // cannot verify context
+    if (!Array.isArray(candles)) return false;
     if (!isDowntrendBefore(candles, i, merged.lookback)) return false;
   }
   return true;
@@ -253,9 +375,7 @@ function describeHammer(candles, i, opts = {}) {
   const up     = upperWick(candle);
   const lo     = lowerWick(candle);
 
-  const downtrend = Array.isArray(candles)
-    ? isDowntrendBefore(candles, i, merged.lookback)
-    : false;
+  const downtrend  = Array.isArray(candles) ? isDowntrendBefore(candles, i, merged.lookback) : false;
 
   return {
     pattern: 'hammer',
@@ -275,22 +395,12 @@ function describeHammer(candles, i, opts = {}) {
       downtrend,
       lookback: merged.lookback,
     },
+    breakout: buildBreakout([candle], 'bullish', candles, i + 1),
   };
 }
 
 // ─────────────────────────────────────────────────────────────────────────
 // Hanging Man
-//
-// Same shape as a hammer (reuses `isHammerShape`) but appears at the TOP
-// of an uptrend instead of the bottom of a downtrend. When the long lower
-// wick shows up after a rally it signals that sellers have started to
-// probe — a bearish reversal warning.
-//
-// Context rule (on by default):
-//   Over the previous `lookback` candles the trend is up
-//   (first close < last close) AND the hanging-man's high is the highest
-//   high in that window. Disable with opts.requireUptrend = false for a
-//   shape-only scan (redundant with the pure hammer scan).
 // ─────────────────────────────────────────────────────────────────────────
 
 const HANGING_MAN_DEFAULTS = {
@@ -321,9 +431,7 @@ function describeHangingMan(candles, i, opts = {}) {
   const up     = upperWick(candle);
   const lo     = lowerWick(candle);
 
-  const uptrend = Array.isArray(candles)
-    ? isUptrendBefore(candles, i, merged.lookback)
-    : false;
+  const uptrend    = Array.isArray(candles) ? isUptrendBefore(candles, i, merged.lookback) : false;
 
   return {
     pattern: 'hangingMan',
@@ -343,35 +451,18 @@ function describeHangingMan(candles, i, opts = {}) {
       uptrend,
       lookback: merged.lookback,
     },
+    breakout: buildBreakout([candle], 'bearish', candles, i + 1),
   };
 }
 
 // ─────────────────────────────────────────────────────────────────────────
 // Shooting Star
-//
-// Mirror of the hammer: small body at the BOTTOM of the candle with a
-// long UPPER wick. Appears after an uptrend — price rallied strongly
-// intraday but closed back near the open, handing control to sellers.
-//
-// Shape rules (configurable via opts):
-//   1. Real range (high > low) and real body (body > 0).
-//   2. Long upper wick:  upperWick >= wickToBody * body   (default 2×).
-//   3. Tiny lower wick:  lowerWick <= maxLowerWickRatio * range
-//                        (default 0.15 → 15 %).
-//   4. Body sits in the lower half of the candle:
-//         high - bodyTop   >=  upperBodyShareMin * range   (default 0.55)
-//      i.e. at least ~55 % of the candle's range is above the body.
-//
-// Context rule (optional, on by default):
-//   5. Previous `lookback` candles trend up (first close < last close)
-//      and the shooting star owns the highest high in that window.
-//      Toggle off with opts.requireUptrend = false for a shape-only scan.
 // ─────────────────────────────────────────────────────────────────────────
 
 const SHOOTING_STAR_DEFAULTS = {
-  wickToBody:         2,      // upper wick ≥ 2× body
-  maxLowerWickRatio:  0.15,   // lower wick ≤ 15 % of range
-  upperBodyShareMin:  0.55,   // top of body sits ≥ 55 % down from the high
+  wickToBody:         2,
+  maxLowerWickRatio:  0.15,
+  upperBodyShareMin:  0.55,
   requireUptrend:     true,
   lookback:           5,
 };
@@ -389,7 +480,7 @@ function isShootingStarShape(candle, opts = {}) {
   const up = upperWick(candle);
   const lo = lowerWick(candle);
 
-  if (up < wickToBody * body)        return false;
+  if (up < wickToBody * body)         return false;
   if (lo > maxLowerWickRatio * range) return false;
 
   const bodyTopFromHigh = candle.high - Math.max(candle.open, candle.close);
@@ -420,9 +511,7 @@ function describeShootingStar(candles, i, opts = {}) {
   const up     = upperWick(candle);
   const lo     = lowerWick(candle);
 
-  const uptrend = Array.isArray(candles)
-    ? isUptrendBefore(candles, i, merged.lookback)
-    : false;
+  const uptrend    = Array.isArray(candles) ? isUptrendBefore(candles, i, merged.lookback) : false;
 
   return {
     pattern: 'shootingStar',
@@ -442,33 +531,17 @@ function describeShootingStar(candles, i, opts = {}) {
       uptrend,
       lookback: merged.lookback,
     },
+    breakout: buildBreakout([candle], 'bearish', candles, i + 1),
   };
 }
 
 // ─────────────────────────────────────────────────────────────────────────
 // Marubozu
-//
-// A full-body candle with (near-)zero wicks. The side that owns the move
-// owned it end-to-end — bullish Marubozu opens at the low and closes at
-// the high, bearish Marubozu opens at the high and closes at the low.
-//
-// Rules (configurable via opts):
-//   1. Real range (high > low) and a real body (body > 0).
-//   2. Body dominates the range:  body / range >= minBodyRatio
-//      (default 0.95 → body is ≥ 95 % of the candle).
-//   3. Each wick is effectively absent:
-//         upperWick / range <= maxWickRatio
-//         lowerWick / range <= maxWickRatio
-//      (default 0.025 → ≤ 2.5 % of range on each side).
-//
-// Direction:
-//   • close > open → bullish Marubozu (buying pressure)
-//   • close < open → bearish Marubozu (selling pressure)
 // ─────────────────────────────────────────────────────────────────────────
 
 const MARUBOZU_DEFAULTS = {
-  minBodyRatio: 0.95,   // body ≥ 95 % of range
-  maxWickRatio: 0.025,  // each wick ≤ 2.5 % of range
+  minBodyRatio: 0.95,
+  maxWickRatio: 0.025,
 };
 
 function isMarubozu(candle, opts = {}) {
@@ -490,7 +563,7 @@ function isMarubozu(candle, opts = {}) {
   return true;
 }
 
-function describeMarubozu(candle, fallbackIndex) {
+function describeMarubozu(candle, fallbackIndex, allCandles, firstIdx) {
   const range = totalRange(candle);
   const body  = bodySize(candle);
   const up    = upperWick(candle);
@@ -515,36 +588,19 @@ function describeMarubozu(candle, fallbackIndex) {
       upperToRange: +(up   / range).toFixed(4),
       lowerToRange: +(lo   / range).toFixed(4),
     },
+    breakout: buildBreakout([candle], direction, allCandles, firstIdx),
   };
 }
 
 // ─────────────────────────────────────────────────────────────────────────
 // Spinning Top
-//
-// Small (but visible) body flanked by roughly equal wicks on both sides.
-// Shares the indecision meaning of a Doji, but the real body means some
-// directional conviction did take place — the market just didn't commit.
-//
-// Rules (configurable via opts):
-//   1. Real range (high > low) and real body (body > 0).
-//   2. Body is small but larger than a doji:
-//         bodyMinRatio  <  bodySize / range  <=  bodyMaxRatio
-//      (defaults: > 0.10 and ≤ 0.35 → keeps doji on one side and
-//       solid-bodied candles on the other).
-//   3. Both wicks exist and each is meaningful:
-//         upperWick / range  >=  minWickRatio   (default 0.25)
-//         lowerWick / range  >=  minWickRatio
-//   4. Wicks are roughly balanced:
-//         |upperWick - lowerWick| / range  <=  wickBalanceRatio
-//      (default 0.20 → the two wicks are within 20 % of range of each
-//       other). Rejects hammer / shooting-star shapes.
 // ─────────────────────────────────────────────────────────────────────────
 
 const SPINNING_TOP_DEFAULTS = {
-  bodyMinRatio:      0.10,  // body > 10 % of range (bigger than doji)
-  bodyMaxRatio:      0.35,  // body ≤ 35 % of range (still a small body)
-  minWickRatio:      0.25,  // each wick ≥ 25 % of range
-  wickBalanceRatio:  0.20,  // |up-lo| ≤ 20 % of range
+  bodyMinRatio:      0.10,
+  bodyMaxRatio:      0.35,
+  minWickRatio:      0.25,
+  wickBalanceRatio:  0.20,
 };
 
 function isSpinningTop(candle, opts = {}) {
@@ -571,7 +627,7 @@ function isSpinningTop(candle, opts = {}) {
   return true;
 }
 
-function describeSpinningTop(candle, fallbackIndex) {
+function describeSpinningTop(candle, fallbackIndex, allCandles, firstIdx) {
   const range = totalRange(candle);
   const body  = bodySize(candle);
   const up    = upperWick(candle);
@@ -591,48 +647,18 @@ function describeSpinningTop(candle, fallbackIndex) {
       lowerToRange:   +(lo   / range).toFixed(4),
       wickImbalance:  +(Math.abs(up - lo) / range).toFixed(4),
     },
+    breakout: buildNeutralBreakout([candle], allCandles, firstIdx),
   };
 }
 
 // ─────────────────────────────────────────────────────────────────────────
 // Engulfing  (Bullish / Bearish)
-//
-// Two-candle reversal pattern detected at the index of the SECOND
-// (engulfing) candle. Only the BODIES are compared — wicks are ignored,
-// matching the classical definition.
-//
-// Bullish engulfing:
-//   • prev  candle is bearish  (close < open)
-//   • curr  candle is bullish  (close > open)
-//   • curr.open  <=  prev.close     // opens at/below prev body bottom
-//   • curr.close >=  prev.open      // closes at/above prev body top
-//
-// Bearish engulfing:
-//   • prev  candle is bullish  (close > open)
-//   • curr  candle is bearish  (close < open)
-//   • curr.open  >=  prev.close     // opens at/above prev body top
-//   • curr.close <=  prev.open      // closes at/below prev body bottom
-//
-// Extra filters (configurable via opts):
-//   • minEngulfRatio — the engulfing body must be at least this multiple
-//     of the engulfed body (default 1.0 → just needs to cover it).
-//     Raise to 1.5 / 2.0 to demand a visibly larger candle.
-//   • minPrevBodyRatio — the engulfed body must be at least this share
-//     of its own range (default 0.1 → ignore pure dojis, which are
-//     trivially engulfed and produce noise).
-//
-// Context (informational, not filtered):
-//   • Bullish engulfing is meaningful after a downtrend.
-//   • Bearish engulfing is meaningful after an uptrend.
-//   Both `downtrend` / `uptrend` flags are returned on the result so the
-//   caller can weight the signal, but the pattern still fires without
-//   the context — this matches how most books teach it.
 // ─────────────────────────────────────────────────────────────────────────
 
 const ENGULFING_DEFAULTS = {
-  minEngulfRatio:   1.0,   // engulfing body ≥ 1× engulfed body
-  minPrevBodyRatio: 0.10,  // engulfed body ≥ 10 % of its own range
-  lookback:         5,     // for informational trend context
+  minEngulfRatio:   1.0,
+  minPrevBodyRatio: 0.10,
+  lookback:         5,
 };
 
 function engulfingDirection(prev, curr, opts = {}) {
@@ -679,8 +705,8 @@ function describeEngulfing(candles, i, opts = {}) {
   const direction = engulfingDirection(prev, curr, merged);
   if (!direction) return null;
 
-  const prevBody = bodySize(prev);
-  const currBody = bodySize(curr);
+  const prevBody   = bodySize(prev);
+  const currBody   = bodySize(curr);
 
   const context = {
     downtrend: isDowntrendBefore(candles, i - 1, merged.lookback),
@@ -706,28 +732,16 @@ function describeEngulfing(candles, i, opts = {}) {
       engulfRatio: +(currBody / prevBody).toFixed(4),
     },
     context,
+    breakout: buildBreakout([prev, curr], direction, candles, i + 1),
   };
 }
 
 // ─────────────────────────────────────────────────────────────────────────
 // Tweezer Tops / Bottoms
-//
-// Two consecutive candles whose highs (tops) or lows (bottoms) match
-// within a small tolerance. The matched level acts as rejection —
-// tops are bearish, bottoms are bullish.
-//
-// Rules (configurable):
-//   • levelTolerance — |a - b| / avgRange ≤ 0.05 (default). The two
-//     levels are considered "matching" when they differ by ≤ 5 % of the
-//     average candle range.
-//   • Tops:    prev bullish, curr bearish, matching highs.
-//   • Bottoms: prev bearish, curr bullish, matching lows.
-//     The opposing-colour requirement keeps this distinct from ordinary
-//     pauses in a trend where both candles agree.
 // ─────────────────────────────────────────────────────────────────────────
 
 const TWEEZER_DEFAULTS = {
-  levelTolerance: 0.05,   // |a-b| ≤ 5 % of avg range
+  levelTolerance: 0.05,
   lookback:       5,
 };
 
@@ -765,9 +779,9 @@ function describeTweezer(candles, i, opts = {}) {
   const kind = tweezerDirection(prev, curr, merged);
   if (!kind) return null;
 
-  const prevRange = totalRange(prev);
-  const currRange = totalRange(curr);
-  const avgRange  = (prevRange + currRange) / 2;
+  const prevRange  = totalRange(prev);
+  const currRange  = totalRange(curr);
+  const avgRange   = (prevRange + currRange) / 2;
 
   const level = kind === 'top'
     ? (prev.high + curr.high) / 2
@@ -777,10 +791,12 @@ function describeTweezer(candles, i, opts = {}) {
     ? Math.abs(prev.high - curr.high)
     : Math.abs(prev.low  - curr.low);
 
+  const patternDirection = kind === 'top' ? 'bearish' : 'bullish';
+
   return {
-    pattern: kind === 'top' ? 'tweezerTop' : 'tweezerBottom',
-    direction: kind === 'top' ? 'bearish' : 'bullish',
-    meaning: kind === 'top'
+    pattern:   kind === 'top' ? 'tweezerTop' : 'tweezerBottom',
+    direction: patternDirection,
+    meaning:   kind === 'top'
       ? 'Bearish reversal — two candles rejected the same high, sellers defending the level.'
       : 'Bullish reversal — two candles rejected the same low, buyers defending the level.',
     candles: {
@@ -788,8 +804,8 @@ function describeTweezer(candles, i, opts = {}) {
       current:  candleRef(curr, i),
     },
     metrics: {
-      level:        +level.toFixed(6),
-      levelDiff:    +diff.toFixed(6),
+      level:          +level.toFixed(6),
+      levelDiff:      +diff.toFixed(6),
       levelDiffRatio: +(diff / avgRange).toFixed(4),
     },
     context: {
@@ -797,31 +813,16 @@ function describeTweezer(candles, i, opts = {}) {
       uptrend:   isUptrendBefore(candles, i - 1, merged.lookback),
       lookback:  merged.lookback,
     },
+    breakout: buildBreakout([prev, curr], patternDirection, candles, i + 1),
   };
 }
 
 // ─────────────────────────────────────────────────────────────────────────
 // Piercing Line  /  Dark Cloud Cover
-//
-// Two-candle reversal where the second candle pushes deep into the first
-// candle's body (past its midpoint) but does NOT fully engulf it.
-//
-// Piercing Line (bullish):
-//   • prev bearish (close < open)
-//   • curr bullish (close > open)
-//   • curr.open  <  prev.low                 (opens below prior low)
-//   • curr.close >  midpoint(prev)           (closes above prior mid)
-//   • curr.close <  prev.open                (but not a full engulf)
-//
-// Dark Cloud Cover (bearish) — mirror:
-//   • prev bullish, curr bearish
-//   • curr.open  >  prev.high
-//   • curr.close <  midpoint(prev)
-//   • curr.close >  prev.open
 // ─────────────────────────────────────────────────────────────────────────
 
 const PIERCING_DEFAULTS = {
-  minPrevBodyRatio: 0.3,   // engulfed body ≥ 30 % of its range (require a real candle)
+  minPrevBodyRatio: 0.3,
   lookback:         5,
 };
 
@@ -838,12 +839,12 @@ function isPiercingLine(candles, i, opts = {}) {
   if (prevRange <= 0 || prevBody <= 0) return false;
   if (prevBody / prevRange < minPrevBodyRatio) return false;
 
-  if (prev.close >= prev.open) return false;       // prev must be bearish
-  if (curr.close <= curr.open) return false;       // curr must be bullish
+  if (prev.close >= prev.open) return false;
+  if (curr.close <= curr.open) return false;
 
-  if (!(curr.open  <  prev.low))              return false;
-  if (!(curr.close >  bodyMidpoint(prev)))    return false;
-  if (!(curr.close <  prev.open))             return false; // not a full engulf
+  if (!(curr.open  <  prev.low))           return false;
+  if (!(curr.close >  bodyMidpoint(prev))) return false;
+  if (!(curr.close <  prev.open))          return false;
 
   return true;
 }
@@ -859,12 +860,12 @@ function isDarkCloudCover(candles, i, opts = {}) {
   if (prevRange <= 0 || prevBody <= 0) return false;
   if (prevBody / prevRange < minPrevBodyRatio) return false;
 
-  if (prev.close <= prev.open) return false;       // prev must be bullish
-  if (curr.close >= curr.open) return false;       // curr must be bearish
+  if (prev.close <= prev.open) return false;
+  if (curr.close >= curr.open) return false;
 
-  if (!(curr.open  >  prev.high))             return false;
-  if (!(curr.close <  bodyMidpoint(prev)))    return false;
-  if (!(curr.close >  prev.open))             return false; // not a full engulf
+  if (!(curr.open  >  prev.high))          return false;
+  if (!(curr.close <  bodyMidpoint(prev))) return false;
+  if (!(curr.close >  prev.open))          return false;
 
   return true;
 }
@@ -878,9 +879,11 @@ function describePiercing(candles, i, kind, opts = {}) {
     ? (curr.close - prev.close) / (prev.open - prev.close)
     : (prev.close - curr.close) / (prev.close - prev.open);
 
+  const patternDirection = kind === 'piercing' ? 'bullish' : 'bearish';
+
   return {
     pattern:   kind === 'piercing' ? 'piercingLine' : 'darkCloudCover',
-    direction: kind === 'piercing' ? 'bullish' : 'bearish',
+    direction: patternDirection,
     meaning:   kind === 'piercing'
       ? 'Bullish reversal — gap-down bullish candle pushed past the midpoint of the prior bearish body.'
       : 'Bearish reversal — gap-up bearish candle pushed past the midpoint of the prior bullish body.',
@@ -890,34 +893,19 @@ function describePiercing(candles, i, kind, opts = {}) {
     },
     metrics: {
       prevMidpoint: +bodyMidpoint(prev).toFixed(6),
-      penetration:  +penetration.toFixed(4),   // share of prev body covered (0..1)
+      penetration:  +penetration.toFixed(4),
     },
     context: {
       downtrend: isDowntrendBefore(candles, i - 1, merged.lookback),
       uptrend:   isUptrendBefore(candles, i - 1, merged.lookback),
       lookback:  merged.lookback,
     },
+    breakout: buildBreakout([prev, curr], patternDirection, candles, i + 1),
   };
 }
 
 // ─────────────────────────────────────────────────────────────────────────
-// Morning Star  /  Evening Star  (three-candle reversals)
-//
-// Morning Star (bullish):
-//   C1: large bearish candle
-//   C2: small-bodied "star" that gaps down vs C1 (C2 body top < C1 close)
-//   C3: large bullish candle that closes well into C1's body
-//
-// Evening Star (bearish) — mirror:
-//   C1: large bullish candle
-//   C2: small "star" gapping up (C2 body bottom > C1 close)
-//   C3: large bearish candle closing well into C1's body
-//
-// Configurable:
-//   • largeBodyRatio — C1 / C3 body ≥ 60 % of their own range (default).
-//   • starBodyRatio  — C2 body ≤ 30 % of its range (default).
-//   • closeIntoBody  — C3 must close beyond `closeIntoBody` share of C1's
-//     body (default 0.5 → past the midpoint, the classical requirement).
+// Morning Star  /  Evening Star
 // ─────────────────────────────────────────────────────────────────────────
 
 const STAR_DEFAULTS = {
@@ -944,21 +932,16 @@ function isMorningStar(candles, i, opts = {}) {
   const { largeBodyRatio, starBodyRatio, closeIntoBody } = { ...STAR_DEFAULTS, ...opts };
   const c1 = candles[i - 2], c2 = candles[i - 1], c3 = candles[i];
 
-  if (!(c1.close < c1.open)) return false;                 // C1 bearish
+  if (!(c1.close < c1.open)) return false;
   if (!isLargeBody(c1, largeBodyRatio)) return false;
 
   if (!isSmallBody(c2, starBodyRatio)) return false;
-  if (Math.max(c2.open, c2.close) >= c1.close === false) {
-    // star body top must be BELOW C1 close (gap down on bodies)
-  }
   if (!(Math.max(c2.open, c2.close) < c1.close)) return false;
 
-  if (!(c3.close > c3.open)) return false;                 // C3 bullish
+  if (!(c3.close > c3.open)) return false;
   if (!isLargeBody(c3, largeBodyRatio)) return false;
 
-  const c1Mid = bodyMidpoint(c1);
   const threshold = c1.close + (c1.open - c1.close) * closeIntoBody;
-  // closeIntoBody=0.5 → threshold = midpoint; must close above it.
   if (!(c3.close > threshold)) return false;
 
   return true;
@@ -969,13 +952,13 @@ function isEveningStar(candles, i, opts = {}) {
   const { largeBodyRatio, starBodyRatio, closeIntoBody } = { ...STAR_DEFAULTS, ...opts };
   const c1 = candles[i - 2], c2 = candles[i - 1], c3 = candles[i];
 
-  if (!(c1.close > c1.open)) return false;                 // C1 bullish
+  if (!(c1.close > c1.open)) return false;
   if (!isLargeBody(c1, largeBodyRatio)) return false;
 
   if (!isSmallBody(c2, starBodyRatio)) return false;
-  if (!(Math.min(c2.open, c2.close) > c1.close)) return false;  // gap up on bodies
+  if (!(Math.min(c2.open, c2.close) > c1.close)) return false;
 
-  if (!(c3.close < c3.open)) return false;                 // C3 bearish
+  if (!(c3.close < c3.open)) return false;
   if (!isLargeBody(c3, largeBodyRatio)) return false;
 
   const threshold = c1.close - (c1.close - c1.open) * closeIntoBody;
@@ -988,10 +971,12 @@ function describeStar(candles, i, kind, opts = {}) {
   const merged = { ...STAR_DEFAULTS, ...opts };
   const c1 = candles[i - 2], c2 = candles[i - 1], c3 = candles[i];
 
+  const patternDirection = kind === 'morning' ? 'bullish' : 'bearish';
+
   return {
     pattern:   kind === 'morning' ? 'morningStar' : 'eveningStar',
-    direction: kind === 'morning' ? 'bullish' : 'bearish',
-    meaning: kind === 'morning'
+    direction: patternDirection,
+    meaning:   kind === 'morning'
       ? 'Strong bullish reversal — bearish candle, indecisive gap-down star, then a bullish candle closing well into the first body.'
       : 'Strong bearish reversal — bullish candle, indecisive gap-up star, then a bearish candle closing well into the first body.',
     candles: {
@@ -1009,22 +994,12 @@ function describeStar(candles, i, kind, opts = {}) {
       uptrend:   isUptrendBefore(candles, i - 2, merged.lookback),
       lookback:  merged.lookback,
     },
+    breakout: buildBreakout([c1, c2, c3], patternDirection, candles, i + 1),
   };
 }
 
 // ─────────────────────────────────────────────────────────────────────────
 // Three White Soldiers  /  Three Black Crows
-//
-// Three consecutive candles of the same colour where each opens inside
-// the prior body and closes progressively in the trend direction.
-//
-// Soldiers (bullish):
-//   • All three bullish (close > open).
-//   • Each body is "real" (body / range ≥ minBodyRatio, default 0.5).
-//   • open[k]  within body of [k-1]: prev.open < open[k] < prev.close.
-//   • close[k] > close[k-1] (higher highs on closes).
-//
-// Crows (bearish) — mirror rules.
 // ─────────────────────────────────────────────────────────────────────────
 
 const TRIPLE_DEFAULTS = {
@@ -1074,10 +1049,12 @@ function describeTriple(candles, i, kind, opts = {}) {
   const merged = { ...TRIPLE_DEFAULTS, ...opts };
   const c1 = candles[i - 2], c2 = candles[i - 1], c3 = candles[i];
 
+  const patternDirection = kind === 'soldiers' ? 'bullish' : 'bearish';
+
   return {
     pattern:   kind === 'soldiers' ? 'threeWhiteSoldiers' : 'threeBlackCrows',
-    direction: kind === 'soldiers' ? 'bullish' : 'bearish',
-    meaning: kind === 'soldiers'
+    direction: patternDirection,
+    meaning:   kind === 'soldiers'
       ? 'Sustained uptrend — three bullish candles with progressively higher closes, each opening inside the prior body.'
       : 'Sustained downtrend — three bearish candles with progressively lower closes, each opening inside the prior body.',
     candles: {
@@ -1095,6 +1072,7 @@ function describeTriple(candles, i, kind, opts = {}) {
       uptrend:   isUptrendBefore(candles, i - 2, merged.lookback),
       lookback:  merged.lookback,
     },
+    breakout: buildBreakout([c1, c2, c3], patternDirection, candles, i + 1),
   };
 }
 
@@ -1109,10 +1087,11 @@ function findPatterns(candles, opts = {}) {
   const results = [];
 
   for (let i = 0; i < candles.length; i++) {
-    const c = candles[i];
+    const c       = candles[i];
+
 
     if (isDoji(c, opts.doji)) {
-      results.push(describeDoji(c, i));
+      results.push(describeDoji(c, i, candles, i + 1));
     }
 
     if (isHammer(candles, i, opts.hammer)) {
@@ -1128,11 +1107,11 @@ function findPatterns(candles, opts = {}) {
     }
 
     if (isMarubozu(c, opts.marubozu)) {
-      results.push(describeMarubozu(c, i));
+      results.push(describeMarubozu(c, i, candles, i + 1));
     }
 
     if (isSpinningTop(c, opts.spinningTop)) {
-      results.push(describeSpinningTop(c, i));
+      results.push(describeSpinningTop(c, i, candles, i + 1));
     }
 
     if (isEngulfing(candles, i, opts.engulfing)) {
@@ -1220,4 +1199,7 @@ module.exports = {
   lowerWick,
   isDowntrendBefore,
   isUptrendBefore,
+  // breakout helper (exported so callers adding new patterns can reuse it)
+  buildBreakout,
+  buildNeutralBreakout,
 };

@@ -23,12 +23,6 @@ function candleRef(candle, fallbackIndex) {
   };
 }
 
-// How far past the consolidation's end candle we'll scan looking for the
-// breakout candle. If no candle in the next BREAKOUT_SCAN_LIMIT bars
-// triggers a breakout (open or close beyond the zone boundary), the
-// breakout side is reported as null. This keeps the detector from
-// associating a zone with a "breakout" that happened many bars later
-// when the zone is no longer relevant.
 const BREAKOUT_SCAN_LIMIT = 10;
 
 function extremaIn(candles, startIdx, endIdx) {
@@ -83,6 +77,328 @@ function findBreakoutBelow(candles, endIdx, loPrice) {
   return null;
 }
 
+// ---------------------------------------------------------------------------
+// Opposite-cross helpers: first candle after the breakout whose body crossed
+// the OPPOSITE consolidation boundary. Used for post-retest invalidation.
+// ---------------------------------------------------------------------------
+function findOppositeCrossAbove(candles, breakoutIdx, zoneHi) {
+  for (let k = breakoutIdx + 1; k < candles.length; k++) {
+    const c = candles[k];
+    if (c.open > zoneHi || c.close > zoneHi) return k;
+  }
+  return -1;
+}
+
+function findOppositeCrossBelow(candles, breakoutIdx, zoneLo) {
+  for (let k = breakoutIdx + 1; k < candles.length; k++) {
+    const c = candles[k];
+    if (c.open < zoneLo || c.close < zoneLo) return k;
+  }
+  return -1;
+}
+
+// ---------------------------------------------------------------------------
+// Retest breakout finders — scan after retest for body break of vShapeExtreme.
+//
+// invalidationLevel race: if a candle's body crosses invalidationLevel in
+// the wrong direction before the vShapeExtreme body break, return
+// { invalidated: true }. Null invalidationLevel means race never fires.
+// ---------------------------------------------------------------------------
+function findRetestBreakoutAbove(candles, startIdx, vPrice, invalidationLevel) {
+  for (let k = startIdx + 1; k < candles.length; k++) {
+    const c = candles[k];
+    if (invalidationLevel != null && (c.open < invalidationLevel || c.close < invalidationLevel)) {
+      return { invalidated: true };
+    }
+    if (c.open > vPrice || c.close > vPrice) {
+      const trigger = c.open > vPrice && c.close > vPrice ? 'open_and_close'
+                    : c.open > vPrice ? 'open' : 'close';
+      return { ...candleRef(c, k), trigger, brokenLevel: vPrice };
+    }
+  }
+  return null;
+}
+
+function findRetestBreakoutBelow(candles, startIdx, vPrice, invalidationLevel) {
+  for (let k = startIdx + 1; k < candles.length; k++) {
+    const c = candles[k];
+    if (invalidationLevel != null && (c.open > invalidationLevel || c.close > invalidationLevel)) {
+      return { invalidated: true };
+    }
+    if (c.open < vPrice || c.close < vPrice) {
+      const trigger = c.open < vPrice && c.close < vPrice ? 'open_and_close'
+                    : c.open < vPrice ? 'open' : 'close';
+      return { ...candleRef(c, k), trigger, brokenLevel: vPrice };
+    }
+  }
+  return null;
+}
+
+// ---------------------------------------------------------------------------
+// V-shape extreme — locked at the peak/trough of the up/down push BEFORE the
+// first pullback qualifier appears. Scans forward from ftIdx; vShape is the
+// running highest high (above) / lowest low (below) until a Type A/B/C
+// qualifier is encountered, at which point vShape is locked.
+//
+// The retest is then selected as the extreme low/high AFTER vShape and
+// BEFORE retestBreakout.
+// ---------------------------------------------------------------------------
+function findVShapeLockAbove(candles, ftIdx, zoneHi, zoneLo) {
+  let vIdx = ftIdx;
+  for (let k = ftIdx + 1; k < candles.length; k++) {
+    const c = candles[k];
+    if (c.high > candles[vIdx].high) { vIdx = k; continue; }
+    const qualifies =
+      c.open < zoneLo || c.close < zoneLo ||  // Type C
+      c.low  < zoneLo ||                      // Type B
+      c.low  <= zoneHi;                       // Type A
+    if (qualifies) break;
+  }
+  return { ...candleRef(candles[vIdx], vIdx), extremePrice: candles[vIdx].high };
+}
+
+function findVShapeLockBelow(candles, ftIdx, zoneHi, zoneLo) {
+  let vIdx = ftIdx;
+  for (let k = ftIdx + 1; k < candles.length; k++) {
+    const c = candles[k];
+    if (c.low < candles[vIdx].low) { vIdx = k; continue; }
+    const qualifies =
+      c.open > zoneHi || c.close > zoneHi ||  // Type C
+      c.high > zoneHi ||                      // Type B
+      c.high >= zoneLo;                       // Type A
+    if (qualifies) break;
+  }
+  return { ...candleRef(candles[vIdx], vIdx), extremePrice: candles[vIdx].low };
+}
+
+// ---------------------------------------------------------------------------
+// Retest candle selection — Type A / B / C classification.
+//
+// The retest is the extreme low (above) / extreme high (below) found
+// BETWEEN the vShape extreme and the retest breakout. The scan window is
+// (startIdx, endIdx]; startIdx is vShape's index, endIdx is one before
+// retestBreakout (or last candle if no retestBreakout exists).
+//
+// BREAKOUT ABOVE — pick candle with the LOWEST LOW among qualifying types:
+//
+//   Type A (in-range):    low >= zoneLo AND low <= zoneHi
+//   Type B (wick below):  low < zoneLo AND open >= zoneLo AND close >= zoneLo
+//   Type C (body below):  open < zoneLo OR close < zoneLo
+//
+// INVALIDATION:
+//   • Running extreme is Type C and a later body in the window breaks
+//     below its low → { invalidated: true } — retest is dead.
+//
+// BREAKOUT BELOW — mirror: highest high, conditions flipped to zoneHi.
+//   Type A: high <= zoneHi AND high >= zoneLo
+//   Type B: high > zoneHi AND open <= zoneHi AND close <= zoneHi
+//   Type C: open > zoneHi OR close > zoneHi
+// ---------------------------------------------------------------------------
+function selectRetestAbove(candles, startIdx, endIdx, zoneHi, zoneLo) {
+  let extremeIdx  = -1;
+  let extremeType = null; // 'A', 'B', or 'C'
+
+  for (let k = startIdx + 1; k <= endIdx; k++) {
+    const c = candles[k];
+
+    // Type C invalidation: running C extreme body-broken later in window.
+    if (extremeIdx >= 0 && extremeType === 'C') {
+      const extLow = candles[extremeIdx].low;
+      if (c.open < extLow || c.close < extLow) {
+        return { extremeIdx: -1, invalidated: true };
+      }
+    }
+
+    // Classify. Priority: C > B > A (most specific first).
+    let type;
+    if (c.open < zoneLo || c.close < zoneLo) {
+      type = 'C';
+    } else if (c.low < zoneLo) {
+      type = 'B';
+    } else if (c.low <= zoneHi) {
+      type = 'A';
+    } else {
+      continue;
+    }
+
+    if (extremeIdx < 0 || c.low < candles[extremeIdx].low) {
+      extremeIdx  = k;
+      extremeType = type;
+    }
+  }
+
+  return { extremeIdx, invalidated: false };
+}
+
+function selectRetestBelow(candles, startIdx, endIdx, zoneHi, zoneLo) {
+  let extremeIdx  = -1;
+  let extremeType = null;
+
+  for (let k = startIdx + 1; k <= endIdx; k++) {
+    const c = candles[k];
+
+    if (extremeIdx >= 0 && extremeType === 'C') {
+      const extHigh = candles[extremeIdx].high;
+      if (c.open > extHigh || c.close > extHigh) {
+        return { extremeIdx: -1, invalidated: true };
+      }
+    }
+
+    let type;
+    if (c.open > zoneHi || c.close > zoneHi) {
+      type = 'C';
+    } else if (c.high > zoneHi) {
+      type = 'B';
+    } else if (c.high >= zoneLo) {
+      type = 'A';
+    } else {
+      continue;
+    }
+
+    if (extremeIdx < 0 || c.high > candles[extremeIdx].high) {
+      extremeIdx  = k;
+      extremeType = type;
+    }
+  }
+
+  return { extremeIdx, invalidated: false };
+}
+
+// ---------------------------------------------------------------------------
+// findRetest — top-level retest resolver.
+// ---------------------------------------------------------------------------
+function findRetest(candles, zoneHi, zoneLo, breakoutAbove, breakoutBelow) {
+  const arrIdxOf = (ref) =>
+    ref ? candles.findIndex((c, k) => (c.index ?? k) === ref.index) : -1;
+
+  const firstIdx = (from, pred) => {
+    for (let k = from; k < candles.length; k++) {
+      if (pred(candles[k])) return k;
+    }
+    return -1;
+  };
+
+  // ---- ABOVE breakout retest path ----
+  const tryAbove = () => {
+    const brkArr = arrIdxOf(breakoutAbove);
+    if (brkArr < 0) return null;
+    const brkHigh = breakoutAbove.high;
+
+    const ftIdx = firstIdx(brkArr + 1, (c) => c.high > brkHigh);
+    if (ftIdx < 0) return null;
+
+    // PRE-FOLLOWTHROUGH INVALIDATION: any candle in (brkArr, ftIdx]
+    // whose body crossed below zoneLo → above-retest is dead.
+    for (let k = brkArr + 1; k <= ftIdx; k++) {
+      const c = candles[k];
+      if (c.open < zoneLo || c.close < zoneLo) return null;
+    }
+
+    // Lock vShape FIRST (highest high after ftIdx until first pullback qualifier).
+    const vShape = findVShapeLockAbove(candles, ftIdx, zoneHi, zoneLo);
+    const vIdx   = candles.findIndex((c, k) => (c.index ?? k) === vShape.index);
+
+    // Find retestBreakout BEFORE retest. Invalidation race: first opposite
+    // body-cross of zoneLo after the original breakout sets the level whose
+    // low must not be body-crossed before vShape is body-broken.
+    const oppCrossIdx     = findOppositeCrossBelow(candles, brkArr, zoneLo);
+    const invalidationLvl = oppCrossIdx >= 0 ? candles[oppCrossIdx].low : null;
+
+    const retestBrk = findRetestBreakoutAbove(candles, vIdx, vShape.extremePrice, invalidationLvl);
+    if (retestBrk && retestBrk.invalidated) return null;
+
+    // Retest = extreme low (Type A/B/C) BETWEEN vShape and retestBreakout.
+    const brkIdx = retestBrk
+      ? candles.findIndex((c, k) => (c.index ?? k) === retestBrk.index)
+      : candles.length;
+    const endIdx = brkIdx - 1;
+
+    const { extremeIdx, invalidated } = selectRetestAbove(candles, vIdx, endIdx, zoneHi, zoneLo);
+    if (invalidated || extremeIdx < 0) return null;
+
+    const ext  = candles[extremeIdx];
+    const mode = ext.low < zoneLo ? 'cross' : 'return';
+
+    return {
+      direction:      'above',
+      followThrough:  candleRef(candles[ftIdx], ftIdx),
+      candle:         candleRef(ext, extremeIdx),
+      mode,
+      vShapeExtreme:  vShape,
+      retestBreakout: retestBrk,
+    };
+  };
+
+  // ---- BELOW breakout retest path ----
+  const tryBelow = () => {
+    const brkArr = arrIdxOf(breakoutBelow);
+    if (brkArr < 0) return null;
+    const brkLow = breakoutBelow.low;
+
+    const ftIdx = firstIdx(brkArr + 1, (c) => c.low < brkLow);
+    if (ftIdx < 0) return null;
+
+    // PRE-FOLLOWTHROUGH INVALIDATION: any candle in (brkArr, ftIdx]
+    // whose body crossed above zoneHi → below-retest is dead.
+    for (let k = brkArr + 1; k <= ftIdx; k++) {
+      const c = candles[k];
+      if (c.open > zoneHi || c.close > zoneHi) return null;
+    }
+
+    // Lock vShape FIRST (lowest low after ftIdx until first pullback qualifier).
+    const vShape = findVShapeLockBelow(candles, ftIdx, zoneHi, zoneLo);
+    const vIdx   = candles.findIndex((c, k) => (c.index ?? k) === vShape.index);
+
+    // Find retestBreakout BEFORE retest. Invalidation race: first opposite
+    // body-cross of zoneHi after the original breakout sets the level whose
+    // high must not be body-crossed before vShape is body-broken.
+    const oppCrossIdx     = findOppositeCrossAbove(candles, brkArr, zoneHi);
+    const invalidationLvl = oppCrossIdx >= 0 ? candles[oppCrossIdx].high : null;
+
+    const retestBrk = findRetestBreakoutBelow(candles, vIdx, vShape.extremePrice, invalidationLvl);
+    if (retestBrk && retestBrk.invalidated) return null;
+
+    // Retest = extreme high (Type A/B/C) BETWEEN vShape and retestBreakout.
+    const brkIdx = retestBrk
+      ? candles.findIndex((c, k) => (c.index ?? k) === retestBrk.index)
+      : candles.length;
+    const endIdx = brkIdx - 1;
+
+    const { extremeIdx, invalidated } = selectRetestBelow(candles, vIdx, endIdx, zoneHi, zoneLo);
+    if (invalidated || extremeIdx < 0) return null;
+
+    const ext  = candles[extremeIdx];
+    const mode = ext.high > zoneHi ? 'cross' : 'return';
+
+    return {
+      direction:      'below',
+      followThrough:  candleRef(candles[ftIdx], ftIdx),
+      candle:         candleRef(ext, extremeIdx),
+      mode,
+      vShapeExtreme:  vShape,
+      retestBreakout: retestBrk,
+    };
+  };
+
+  const above = tryAbove();
+  const below = tryBelow();
+  if (above && below) {
+    return above.candle.index <= below.candle.index ? above : below;
+  }
+  return above || below || null;
+}
+
+// ---------------------------------------------------------------------------
+// Helper: every adjacent pair shares price overlap (no gaps).
+// ---------------------------------------------------------------------------
+function allAdjacentOverlap(window) {
+  for (let k = 0; k < window.length - 1; k++) {
+    const x = window[k], y = window[k + 1];
+    if (Math.min(x.high, y.high) < Math.max(x.low, y.low)) return false;
+  }
+  return true;
+}
+
 function buildZone(candles, startIdx, endIdx, scenario) {
   const { highest, lowest } = extremaIn(candles, startIdx, endIdx);
   const breakoutAbove = findBreakoutAbove(candles, endIdx, highest.price);
@@ -102,447 +418,101 @@ function buildZone(candles, startIdx, endIdx, scenario) {
   };
 }
 
-// ---------------------------------------------------------------------------
-// Retest
-//
-// After a breakout, the market often pushes further in the breakout
-// direction (the "follow-through") and then comes back to retest the zone.
-// The retest is what we capture here.
-//
-// BREAKOUT ABOVE flow:
-//   1. Find the FOLLOW-THROUGH candle: the first candle after the breakout
-//      whose HIGH strictly exceeds the breakout candle's HIGH. Wick is
-//      enough; we don't require a body break.
-//   2. After the follow-through candle, find the RETEST candle: the first
-//      candle that EITHER
-//        a) crosses below the consolidation's low (low < zoneLo, OR
-//           open < zoneLo, OR close < zoneLo), OR
-//        b) returns into the consolidation range (any OHLC inside
-//           [zoneLo, zoneHi]).
-//      First match wins. If a single candle satisfies both on the same
-//      bar, "cross below low" takes priority — we report that case.
-//
-// BREAKOUT BELOW: mirror.
-//   1. Follow-through: first candle with LOW strictly below breakout's LOW.
-//   2. Retest: first candle that EITHER
-//        a) crosses above zoneHi (high/open/close > zoneHi), OR
-//        b) returns into [zoneLo, zoneHi] (any OHLC inside).
-//      Cross-above-high takes priority on a same-bar tie.
-//
-// Scan range: unbounded — we scan from after the follow-through to the
-// end of the data. Either we find a retest candle or we return null.
-//
-// If no breakout exists, or the breakout never gets a follow-through,
-// retest is null.
-//
-// If both breakout sides exist (above and below), preference goes to the
-// first one (chronologically) whose follow-through can be found. If both
-// trigger from the same direction in time, we go with `above` first.
-//
-// Return shape (or null):
-//   {
-//     direction:   'above' | 'below',     // breakout direction this retest belongs to
-//     followThrough: { ...candleRef },    // the candle that pushed past breakout high/low
-//     candle:        { ...candleRef },    // the retest candle itself
-//     mode:          'cross' | 'return',  // 'cross' = pierced opposite zone boundary;
-//                                         //   'return' = came back into [zoneLo, zoneHi]
-//   }
-// ---------------------------------------------------------------------------
-// Find the extreme V-shape candle strictly between the breakout and the
-// retest. For an 'above' breakout this is the highest-high candle in that
-// span (the peak of the V); for 'below' it's the lowest-low (the trough).
-// Returns null if there are no candles strictly between the two indices.
-function findVShapeExtreme(candles, brkIdx, retestIdx, direction) {
-  const from = brkIdx + 1;
-  const to   = retestIdx - 1;
-  if (from > to) return null;
-
-  let extIdx = from;
-  if (direction === 'above') {
-    for (let k = from + 1; k <= to; k++) {
-      if (candles[k].high > candles[extIdx].high) extIdx = k;
-    }
-    return { ...candleRef(candles[extIdx], extIdx), extremePrice: candles[extIdx].high };
-  } else {
-    for (let k = from + 1; k <= to; k++) {
-      if (candles[k].low < candles[extIdx].low) extIdx = k;
-    }
-    return { ...candleRef(candles[extIdx], extIdx), extremePrice: candles[extIdx].low };
-  }
-}
-
-function findRetest(candles, zoneHi, zoneLo, breakoutAbove, breakoutBelow) {
-  // Resolve a breakout's array index given its candle ref.
-  const arrIdxOf = (ref) =>
-    ref ? candles.findIndex((c, k) => (c.index ?? k) === ref.index) : -1;
-
-  // Helper: find the index of the first candle in [from..end] satisfying
-  // predicate. Returns -1 if not found.
-  const firstIdx = (from, pred) => {
-    for (let k = from; k < candles.length; k++) {
-      if (pred(candles[k])) return k;
-    }
-    return -1;
-  };
-
-  // ---- ABOVE breakout retest path ----
-  const tryAbove = () => {
-    const brkArr = arrIdxOf(breakoutAbove);
-    if (brkArr < 0) return null;
-    const brkHigh = breakoutAbove.high;
-
-    // 1. Follow-through: first candle after the breakout whose high > brk.high.
-    const ftIdx = firstIdx(brkArr + 1, (c) => c.high > brkHigh);
-    if (ftIdx < 0) return null;
-
-    // 2. Retest after follow-through: first candle that either crosses
-    //    below zoneLo or returns into [zoneLo, zoneHi]. Cross wins on ties.
-    for (let k = ftIdx + 1; k < candles.length; k++) {
-      const c = candles[k];
-
-      const crossBelow =
-        c.low   < zoneLo ||
-        c.open  < zoneLo ||
-        c.close < zoneLo;
-
-      if (crossBelow) {
-        return {
-          direction:     'above',
-          followThrough: candleRef(candles[ftIdx], ftIdx),
-          candle:        candleRef(c, k),
-          mode:          'cross',
-          vShapeExtreme: findVShapeExtreme(candles, brkArr, k, 'above'),
-        };
-      }
-
-      const inRange = (v) => v >= zoneLo && v <= zoneHi;
-      const returned =
-        inRange(c.open)  ||
-        inRange(c.high)  ||
-        inRange(c.low)   ||
-        inRange(c.close);
-
-      if (returned) {
-        return {
-          direction:     'above',
-          followThrough: candleRef(candles[ftIdx], ftIdx),
-          candle:        candleRef(c, k),
-          mode:          'return',
-          vShapeExtreme: findVShapeExtreme(candles, brkArr, k, 'above'),
-        };
-      }
-    }
-    return null;
-  };
-
-  // ---- BELOW breakout retest path ----
-  const tryBelow = () => {
-    const brkArr = arrIdxOf(breakoutBelow);
-    if (brkArr < 0) return null;
-    const brkLow = breakoutBelow.low;
-
-    const ftIdx = firstIdx(brkArr + 1, (c) => c.low < brkLow);
-    if (ftIdx < 0) return null;
-
-    for (let k = ftIdx + 1; k < candles.length; k++) {
-      const c = candles[k];
-
-      const crossAbove =
-        c.high  > zoneHi ||
-        c.open  > zoneHi ||
-        c.close > zoneHi;
-
-      if (crossAbove) {
-        return {
-          direction:     'below',
-          followThrough: candleRef(candles[ftIdx], ftIdx),
-          candle:        candleRef(c, k),
-          mode:          'cross',
-          vShapeExtreme: findVShapeExtreme(candles, brkArr, k, 'below'),
-        };
-      }
-
-      const inRange = (v) => v >= zoneLo && v <= zoneHi;
-      const returned =
-        inRange(c.open)  ||
-        inRange(c.high)  ||
-        inRange(c.low)   ||
-        inRange(c.close);
-
-      if (returned) {
-        return {
-          direction:     'below',
-          followThrough: candleRef(candles[ftIdx], ftIdx),
-          candle:        candleRef(c, k),
-          mode:          'return',
-          vShapeExtreme: findVShapeExtreme(candles, brkArr, k, 'below'),
-        };
-      }
-    }
-    return null;
-  };
-
-  // If both breakout directions exist with valid retest paths, prefer
-  // whichever retest candle is chronologically earliest. If neither has a
-  // retest, return null. If only one has one, return that.
-  const above = tryAbove();
-  const below = tryBelow();
-  if (above && below) {
-    return above.candle.index <= below.candle.index ? above : below;
-  }
-  return above || below || null;
-}
-
-// Helper: every adjacent pair in the window shares price overlap (no gaps).
-function allAdjacentOverlap(window) {
-  for (let k = 0; k < window.length - 1; k++) {
-    const x = window[k], y = window[k + 1];
-    if (Math.min(x.high, y.high) < Math.max(x.low, y.low)) return false;
-  }
-  return true;
-}
-
-// ---------------------------------------------------------------------------
-// Scenario 1 — 5-candle stair-step recovery (A,B,C,D,E)
-// (rules unchanged — see prior version for the sample window and notes)
-// ---------------------------------------------------------------------------
 function matchesScenario1(candles, i) {
-  const A = candles[i];
-  const B = candles[i + 1];
-  const C = candles[i + 2];
-  const D = candles[i + 3];
-  const E = candles[i + 4];
-
-  const bHighPivot    = B.high  > A.high  && B.high  > C.high;
-  const cLowPivot     = C.low   < B.low   && C.low   < D.low;
+  const A = candles[i], B = candles[i+1], C = candles[i+2], D = candles[i+3], E = candles[i+4];
+  const bHighPivot    = B.high > A.high && B.high > C.high;
+  const cLowPivot     = C.low < B.low && C.low < D.low;
   const closesRecover = D.close > C.close && E.close > D.close;
-  const opensStepUp   = C.open  < D.open  && D.open  < E.open;
-  const overlapping   = allAdjacentOverlap([A, B, C, D, E]);
-
+  const opensStepUp   = C.open < D.open && D.open < E.open;
+  const overlapping   = allAdjacentOverlap([A,B,C,D,E]);
   return bHighPivot && cLowPivot && closesRecover && opensStepUp && overlapping;
 }
 
-// ---------------------------------------------------------------------------
-// Scenario 2 — 3-candle compression with close-pivot recovery (A,B,C)
-// ---------------------------------------------------------------------------
 function matchesScenario2(candles, i) {
-  const A = candles[i];
-  const B = candles[i + 1];
-  const C = candles[i + 2];
-
+  const A = candles[i], B = candles[i+1], C = candles[i+2];
   const descendingHighs  = A.high > B.high && B.high > C.high;
-  const descendingLows   = A.low  > B.low  && B.low  > C.low;
+  const descendingLows   = A.low > B.low && B.low > C.low;
   const alternatingDirs  = A.close < A.open && B.close > B.open && C.close < C.open;
   const bClosePivot      = B.close > A.close && B.close > C.close;
   const netUpwardDrift   = C.close > A.close;
-  const vShapeOpens      = B.open  < A.open  && C.open  > B.open;
-  const overlapping      = allAdjacentOverlap([A, B, C]);
-
-  return descendingHighs
-      && descendingLows
-      && alternatingDirs
-      && bClosePivot
-      && netUpwardDrift
-      && vShapeOpens
-      && overlapping;
+  const vShapeOpens      = B.open < A.open && C.open > B.open;
+  const overlapping      = allAdjacentOverlap([A,B,C]);
+  return descendingHighs && descendingLows && alternatingDirs && bClosePivot && netUpwardDrift && vShapeOpens && overlapping;
 }
 
-// ---------------------------------------------------------------------------
-// Scenario 3 — 3-candle failed-push distribution (A,B,C)
-// ---------------------------------------------------------------------------
 function matchesScenario3(candles, i) {
-  const A = candles[i];
-  const B = candles[i + 1];
-  const C = candles[i + 2];
-
-  const bHighPivot      = B.high  > A.high  && B.high  > C.high;
-  const cLowPivot       = C.low   < A.low   && C.low   < B.low;
-  const closesDescend   = A.close > B.close && B.close > C.close;
-  const bOpenHighest    = B.open  > A.open  && B.open  > C.open;
-  const dirsBullBearBear =
-        A.close > A.open &&
-        B.close < B.open &&
-        C.close < C.open;
-  const overlapping     = allAdjacentOverlap([A, B, C]);
-
-  return bHighPivot
-      && cLowPivot
-      && closesDescend
-      && bOpenHighest
-      && dirsBullBearBear
-      && overlapping;
+  const A = candles[i], B = candles[i+1], C = candles[i+2];
+  const bHighPivot       = B.high > A.high && B.high > C.high;
+  const cLowPivot        = C.low < A.low && C.low < B.low;
+  const closesDescend    = A.close > B.close && B.close > C.close;
+  const bOpenHighest     = B.open > A.open && B.open > C.open;
+  const dirsBullBearBear = A.close > A.open && B.close < B.open && C.close < C.open;
+  const overlapping      = allAdjacentOverlap([A,B,C]);
+  return bHighPivot && cLowPivot && closesDescend && bOpenHighest && dirsBullBearBear && overlapping;
 }
 
-// ---------------------------------------------------------------------------
-// Scenario 4 — 4-candle capped V-recovery (A,B,C,D)
-// ---------------------------------------------------------------------------
 function matchesScenario4(candles, i) {
-  const A = candles[i];
-  const B = candles[i + 1];
-  const C = candles[i + 2];
-  const D = candles[i + 3];
-
+  const A = candles[i], B = candles[i+1], C = candles[i+2], D = candles[i+3];
   const aWindowHigh     = A.high > B.high && A.high > C.high && A.high > D.high;
   const highsStepDown   = A.high > B.high && B.high > C.high;
   const dRecoversCapped = D.high > B.high && D.high > C.high && D.high < A.high;
-
   const bWindowLow      = B.low < A.low && B.low < C.low && B.low < D.low;
-
-  const dirsAlternate =
-        A.close < A.open &&
-        B.close > B.open &&
-        C.close < C.open &&
-        D.close > D.open;
-
-  const zigzagCloses  = A.close < B.close && B.close > C.close && C.close < D.close;
-  const dClosePeak    = D.close > A.close && D.close > B.close && D.close > C.close;
-  const cCloseTrough  = C.close < A.close && C.close < B.close && C.close < D.close;
-
-  const opensSlide    = A.open > B.open && D.open < C.open;
-  const netRecovery   = D.close > A.close;
-  const overlapping   = allAdjacentOverlap([A, B, C, D]);
-
-  return aWindowHigh
-      && highsStepDown
-      && dRecoversCapped
-      && bWindowLow
-      && dirsAlternate
-      && zigzagCloses
-      && dClosePeak
-      && cCloseTrough
-      && opensSlide
-      && netRecovery
-      && overlapping;
+  const dirsAlternate   = A.close < A.open && B.close > B.open && C.close < C.open && D.close > D.open;
+  const zigzagCloses    = A.close < B.close && B.close > C.close && C.close < D.close;
+  const dClosePeak      = D.close > A.close && D.close > B.close && D.close > C.close;
+  const cCloseTrough    = C.close < A.close && C.close < B.close && C.close < D.close;
+  const opensSlide      = A.open > B.open && D.open < C.open;
+  const netRecovery     = D.close > A.close;
+  const overlapping     = allAdjacentOverlap([A,B,C,D]);
+  return aWindowHigh && highsStepDown && dRecoversCapped && bWindowLow && dirsAlternate && zigzagCloses && dClosePeak && cCloseTrough && opensSlide && netRecovery && overlapping;
 }
 
-// ---------------------------------------------------------------------------
-// Scenario 5 — 4-candle rising-wedge top with D-failure (A,B,C,D)
-// ---------------------------------------------------------------------------
 function matchesScenario5(candles, i) {
-  const A = candles[i];
-  const B = candles[i + 1];
-  const C = candles[i + 2];
-  const D = candles[i + 3];
-
-  const highsAscend     = A.high < B.high && B.high < C.high;
-  const cWindowHigh     = C.high > A.high && C.high > B.high && C.high > D.high;
-  const dLowestHigh     = D.high < A.high && D.high < B.high && D.high < C.high;
-
-  const lowsInvertedV   = A.low < B.low && B.low > C.low && C.low > D.low;
-  const dWindowLow      = D.low < A.low && D.low < B.low && D.low < C.low;
-
-  const closesDescend   = A.close > B.close && B.close > C.close && C.close > D.close;
-
-  const dirsBullBearBearBear =
-        A.close > A.open &&
-        B.close < B.open &&
-        C.close < C.open &&
-        D.close < D.open;
-
-  const opensSpikeThenSlide =
-        A.open < B.open &&
-        B.open > C.open &&
-        C.open > D.open;
-
-  const overlapping     = allAdjacentOverlap([A, B, C, D]);
-
-  return highsAscend
-      && cWindowHigh
-      && dLowestHigh
-      && lowsInvertedV
-      && dWindowLow
-      && closesDescend
-      && dirsBullBearBearBear
-      && opensSpikeThenSlide
-      && overlapping;
+  const A = candles[i], B = candles[i+1], C = candles[i+2], D = candles[i+3];
+  const highsAscend          = A.high < B.high && B.high < C.high;
+  const cWindowHigh          = C.high > A.high && C.high > B.high && C.high > D.high;
+  const dLowestHigh          = D.high < A.high && D.high < B.high && D.high < C.high;
+  const lowsInvertedV        = A.low < B.low && B.low > C.low && C.low > D.low;
+  const dWindowLow           = D.low < A.low && D.low < B.low && D.low < C.low;
+  const closesDescend        = A.close > B.close && B.close > C.close && C.close > D.close;
+  const dirsBullBearBearBear = A.close > A.open && B.close < B.open && C.close < C.open && D.close < D.open;
+  const opensSpikeThenSlide  = A.open < B.open && B.open > C.open && C.open > D.open;
+  const overlapping          = allAdjacentOverlap([A,B,C,D]);
+  return highsAscend && cWindowHigh && dLowestHigh && lowsInvertedV && dWindowLow && closesDescend && dirsBullBearBearBear && opensSpikeThenSlide && overlapping;
 }
 
-// ---------------------------------------------------------------------------
-// Scenario 6 — anchor-range containment (body-contained, wick-tolerant)
-// ---------------------------------------------------------------------------
 function findAnchorRangeEnd(candles, anchorIdx) {
   const anchor = candles[anchorIdx];
-  const hi = anchor.high;
-  const lo = anchor.low;
-
-  let contained = 0;
-  let lastContainedIdx = anchorIdx;
-
+  const hi = anchor.high, lo = anchor.low;
+  let contained = 0, lastContainedIdx = anchorIdx;
   for (let k = anchorIdx + 1; k < candles.length; k++) {
     const c = candles[k];
-
-    const bodyInside =
-      c.open  >= lo && c.open  <= hi &&
-      c.close >= lo && c.close <= hi;
-
-    if (bodyInside) {
-      contained++;
-      lastContainedIdx = k;
-    } else {
-      break;
-    }
+    const bodyInside = c.open >= lo && c.open <= hi && c.close >= lo && c.close <= hi;
+    if (bodyInside) { contained++; lastContainedIdx = k; } else break;
   }
-
   return contained >= 2 ? lastContainedIdx : null;
 }
 
-// ---------------------------------------------------------------------------
-// Scenario 7 — anchor-range with straddle-break on the 3rd following candle
-// ---------------------------------------------------------------------------
 const SLIGHTLY_NEAR_PCT = 0.15;
-
 function matchesScenario7(candles, i) {
-  const anchor = candles[i];
-  const c1 = candles[i + 1];
-  const c2 = candles[i + 2];
-  const s  = candles[i + 3];
-
-  const hi = anchor.high;
-  const lo = anchor.low;
+  const anchor = candles[i], c1 = candles[i+1], c2 = candles[i+2], s = candles[i+3];
+  const hi = anchor.high, lo = anchor.low;
   const range = hi - lo;
   if (range <= 0) return false;
   const tol = range * SLIGHTLY_NEAR_PCT;
-
-  const bodyInside = (c) =>
-    c.open  >= lo && c.open  <= hi &&
-    c.close >= lo && c.close <= hi;
-
+  const bodyInside = (c) => c.open >= lo && c.open <= hi && c.close >= lo && c.close <= hi;
   if (!bodyInside(c1) || !bodyInside(c2)) return false;
-
-  const sOpenInside  = s.open  >= lo && s.open  <= hi;
-  const sCloseInside = s.close >= lo && s.close <= hi;
-
-  const sOpenAbove   = s.open  >  hi;
-  const sCloseAbove  = s.close >  hi;
-  const sOpenBelow   = s.open  <  lo;
-  const sCloseBelow  = s.close <  lo;
-
-  const oneAboveByLittle =
-        (sOpenAbove  && sCloseInside && (s.open  - hi) <= tol) ||
-        (sCloseAbove && sOpenInside  && (s.close - hi) <= tol);
-
-  const lowNearLo =
-        (s.low >= lo && s.low <= lo + tol) ||
-        (s.low <  lo && (lo - s.low) <= tol);
-
-  const variantA = oneAboveByLittle && lowNearLo;
-
-  const oneBelowByLittle =
-        (sOpenBelow  && sCloseInside && (lo - s.open)  <= tol) ||
-        (sCloseBelow && sOpenInside  && (lo - s.close) <= tol);
-
-  const highNearHi =
-        (s.high <= hi && s.high >= hi - tol) ||
-        (s.high >  hi && (s.high - hi) <= tol);
-
-  const variantB = oneBelowByLittle && highNearHi;
-
+  const oneAboveByLittle = (s.open > hi && s.close >= lo && s.close <= hi && (s.open - hi) <= tol) ||
+                           (s.close > hi && s.open >= lo && s.open <= hi && (s.close - hi) <= tol);
+  const lowNearLo        = (s.low >= lo && s.low <= lo + tol) || (s.low < lo && (lo - s.low) <= tol);
+  const variantA         = oneAboveByLittle && lowNearLo;
+  const oneBelowByLittle = (s.open < lo && s.close >= lo && s.close <= hi && (lo - s.open) <= tol) ||
+                           (s.close < lo && s.open >= lo && s.open <= hi && (lo - s.close) <= tol);
+  const highNearHi       = (s.high <= hi && s.high >= hi - tol) || (s.high > hi && (s.high - hi) <= tol);
+  const variantB         = oneBelowByLittle && highNearHi;
   return variantA || variantB;
 }
 
-// ---------------------------------------------------------------------------
-// Top-level entry — slide all scenarios across the candle array
-// ---------------------------------------------------------------------------
 function findConsolidations(candles) {
   if (!Array.isArray(candles) || candles.length < 3) return [];
 
@@ -607,6 +577,39 @@ function findConsolidations(candles) {
     if (sa !== sb) return sa - sb;
     return (a.end.index ?? 0) - (b.end.index ?? 0);
   });
+
+  // Attach confirmationConsolidation: earliest other zone (by start, then end)
+  // whose range ends at or after the retest breakout candle. The retest
+  // breakout itself can be part of that confirmation consolidation.
+  for (const z of zones) {
+    if (!z.retest || !z.retest.retestBreakout) continue;
+    const retestBrkIdx = z.retest.retestBreakout.index;
+
+    let best = null;
+    for (const c of zones) {
+      if (c === z) continue;
+      const cEnd = c.end.index ?? 0;
+      if (cEnd < retestBrkIdx) continue;
+      if (!best) { best = c; continue; }
+      const cStart = c.start.index ?? 0;
+      const bStart = best.start.index ?? 0;
+      const bEnd   = best.end.index ?? 0;
+      if (cStart < bStart || (cStart === bStart && cEnd < bEnd)) best = c;
+    }
+
+    if (best) {
+      const dirBrk = z.retest.direction === 'above'
+        ? (best.breakout && best.breakout.above) || null
+        : (best.breakout && best.breakout.below) || null;
+      z.retest.confirmationConsolidation = {
+        start:    best.start,
+        end:      best.end,
+        breakout: dirBrk,
+      };
+    } else {
+      z.retest.confirmationConsolidation = null;
+    }
+  }
 
   return zones;
 }
