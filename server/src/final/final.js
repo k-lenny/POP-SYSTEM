@@ -7,6 +7,7 @@ const pattern2Engine = require('../strategies/patterns/pattern2');
 const pattern3Engine = require('../strategies/patterns/pattern3');
 const swingEngine = require('../signals/dataProcessor/swings');
 const signalEngine = require('../signals/signalEngine');
+const { findConsolidations } = require('../signals/dataProcessor/Consolidation');
 const { buildCandleIndexMap } = require('../utils/dataProcessorUtils');
 
 class FinalEngine {
@@ -43,6 +44,23 @@ class FinalEngine {
     const pattern3Patterns = pattern3Engine.get(symbol, granularity);
 
     const candleIndexMap = candles && candles.length ? buildCandleIndexMap(candles) : null;
+    const consolidations = candles && candles.length ? findConsolidations(candles) : [];
+
+    // If a pattern's retest candle index falls inside any consolidation's
+    // [start.index, end.index] window, return that consolidation's
+    // confirmationConsolidation.breakout.
+    const findConfirmationBreakout = (retestIndex) => {
+      if (retestIndex == null) return null;
+      for (const z of consolidations) {
+        const s = z.start?.index;
+        const e = z.end?.index;
+        if (s == null || e == null) continue;
+        if (retestIndex >= s && retestIndex <= e) {
+          return z.retest?.confirmationConsolidation?.breakout ?? null;
+        }
+      }
+      return null;
+    };
 
     return setups.map(setup => {
       const extremePrice = setup.OBSetupExtreme?.price;
@@ -78,6 +96,31 @@ class FinalEngine {
         this._findPattern2ByFirstSwing(pattern2Patterns, oppositePrice);
       const OBOppositeExtremePattern3Match =
         this._findPattern3ByFirstSwing(pattern3Patterns, oppositePrice);
+
+      if (patternMatch) {
+        patternMatch.confirmationConsolidationBreakout =
+          findConfirmationBreakout(patternMatch.retest?.index);
+      }
+      if (pattern2Match) {
+        pattern2Match.confirmationConsolidationBreakout =
+          findConfirmationBreakout(pattern2Match.retestData?.index);
+      }
+      if (pattern3Match) {
+        pattern3Match.confirmationConsolidationBreakout =
+          findConfirmationBreakout(pattern3Match.retest?.index);
+      }
+      if (OBOppositeExtremePatternMatch) {
+        OBOppositeExtremePatternMatch.confirmationConsolidationBreakout =
+          findConfirmationBreakout(OBOppositeExtremePatternMatch.retest?.index);
+      }
+      if (OBOppositeExtremePattern2Match) {
+        OBOppositeExtremePattern2Match.confirmationConsolidationBreakout =
+          findConfirmationBreakout(OBOppositeExtremePattern2Match.retestData?.index);
+      }
+      if (OBOppositeExtremePattern3Match) {
+        OBOppositeExtremePattern3Match.confirmationConsolidationBreakout =
+          findConfirmationBreakout(OBOppositeExtremePattern3Match.retest?.index);
+      }
 
       return {
         ...setup,

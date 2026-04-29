@@ -578,13 +578,27 @@ function findConsolidations(candles) {
     return (a.end.index ?? 0) - (b.end.index ?? 0);
   });
 
+  // ---------------------------------------------------------------------------
   // Attach confirmationConsolidation: earliest other zone (by start, then end)
-  // whose range ends at or after the retest breakout candle. The retest
-  // breakout itself can be part of that confirmation consolidation.
+  // whose range ends at or after the retest breakout candle.
+  //
+  // INVALIDATION: after finding the best candidate zone, scan every candle
+  // from the retest breakout (inclusive) up to — but NOT including — the
+  // confirmation consolidation's own breakout candle. If any of those candles
+  // has a body that crosses the WRONG side of the confirmation zone's range:
+  //
+  //   • retest direction 'above' → body crosses BELOW confirmZone.lowest.price
+  //                                (open < lowest OR close < lowest)
+  //   • retest direction 'below' → body crosses ABOVE confirmZone.highest.price
+  //                                (open > highest OR close > highest)
+  //
+  // …the confirmationConsolidation is set to null (invalidated).
+  // ---------------------------------------------------------------------------
   for (const z of zones) {
     if (!z.retest || !z.retest.retestBreakout) continue;
     const retestBrkIdx = z.retest.retestBreakout.index;
 
+    // Find the best candidate confirmation consolidation zone.
     let best = null;
     for (const c of zones) {
       if (c === z) continue;
@@ -597,17 +611,64 @@ function findConsolidations(candles) {
       if (cStart < bStart || (cStart === bStart && cEnd < bEnd)) best = c;
     }
 
-    if (best) {
-      const dirBrk = z.retest.direction === 'above'
-        ? (best.breakout && best.breakout.above) || null
-        : (best.breakout && best.breakout.below) || null;
+    if (!best) {
+      z.retest.confirmationConsolidation = null;
+      continue;
+    }
+
+    // Determine the direction-specific breakout of the confirmation zone
+    // and the boundary price to guard.
+    const direction = z.retest.direction;
+    const dirBrk = direction === 'above'
+      ? (best.breakout && best.breakout.above) || null
+      : (best.breakout && best.breakout.below) || null;
+
+    // Resolve the array index of the retest breakout candle.
+    const retestBrkArrIdx = candles.findIndex(
+      (c, k) => (c.index ?? k) === retestBrkIdx
+    );
+
+    // Resolve the array index of the confirmation zone's directional breakout
+    // candle (if it exists). We scan UP TO but NOT including this candle.
+    const confirmBrkArrIdx = dirBrk != null
+      ? candles.findIndex((c, k) => (c.index ?? k) === dirBrk.index)
+      : candles.length; // no breakout yet → scan to end of candles
+
+    // Scan for body-cross invalidation between retestBreakout and confirmBreakout.
+    let invalidated = false;
+    if (retestBrkArrIdx >= 0) {
+      const scanEnd = confirmBrkArrIdx >= 0 ? confirmBrkArrIdx : candles.length;
+      if (direction === 'above') {
+        // Invalidation: any body crosses BELOW the confirmation zone's lowest price.
+        const guardLevel = best.lowest.price;
+        for (let k = retestBrkArrIdx; k < scanEnd; k++) {
+          const c = candles[k];
+          if (c.open < guardLevel || c.close < guardLevel) {
+            invalidated = true;
+            break;
+          }
+        }
+      } else {
+        // Invalidation: any body crosses ABOVE the confirmation zone's highest price.
+        const guardLevel = best.highest.price;
+        for (let k = retestBrkArrIdx; k < scanEnd; k++) {
+          const c = candles[k];
+          if (c.open > guardLevel || c.close > guardLevel) {
+            invalidated = true;
+            break;
+          }
+        }
+      }
+    }
+
+    if (invalidated) {
+      z.retest.confirmationConsolidation = null;
+    } else {
       z.retest.confirmationConsolidation = {
         start:    best.start,
         end:      best.end,
         breakout: dirBrk,
       };
-    } else {
-      z.retest.confirmationConsolidation = null;
     }
   }
 

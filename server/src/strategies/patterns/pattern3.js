@@ -29,13 +29,6 @@ class Pattern3Engine extends EventEmitter {
     return new Date(ts).toISOString().replace('T', ' ').substring(0, 19);
   }
 
-  // For a firstSwing, scan forward (bounded) for the "second extreme" same-type swing.
-  //  - high firstSwing  → second must be a LOWER HIGH; among candidates we keep the
-  //                       highest one (the most "extreme" lower high).
-  //  - low  firstSwing  → second must be a HIGHER LOW; among candidates we keep the
-  //                       lowest one (the most "extreme" higher low).
-  // If any intervening same-type swing is MORE extreme than firstSwing, firstSwing is
-  // invalidated and we stop.
   _findSecondExtremeSwing(swings, firstIdx) {
     const firstSwing = swings[firstIdx];
     const type = firstSwing.type;
@@ -51,9 +44,8 @@ class Pattern3Engine extends EventEmitter {
       const s = swings[j];
       if (s.type !== type) continue;
 
-      // firstSwing invalidated by a more extreme same-type swing — stop searching.
-      if (type === 'high' && s.price >= firstPrice) break;
-      if (type === 'low' && s.price <= firstPrice) break;
+      if (type === 'high' && s.price > firstPrice) break;
+      if (type === 'low' && s.price < firstPrice) break;
 
       if (type === 'high' && s.price > bestPrice) {
         bestPrice = s.price;
@@ -69,15 +61,6 @@ class Pattern3Engine extends EventEmitter {
     return best ? { swing: best, idx: bestIdx } : null;
   }
 
-  // Breakout: first candle AFTER secondSwing whose body (open or close) closes
-  // beyond the V-shape extreme — but ONLY if price hasn't crossed firstSwing
-  // between secondSwing and that candle. If firstSwing is crossed first, the
-  // pattern is invalid (returns null).
-  //
-  //  - bearish → body closes/opens below vShapeCandle.low,
-  //              invalid if any candle's high > firstSwing.price before then.
-  //  - bullish → body closes/opens above vShapeCandle.high,
-  //              invalid if any candle's low  < firstSwing.price before then.
   _findBreakoutCandle(vShapeCandle, firstSwing, secondSwing, candles, direction) {
     if (!vShapeCandle || !firstSwing || !secondSwing) return null;
     const startIdx = (secondSwing.index ?? -1) + 1;
@@ -120,8 +103,6 @@ class Pattern3Engine extends EventEmitter {
     return null;
   }
 
-  // Find the first OB (by candle index) within [secondSwingIndex, breakoutIndex].
-  // OBRetest status ('yes' or 'no') is included on the result but no longer filters.
   _findFirstOBNoRetest(obEntries, candles, secondSwingIndex, breakoutIndex) {
     if (!Array.isArray(obEntries) || obEntries.length === 0) return null;
     if (secondSwingIndex == null || breakoutIndex == null) return null;
@@ -159,10 +140,6 @@ class Pattern3Engine extends EventEmitter {
     };
   }
 
-  // Count LVs that formed between vShapeIndex and secondSwingIndex AND were NOT
-  // retested within that same [vShape → secondSwing] window.
-  // Deliberately ignores the breakout — we assume price never broke out, and only
-  // ask: "within this window, how many LVs still stand un-retested?"
   _countNoRetestLvs(lvs, candles, vShapeIndex, secondSwingIndex) {
     if (!Array.isArray(lvs) || lvs.length === 0) return 0;
     if (vShapeIndex == null || secondSwingIndex == null) return 0;
@@ -200,49 +177,22 @@ class Pattern3Engine extends EventEmitter {
     return count;
   }
 
-  // Retest: after breakout, a confirmation candle must first cross the
-  // breakout candle's low (bearish) / high (bullish). Once confirmed, scan
-  // forward for the extreme candle whose wick falls inside the zone bounded
-  // by vShapeCandlePrice and secondSwingPrice.
-  //
-  //  - bearish → highest high candle with high ∈ [vShapePrice, secondSwingPrice]
-  //  - bullish → lowest  low  candle with low  ∈ [secondSwingPrice, vShapePrice]
-  //
-  // Stops once a candle pierces beyond secondSwingPrice on the retrace side
-  // (invalidation) or after lookaheadLimit candles.
   _findRetestCandle(breakout, vShapePrice, secondSwingPrice, firstSwingPrice, candles, direction) {
     if (!breakout || breakout.index == null) return null;
     const startIdx = breakout.index + 1;
     if (startIdx >= candles.length) return null;
 
-    let confirmedIdx = -1;
-    if (direction === 'bearish') {
-      for (let i = startIdx; i < candles.length; i++) {
-        const c = candles[i];
-        if (!c) continue;
-        if (c.low < breakout.low) { confirmedIdx = i; break; }
-      }
-    } else {
-      for (let i = startIdx; i < candles.length; i++) {
-        const c = candles[i];
-        if (!c) continue;
-        if (c.high > breakout.high) { confirmedIdx = i; break; }
-      }
-    }
-    if (confirmedIdx === -1) return null;
-
     const zoneLow = Math.min(vShapePrice, secondSwingPrice);
     const zoneHigh = Math.max(vShapePrice, secondSwingPrice);
 
-    const scanStart = confirmedIdx + 1;
-    const scanEnd = Math.min(candles.length - 1, scanStart + this.retestLookahead);
+    const scanEnd = Math.min(candles.length - 1, startIdx + this.retestLookahead);
 
     let extreme = null;
     let extremeIdx = -1;
 
     if (direction === 'bearish') {
       let maxHigh = -Infinity;
-      for (let i = scanStart; i <= scanEnd; i++) {
+      for (let i = startIdx; i <= scanEnd; i++) {
         const c = candles[i];
         if (!c) continue;
         if (c.high > zoneHigh) break;
@@ -254,7 +204,7 @@ class Pattern3Engine extends EventEmitter {
       }
     } else {
       let minLow = Infinity;
-      for (let i = scanStart; i <= scanEnd; i++) {
+      for (let i = startIdx; i <= scanEnd; i++) {
         const c = candles[i];
         if (!c) continue;
         if (c.low < zoneLow) break;
@@ -268,10 +218,6 @@ class Pattern3Engine extends EventEmitter {
 
     if (!extreme) return null;
 
-    // Post-retest validation: price must continue in the breakout direction
-    // by crossing the retest candle's extreme before it invalidates by
-    // crossing firstSwing. If firstSwing is crossed first (or reached without
-    // continuation), the retest is nullified.
     const postStart = extremeIdx + 1;
     const postEnd = Math.min(candles.length - 1, postStart + this.retestLookahead);
 
@@ -294,9 +240,6 @@ class Pattern3Engine extends EventEmitter {
     }
   }
 
-  // Extreme candle between the two swings forming the V-shape:
-  //  - two highs → lowest low between them (V)
-  //  - two lows  → highest high between them (inverted V)
   _findVShapeCandle(firstSwing, secondSwing, candles) {
     const startIdx = Math.min(firstSwing.index, secondSwing.index) + 1;
     const endIdx = Math.max(firstSwing.index, secondSwing.index);
@@ -354,15 +297,31 @@ class Pattern3Engine extends EventEmitter {
       if (!vShape) continue;
 
       const direction = firstSwing.type === 'high' ? 'bearish' : 'bullish';
-
       const vShapePrice = firstSwing.type === 'high' ? vShape.low : vShape.high;
+
+      // 62.5% retracement check: secondSwing must retrace at least 62.5%
+      // of the range between firstSwing and vShapePrice back toward firstSwing
+      const range = Math.abs(firstSwing.price - vShapePrice);
+      if (range === 0) continue;
+
+      if (direction === 'bearish') {
+        // firstSwing is a high, vShapePrice is the low between them
+        // secondSwing (also a high) must be >= vShapePrice + 62.5% of range
+        const minSecondPrice = vShapePrice + range * 0.625;
+        if (secondSwing.price < minSecondPrice) continue;
+      } else {
+        // firstSwing is a low, vShapePrice is the high between them
+        // secondSwing (also a low) must be <= vShapePrice - 62.5% of range
+        const maxSecondPrice = vShapePrice - range * 0.625;
+        if (secondSwing.price > maxSecondPrice) continue;
+      }
+
       const vShapeTime = vShape.time ?? vShape.timestamp ?? null;
 
       const breakout = this._findBreakoutCandle(vShape, firstSwing, secondSwing, candles, direction);
       if (!breakout) continue;
       const breakoutTime = breakout.time ?? breakout.timestamp ?? null;
 
-      // Only feed LV detection the candles strictly between vShape and secondSwing.
       const vIdx = vShape.index ?? null;
       const sIdx = secondSwing.index ?? null;
       let numberOfNoLv = 0;
@@ -379,8 +338,6 @@ class Pattern3Engine extends EventEmitter {
 
       if (numberOfNoLv !== 0 && numberOfNoLv !== 1) continue;
 
-      // Feed OB detection only the candles from secondSwing through breakout — so
-      // OBRetest is computed as if price never continued past the breakout.
       let obFound = null;
       if (breakout.index > secondSwing.index) {
         const obWindowCandles = candles.slice(secondSwing.index, breakout.index + 1);
