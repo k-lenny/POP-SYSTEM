@@ -1,6 +1,4 @@
 // server/src/final/final.js
-// Imports and exposes everything from confirmedSetup engine as the "final" data layer.
-
 const confirmedSetupEngine = require('../signals/dataProcessor/confirmedSetup');
 const patternEngine = require('../strategies/patterns/pattern');
 const pattern2Engine = require('../strategies/patterns/pattern2');
@@ -11,13 +9,6 @@ const { findConsolidations } = require('../signals/dataProcessor/Consolidation')
 const { buildCandleIndexMap } = require('../utils/dataProcessorUtils');
 
 class FinalEngine {
-  /**
-   * Returns all confirmed setups (OTE, DOUBLE EQ, S-SETUP) for a given symbol
-   * and granularity, including the setupOB field from OBLV.
-   * Also checks if OBSetupExtreme's price matches the currentSwingPrice
-   * in a pattern or the firstSwingPrice in a pattern2, and if so attaches
-   * the matched pattern's data.
-   */
   async getConfirmedSetups(symbol, granularity) {
     const candles = signalEngine.getCandles(symbol, granularity, true);
     if (candles && candles.length) {
@@ -35,8 +26,6 @@ class FinalEngine {
       }
     }
 
-    // Patterns must be detected BEFORE this call — confirmedSetupEngine reads
-    // them to identify the pattern-matched OBSetupExtreme.
     const setups = confirmedSetupEngine.getConfirmedSetups(symbol, granularity);
 
     const pattern1Patterns = patternEngine.get(symbol, granularity);
@@ -46,9 +35,6 @@ class FinalEngine {
     const candleIndexMap = candles && candles.length ? buildCandleIndexMap(candles) : null;
     const consolidations = candles && candles.length ? findConsolidations(candles) : [];
 
-    // If a pattern's retest candle index falls inside any consolidation's
-    // [start.index, end.index] window, return that consolidation's
-    // confirmationConsolidation.breakout.
     const findConfirmationBreakout = (retestIndex) => {
       if (retestIndex == null) return null;
       for (const z of consolidations) {
@@ -63,28 +49,100 @@ class FinalEngine {
     };
 
     return setups.map(setup => {
-      const extremePrice = setup.OBSetupExtreme?.price;
-      let patternMatch =
-        this._findPatternByCurrentSwing(pattern1Patterns, extremePrice);
-      // Invalidate patternMatch if its previousSwing formed before OBCross —
-      // the pattern must be discovered after the OB was crossed.
       const obCrossFT = setup.OBCross?.formattedTime;
-      if (
-        patternMatch &&
-        obCrossFT &&
-        patternMatch.previousSwing?.formattedTime &&
-        patternMatch.previousSwing.formattedTime < obCrossFT
-      ) {
-        patternMatch = null;
+      const candidates = setup.OBSetupExtremeCandidates || [];
+
+      // Walk candidates in order (each is a progressively deeper extreme).
+      //
+      // Gate 1 — skip if patternMatch's previousSwing predates the OB cross.
+      //
+      // Gate 2 — if patternMatch retest violated currentSwing:
+      //   a. Derive OBOppositeExtreme for this candidate and check all three
+      //      pattern finders against it.
+      //   b. If NO opposite match exists → skip to next candidate.
+      //   c. If an opposite match EXISTS → candidate would normally hold, BUT
+      //      first check if the opposite match came from pattern2 AND that
+      //      pattern2's retestStatus is 'expired' (firstSwing crossed before
+      //      the vshape lock was established). If that specific condition is
+      //      true → the OBOppositeExtreme rescue is cancelled, skip to next
+      //      candidate.
+      //   d. Otherwise → candidate holds, patternMatch kept despite violation.
+      let resolvedOBSetupExtreme = setup.OBSetupExtreme;
+      let patternMatch = null;
+
+      for (const candidate of candidates) {
+        const candidateMatch = this._findPatternByCurrentSwing(pattern1Patterns, candidate.price);
+
+        // Gate 1: previousSwing must not predate the OB cross
+        if (
+          candidateMatch &&
+          obCrossFT &&
+          candidateMatch.previousSwing?.formattedTime &&
+          candidateMatch.previousSwing.formattedTime < obCrossFT
+        ) {
+          continue;
+        }
+
+        // Gate 2: retest violated currentSwing — evaluate OBOppositeExtreme
+        // before deciding whether to skip
+        if (candidateMatch?.retest?.violatedCurrentSwing === true) {
+          // Derive OBOppositeExtreme anchored on this specific candidate
+          const candidateOppositeExtreme = this._findOBOppositeExtreme(
+            setup.type,
+            candidate,
+            candleIndexMap,
+            candles
+          );
+          const oppositePrice = candidateOppositeExtreme?.price;
+
+          const oppositePattern1Match =
+            this._findPatternByCurrentSwing(pattern1Patterns, oppositePrice);
+          const oppositePattern2Match =
+            this._findPattern2ByFirstSwing(pattern2Patterns, oppositePrice);
+          const oppositePattern3Match =
+            this._findPattern3ByFirstSwing(pattern3Patterns, oppositePrice);
+
+          const hasOppositeMatch =
+            oppositePattern1Match != null ||
+            oppositePattern2Match != null ||
+            oppositePattern3Match != null;
+
+          if (!hasOppositeMatch) {
+            // No opposite match at all — skip to next deeper candidate
+            continue;
+          }
+
+          // Opposite match exists — but check if the pattern2 opposite match
+          // has retestStatus === 'expired', which cancels the rescue
+          if (
+            oppositePattern2Match != null &&
+            oppositePattern2Match.retestStatus === 'expired'
+          ) {
+            // pattern2 opposite retest expired (firstSwing crossed before lock)
+            // — rescue cancelled, skip to next deeper candidate
+            continue;
+          }
+
+          // Opposite match is valid — candidate holds despite patternMatch violation
+          resolvedOBSetupExtreme = candidate;
+          patternMatch = candidateMatch;
+          break;
+        }
+
+        // Passed all gates cleanly — commit and stop
+        resolvedOBSetupExtreme = candidate;
+        patternMatch = candidateMatch;
+        break;
       }
-      const pattern2Match =
-        this._findPattern2ByFirstSwing(pattern2Patterns, extremePrice);
-      const pattern3Match =
-        this._findPattern3ByFirstSwing(pattern3Patterns, extremePrice);
+
+      // pattern2 and pattern3 always resolve against the final OBSetupExtreme price
+      const resolvedPrice = resolvedOBSetupExtreme?.price;
+      const pattern2Match = this._findPattern2ByFirstSwing(pattern2Patterns, resolvedPrice);
+      const pattern3Match = this._findPattern3ByFirstSwing(pattern3Patterns, resolvedPrice);
 
       const OBOppositeExtreme = this._findOBOppositeExtreme(
         setup.type,
-        setup.OBSetupExtreme,
+        resolvedOBSetupExtreme,
         candleIndexMap,
         candles
       );
@@ -124,6 +182,7 @@ class FinalEngine {
 
       return {
         ...setup,
+        OBSetupExtreme: resolvedOBSetupExtreme,
         OBOppositeExtreme,
         patternMatch,
         pattern2Match,
@@ -135,11 +194,6 @@ class FinalEngine {
     });
   }
 
-  /**
-   * Finds a pattern3 pattern whose firstSwingPrice matches the given price.
-   * Returns the breakout, firstSwing, secondSwing, vShape and OBFound from that pattern, or null.
-   * @private
-   */
   _findPattern3ByFirstSwing(patterns, firstSwingPrice) {
     if (firstSwingPrice == null) return null;
 
@@ -186,13 +240,6 @@ class FinalEngine {
     return null;
   }
 
-  /**
-   * Finds the OBOppositeExtreme — the extreme candle on the OPPOSITE side found
-   * after OBSetupExtreme. For an EQL setup, OBSetupExtreme is the lowest low, so
-   * the opposite extreme is the highest high after it. For an EQH setup, it is
-   * the lowest low after the highest high.
-   * @private
-   */
   _findOBOppositeExtreme(type, OBSetupExtreme, candleIndexMap, candles) {
     if (!OBSetupExtreme || !candleIndexMap || !candles || !candles.length) return null;
 
@@ -205,8 +252,6 @@ class FinalEngine {
 
     for (let i = startPos + 1; i < candles.length; i++) {
       const c = candles[i];
-      // Stop scanning once price crosses back through the OBSetupExtreme —
-      // the opposite extreme must be found before that cross.
       if (isEQL && setupPrice != null && c.low < setupPrice) break;
       if (!isEQL && setupPrice != null && c.high > setupPrice) break;
 
@@ -230,11 +275,6 @@ class FinalEngine {
     };
   }
 
-  /**
-   * Finds a pattern whose currentSwingPrice matches the given price.
-   * Returns the breakout, currentSwing, and previousSwing from that pattern, or null.
-   * @private
-   */
   _findPatternByCurrentSwing(patterns, currentSwingPrice) {
     if (currentSwingPrice == null) return null;
 
@@ -261,6 +301,7 @@ class FinalEngine {
             index: p.retestIndex ?? null,
             time: p.retestTime ?? null,
             formattedTime: p.retestFormattedTime ?? null,
+            violatedCurrentSwing: p.retestViolatedCurrentSwing ?? false,
           },
         };
       }
@@ -268,11 +309,6 @@ class FinalEngine {
     return null;
   }
 
-  /**
-   * Finds a pattern2 pattern whose firstSwingPrice matches the given price.
-   * Returns the breakout, firstSwing, and secondSwing from that pattern, or null.
-   * @private
-   */
   _findPattern2ByFirstSwing(patterns, firstSwingPrice) {
     if (firstSwingPrice == null) return null;
 
