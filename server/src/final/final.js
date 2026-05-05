@@ -50,27 +50,19 @@ class FinalEngine {
 
     return setups.map(setup => {
       const obCrossFT = setup.OBCross?.formattedTime;
-      const candidates = setup.OBSetupExtremeCandidates || [];
 
-      // Walk candidates in order (each is a progressively deeper extreme).
-      //
-      // Gate 1 — skip if patternMatch's previousSwing predates the OB cross.
-      //
-      // Gate 2 — if patternMatch retest violated currentSwing:
-      //   a. Derive OBOppositeExtreme for this candidate and check all three
-      //      pattern finders against it.
-      //   b. If NO opposite match exists → skip to next candidate.
-      //   c. If an opposite match EXISTS → candidate would normally hold, BUT
-      //      first check if the opposite match came from pattern2 AND that
-      //      pattern2's retestStatus is 'expired' (firstSwing crossed before
-      //      the vshape lock was established). If that specific condition is
-      //      true → the OBOppositeExtreme rescue is cancelled, skip to next
-      //      candidate.
-      //   d. Otherwise → candidate holds, patternMatch kept despite violation.
+      const OBSetupExtremeCandidates = this._buildOBSetupExtremeCandidates(
+        setup.type,
+        setup.OBCross,
+        setup.OBSetupExtremeCandidates || [],
+        candleIndexMap,
+        candles
+      );
+
       let resolvedOBSetupExtreme = setup.OBSetupExtreme;
       let patternMatch = null;
 
-      for (const candidate of candidates) {
+      for (const candidate of OBSetupExtremeCandidates) {
         const candidateMatch = this._findPatternByCurrentSwing(pattern1Patterns, candidate.price);
 
         // Gate 1: previousSwing must not predate the OB cross
@@ -86,7 +78,6 @@ class FinalEngine {
         // Gate 2: retest violated currentSwing — evaluate OBOppositeExtreme
         // before deciding whether to skip
         if (candidateMatch?.retest?.violatedCurrentSwing === true) {
-          // Derive OBOppositeExtreme anchored on this specific candidate
           const candidateOppositeExtreme = this._findOBOppositeExtreme(
             setup.type,
             candidate,
@@ -108,22 +99,17 @@ class FinalEngine {
             oppositePattern3Match != null;
 
           if (!hasOppositeMatch) {
-            // No opposite match at all — skip to next deeper candidate
             continue;
           }
 
-          // Opposite match exists — but check if the pattern2 opposite match
-          // has retestStatus === 'expired', which cancels the rescue
+          // Rescue cancelled if pattern2 opposite retest is expired
           if (
             oppositePattern2Match != null &&
             oppositePattern2Match.retestStatus === 'expired'
           ) {
-            // pattern2 opposite retest expired (firstSwing crossed before lock)
-            // — rescue cancelled, skip to next deeper candidate
             continue;
           }
 
-          // Opposite match is valid — candidate holds despite patternMatch violation
           resolvedOBSetupExtreme = candidate;
           patternMatch = candidateMatch;
           break;
@@ -135,7 +121,6 @@ class FinalEngine {
         break;
       }
 
-      // pattern2 and pattern3 always resolve against the final OBSetupExtreme price
       const resolvedPrice = resolvedOBSetupExtreme?.price;
       const pattern2Match = this._findPattern2ByFirstSwing(pattern2Patterns, resolvedPrice);
       const pattern3Match = this._findPattern3ByFirstSwing(pattern3Patterns, resolvedPrice);
@@ -145,6 +130,21 @@ class FinalEngine {
         resolvedOBSetupExtreme,
         candleIndexMap,
         candles
+      );
+
+      // OBOppositeExtremeCandidates is derived by iterating every entry in
+      // OBSetupExtremeCandidates (including the raw absolute extreme), finding
+      // the OBOppositeExtreme anchored on each one, and collecting those whose
+      // price matches any pattern/pattern2/pattern3. Deduplicated by index and
+      // sorted in discovery order.
+      const OBOppositeExtremeCandidates = this._findOBOppositeExtremeCandidates(
+        setup.type,
+        OBSetupExtremeCandidates,
+        candleIndexMap,
+        candles,
+        pattern1Patterns,
+        pattern2Patterns,
+        pattern3Patterns
       );
 
       const oppositePrice = OBOppositeExtreme?.price;
@@ -183,7 +183,9 @@ class FinalEngine {
       return {
         ...setup,
         OBSetupExtreme: resolvedOBSetupExtreme,
+        OBSetupExtremeCandidates,
         OBOppositeExtreme,
+        OBOppositeExtremeCandidates,
         patternMatch,
         pattern2Match,
         pattern3Match,
@@ -192,6 +194,107 @@ class FinalEngine {
         OBOppositeExtremePattern3Match,
       };
     });
+  }
+
+  /**
+   * Finds the single absolute extreme candle after the OB cross:
+   *   EQH — candle with the highest high after the cross (scan to end of candles)
+   *   EQL — candle with the lowest low after the cross (scan to end of candles)
+   * Merges it with the pattern-matched candidates from confirmedSetup.js,
+   * deduplicates by candle index, and sorts in discovery order.
+   */
+  _buildOBSetupExtremeCandidates(type, OBCross, patternMatchedCandidates, candleIndexMap, candles) {
+    if (!OBCross || !candleIndexMap || !candles || !candles.length) {
+      return [...patternMatchedCandidates];
+    }
+
+    const crossPos = candleIndexMap.get(OBCross.index);
+    if (crossPos === undefined) return [...patternMatchedCandidates];
+
+    const isEQL = type === 'EQL';
+    let extremeCandle = null;
+
+    for (let i = crossPos + 1; i < candles.length; i++) {
+      const c = candles[i];
+      if (!extremeCandle) {
+        extremeCandle = c;
+        continue;
+      }
+      if (isEQL && c.low < extremeCandle.low) {
+        extremeCandle = c;
+      } else if (!isEQL && c.high > extremeCandle.high) {
+        extremeCandle = c;
+      }
+    }
+
+    if (!extremeCandle) return [...patternMatchedCandidates];
+
+    const absoluteExtremeCandidate = {
+      index: extremeCandle.index,
+      price: isEQL ? extremeCandle.low : extremeCandle.high,
+      formattedTime: extremeCandle.formattedTime,
+    };
+
+    const mergedMap = new Map();
+    for (const c of patternMatchedCandidates) {
+      mergedMap.set(c.index, c);
+    }
+    if (!mergedMap.has(absoluteExtremeCandidate.index)) {
+      mergedMap.set(absoluteExtremeCandidate.index, absoluteExtremeCandidate);
+    }
+
+    return Array.from(mergedMap.values()).sort((a, b) => a.index - b.index);
+  }
+
+  /**
+   * For each candidate in OBSetupExtremeCandidates (including the raw absolute
+   * extreme), derives the OBOppositeExtreme anchored on that candidate, then
+   * checks if its price matches any pattern/pattern2/pattern3. Matching opposite
+   * extremes are collected, deduplicated by index, and sorted in discovery order.
+   */
+  _findOBOppositeExtremeCandidates(type, OBSetupExtremeCandidates, candleIndexMap, candles, p1Patterns, p2Patterns, p3Patterns) {
+    if (!OBSetupExtremeCandidates.length || !candleIndexMap || !candles || !candles.length) return [];
+
+    const p1Prices = new Set(
+      p1Patterns.map(p => p.currentSwingPrice).filter(v => v != null)
+    );
+    const p2Prices = new Set(
+      p2Patterns.map(p => p.firstSwingPrice).filter(v => v != null)
+    );
+    const p3Prices = new Set(
+      p3Patterns.map(p => p.firstSwingPrice).filter(v => v != null)
+    );
+
+    const mergedMap = new Map();
+
+    for (const setupCandidate of OBSetupExtremeCandidates) {
+      // Derive the OBOppositeExtreme anchored on this specific setup candidate
+      const oppositeExtreme = this._findOBOppositeExtreme(
+        type,
+        setupCandidate,
+        candleIndexMap,
+        candles
+      );
+      if (!oppositeExtreme) continue;
+
+      // Only collect if price matches any pattern — deduplicate by index so the
+      // same opposite candle reached from multiple setup candidates is not repeated
+      if (
+        p1Prices.has(oppositeExtreme.price) ||
+        p2Prices.has(oppositeExtreme.price) ||
+        p3Prices.has(oppositeExtreme.price)
+      ) {
+        if (!mergedMap.has(oppositeExtreme.index)) {
+          mergedMap.set(oppositeExtreme.index, {
+            index: oppositeExtreme.index,
+            price: oppositeExtreme.price,
+            formattedTime: oppositeExtreme.formattedTime,
+          });
+        }
+      }
+    }
+
+    return Array.from(mergedMap.values()).sort((a, b) => a.index - b.index);
   }
 
   _findPattern3ByFirstSwing(patterns, firstSwingPrice) {

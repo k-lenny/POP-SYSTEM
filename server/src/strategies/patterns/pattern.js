@@ -27,7 +27,6 @@ class PatternEngine extends EventEmitter {
     this.config = {
       vShapeWickRatio: 2.0,
       equalLevelTolerance: 0.002,
-      retestScanRange: 30,
       obScanRange: 10,
       ...options.config
     };
@@ -697,23 +696,24 @@ class PatternEngine extends EventEmitter {
     if (breakoutStartIndex >= candles.length) return null;
 
     const currentSwingPrice = direction === DIRECTION.BULLISH ? setup.currentSwing.low : setup.currentSwing.high;
+    const vShapePrice = direction === DIRECTION.BULLISH ? setup.vShapeCandle.high : setup.vShapeCandle.low;
     const breakoutExtreme = direction === DIRECTION.BULLISH ? setup.breakout.high : setup.breakout.low;
 
-    // Step 1 — find the cross candle that confirms breakout follow-through.
-    // If currentSwing is violated before the cross candle is found, abort immediately.
+    // Step 1 — find the cross candle confirming breakout follow-through.
+    // Abort immediately if currentSwing is violated before the cross candle.
     let crossCandleIndex = null;
     for (let i = breakoutStartIndex; i < candles.length; i++) {
       const candle = candles[i];
       if (!candle) continue;
       if (direction === DIRECTION.BULLISH) {
         if (candle.low < currentSwingPrice) {
-          this._debugLog(`[identifyRetest] currentSwing violated before cross candle found at candle ${i}`);
+          this._debugLog(`[identifyRetest] currentSwing violated before cross candle at candle ${i}`);
           return { violatedCurrentSwing: true };
         }
         if (candle.high > breakoutExtreme) { crossCandleIndex = i; break; }
       } else {
         if (candle.high > currentSwingPrice) {
-          this._debugLog(`[identifyRetest] currentSwing violated before cross candle found at candle ${i}`);
+          this._debugLog(`[identifyRetest] currentSwing violated before cross candle at candle ${i}`);
           return { violatedCurrentSwing: true };
         }
         if (candle.low < breakoutExtreme) { crossCandleIndex = i; break; }
@@ -724,40 +724,46 @@ class PatternEngine extends EventEmitter {
       return null;
     }
 
-    // Step 2 — scan forward candle by candle. For each candle compute its
-    // retestVShape then check if a subsequent candle breaks that level.
-    // The first hit wins: find the extreme candle in the pullback between
-    // retestVShape and the break candle and return that as the retest.
+    // Step 2 — scan every candle after the cross candle to the end of the
+    // array with no artificial limit. Each candle in the valid price zone
+    // (between currentSwingPrice and vShapePrice) is a potential retest.
+    // For each, compute its retestVShape relative to currentSwing, check if
+    // that vShape gets broken, find the extreme candle in the pullback between
+    // retestVShape and the break, validate it, and return the first that qualifies.
     const startIndex = crossCandleIndex + 1;
-    const maxScanRange = this.config.retestScanRange;
-    const endIndex = Math.min(startIndex + maxScanRange, candles.length);
 
-    for (let i = startIndex; i < endIndex; i++) {
+    for (let i = startIndex; i < candles.length; i++) {
       const candle = candles[i];
       if (!candle) continue;
 
-      // Hard stop — currentSwing violated during retest scan
+      // Hard stop — currentSwing violated during scan
       if (direction === DIRECTION.BULLISH) {
         if (candle.low < currentSwingPrice) {
-          this._debugLog(`[identifyRetest] Retest invalidated: price crossed below currentSwing low at candle ${i}`);
+          this._debugLog(`[identifyRetest] currentSwing violated at candle ${i}`);
           return { violatedCurrentSwing: true };
         }
       } else {
         if (candle.high > currentSwingPrice) {
-          this._debugLog(`[identifyRetest] Retest invalidated: price crossed above currentSwing high at candle ${i}`);
+          this._debugLog(`[identifyRetest] currentSwing violated at candle ${i}`);
           return { violatedCurrentSwing: true };
         }
       }
 
+      // Candle must be in the valid price zone between currentSwingPrice and vShapePrice
+      if (direction === DIRECTION.BULLISH) {
+        if (candle.low < currentSwingPrice || candle.low > vShapePrice) continue;
+      } else {
+        if (candle.high > currentSwingPrice || candle.high < vShapePrice) continue;
+      }
+
+      // Compute retestVShape for this candidate candle
       const retestVShape = this.findRetestToCurrentSwingVShape(candle, setup.currentSwing, candles, direction);
       if (!retestVShape) continue;
 
       // Check if retestVShape gets broken by a subsequent candle's open or close
       const breakLevel = direction === DIRECTION.BULLISH ? retestVShape.high : retestVShape.low;
-      const scanStart = retestVShape.index + 1;
       let breakCandleIndex = null;
-
-      for (let j = scanStart; j < candles.length; j++) {
+      for (let j = retestVShape.index + 1; j < candles.length; j++) {
         const c = candles[j];
         if (!c) continue;
         if (direction === DIRECTION.BULLISH) {
@@ -766,11 +772,10 @@ class PatternEngine extends EventEmitter {
           if (c.close < breakLevel || c.open < breakLevel) { breakCandleIndex = j; break; }
         }
       }
-
       if (breakCandleIndex === null) continue;
 
-      // Step 3 — find the extreme candle in the pullback between retestVShape
-      // and the break candle — this is the actual retest candle
+      // Find the extreme candle in the pullback between retestVShape and the
+      // break candle — this is the actual retest candle
       let extremumCandle = null;
       if (direction === DIRECTION.BULLISH) {
         let minLow = Infinity;
@@ -787,20 +792,17 @@ class PatternEngine extends EventEmitter {
           if (c.high > maxHigh) { maxHigh = c.high; extremumCandle = c; }
         }
       }
-
       if (!extremumCandle) continue;
 
-      // Check if the extremum candle price violates currentSwingPrice using wicks:
-      // bullish: retest low must not be less than currentSwing low
-      // bearish: retest high must not be greater than currentSwing high
+      // Extremum wick must not violate currentSwingPrice
       if (direction === DIRECTION.BULLISH) {
         if (extremumCandle.low < currentSwingPrice) {
-          this._debugLog(`[identifyRetest] Extremum candle low (${extremumCandle.low}) violates currentSwing low (${currentSwingPrice}) at candle ${extremumCandle.index}`);
+          this._debugLog(`[identifyRetest] Extremum low (${extremumCandle.low}) violates currentSwing low (${currentSwingPrice})`);
           return { violatedCurrentSwing: true };
         }
       } else {
         if (extremumCandle.high > currentSwingPrice) {
-          this._debugLog(`[identifyRetest] Extremum candle high (${extremumCandle.high}) violates currentSwing high (${currentSwingPrice}) at candle ${extremumCandle.index}`);
+          this._debugLog(`[identifyRetest] Extremum high (${extremumCandle.high}) violates currentSwing high (${currentSwingPrice})`);
           return { violatedCurrentSwing: true };
         }
       }
@@ -813,7 +815,7 @@ class PatternEngine extends EventEmitter {
         retestBreakout = this.findRetestBreakout(vShapeLevel, candles, extremumCandle.index, direction);
       }
 
-      this._debugLog(`[identifyRetest] Found qualified retest candidate at candle ${extremumCandle.index}`);
+      this._debugLog(`[identifyRetest] Found qualified retest at candle ${extremumCandle.index}`);
       return {
         ...extremumCandle,
         retestLevel: direction === DIRECTION.BULLISH ? extremumCandle.low : extremumCandle.high,
