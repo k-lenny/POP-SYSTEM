@@ -49,39 +49,69 @@ function buildBreakout(patternCandles, direction, allCandles, firstIdx) {
 
   const breakoutDirection = direction === 'bullish' ? 'above' : 'below';
 
+  // No candles to scan
   if (!Array.isArray(allCandles) || firstIdx >= allCandles.length) {
     return {
-      level:            +level.toFixed(6),
-      direction:        breakoutDirection,
-      confirmed:        null,
-      confirmingCandle: null,
-      candlesChecked:   0,
+      breakout: {
+        level,
+        direction: breakoutDirection,
+        confirmed: null,
+        confirmingCandle: null,
+        candlesChecked: 0,
+        confirmationCandlesChecked: 0,
+      },
+      candleConfirmation: null,
     };
   }
 
+  // Find the breakout candle
+  let confirmingCandle = null;
+  let breakIdx = -1;
   for (let k = firstIdx; k < allCandles.length; k++) {
     const c = allCandles[k];
-    const broke = direction === 'bullish'
+    const broke = breakoutDirection === 'above'
       ? (c.open > level || c.close > level)
       : (c.open < level || c.close < level);
 
     if (broke) {
-      return {
-        level:            +level.toFixed(6),
-        direction:        breakoutDirection,
-        confirmed:        true,
-        confirmingCandle: candleRef(c, k),
-        candlesChecked:   k - firstIdx + 1,
-      };
+      confirmingCandle = candleRef(c, k);
+      breakIdx = k;
+      break;
+    }
+  }
+
+  const candlesChecked = breakIdx >= 0
+    ? breakIdx - firstIdx + 1
+    : allCandles.length - firstIdx;
+
+  // Search for a second confirmation candle
+  let candleConfirmation = null;
+  let confCandlesChecked = 0;
+
+  if (confirmingCandle && breakIdx + 1 < allCandles.length) {
+    for (let k = breakIdx + 1; k < allCandles.length; k++) {
+      confCandlesChecked++;
+      const c = allCandles[k];
+      const pushed = breakoutDirection === 'above'
+        ? (c.open > confirmingCandle.high || c.close > confirmingCandle.high)
+        : (c.open < confirmingCandle.low  || c.close < confirmingCandle.low);
+      if (pushed) {
+        candleConfirmation = candleRef(c, k);
+        break;
+      }
     }
   }
 
   return {
-    level:            +level.toFixed(6),
-    direction:        breakoutDirection,
-    confirmed:        false,
-    confirmingCandle: null,
-    candlesChecked:   allCandles.length - firstIdx,
+    breakout: {
+      level,
+      direction: breakoutDirection,
+      confirmed: !!confirmingCandle,
+      confirmingCandle,
+      candlesChecked,
+      confirmationCandlesChecked: confCandlesChecked,
+    },
+    candleConfirmation,   // candle object or null
   };
 }
 
@@ -91,40 +121,66 @@ function buildNeutralBreakout(patternCandles, allCandles, firstIdx) {
 
   if (!Array.isArray(allCandles) || firstIdx >= allCandles.length) {
     return {
-      level:            +bullLevel.toFixed(6),
-      direction:        'above',
-      confirmed:        null,
-      confirmingCandle: null,
-      candlesChecked:   0,
-      altLevel:         +bearLevel.toFixed(6),
+      breakout: {
+        level: bullLevel,
+        direction: 'above',
+        confirmed: null,
+        confirmingCandle: null,
+        candlesChecked: 0,
+        confirmationCandlesChecked: 0,
+        altLevel: bearLevel,
+      },
+      candleConfirmation: null,
     };
   }
 
+  let confirmingCandle = null;
+  let breakIdx = -1;
+  let direction = 'above';
   for (let k = firstIdx; k < allCandles.length; k++) {
     const c = allCandles[k];
     const brokeUp   = c.open > bullLevel || c.close > bullLevel;
     const brokeDown = c.open < bearLevel || c.close < bearLevel;
 
     if (brokeUp || brokeDown) {
-      const direction = brokeUp ? 'above' : 'below';
-      const level     = brokeUp ? bullLevel : bearLevel;
-      return {
-        level:            +level.toFixed(6),
-        direction,
-        confirmed:        true,
-        confirmingCandle: candleRef(c, k),
-        candlesChecked:   k - firstIdx + 1,
-      };
+      direction = brokeUp ? 'above' : 'below';
+      confirmingCandle = candleRef(c, k);
+      breakIdx = k;
+      break;
+    }
+  }
+
+  const candlesChecked = breakIdx >= 0
+    ? breakIdx - firstIdx + 1
+    : allCandles.length - firstIdx;
+
+  let candleConfirmation = null;
+  let confCandlesChecked = 0;
+  if (confirmingCandle && breakIdx + 1 < allCandles.length) {
+    for (let k = breakIdx + 1; k < allCandles.length; k++) {
+      confCandlesChecked++;
+      const c = allCandles[k];
+      const pushed = direction === 'above'
+        ? (c.open > confirmingCandle.high || c.close > confirmingCandle.high)
+        : (c.open < confirmingCandle.low  || c.close < confirmingCandle.low);
+      if (pushed) {
+        candleConfirmation = candleRef(c, k);
+        break;
+      }
     }
   }
 
   return {
-    level:            +bullLevel.toFixed(6),
-    direction:        'above',
-    confirmed:        false,
-    confirmingCandle: null,
-    candlesChecked:   allCandles.length - firstIdx,
-    altLevel:         +bearLevel.toFixed(6),
+    breakout: {
+      level: bullLevel,
+      direction,
+      confirmed: true,
+      confirmingCandle,
+      candlesChecked,
+      confirmationCandlesChecked: confCandlesChecked,
+      altLevel: bearLevel,
+    },
+    candleConfirmation,
   };
 }
 
@@ -156,6 +212,7 @@ function describeDoji(candle, fallbackIndex, allCandles, firstIdx) {
   const body  = bodySize(candle);
   const up    = upperWick(candle);
   const lo    = lowerWick(candle);
+  const { breakout, candleConfirmation } = buildNeutralBreakout([candle], allCandles, firstIdx);
 
   return {
     pattern: 'doji',
@@ -171,7 +228,8 @@ function describeDoji(candle, fallbackIndex, allCandles, firstIdx) {
       upperToRange:   +(up   / range).toFixed(4),
       lowerToRange:   +(lo   / range).toFixed(4),
     },
-    breakout: buildNeutralBreakout([candle], allCandles, firstIdx),
+    breakout,
+    candleConfirmation,
   };
 }
 
@@ -249,6 +307,7 @@ function describeHammer(candles, i, opts = {}) {
   const up     = upperWick(candle);
   const lo     = lowerWick(candle);
   const downtrend = Array.isArray(candles) ? isDowntrendBefore(candles, i, merged.lookback) : false;
+  const { breakout, candleConfirmation } = buildBreakout([candle], 'bullish', candles, i + 1);
 
   return {
     pattern: 'hammer',
@@ -269,7 +328,8 @@ function describeHammer(candles, i, opts = {}) {
       downtrend,
       lookback: merged.lookback,
     },
-    breakout: buildBreakout([candle], 'bullish', candles, i + 1),
+    breakout,
+    candleConfirmation,
   };
 }
 
@@ -303,6 +363,7 @@ function describeHangingMan(candles, i, opts = {}) {
   const up     = upperWick(candle);
   const lo     = lowerWick(candle);
   const uptrend = Array.isArray(candles) ? isUptrendBefore(candles, i, merged.lookback) : false;
+  const { breakout, candleConfirmation } = buildBreakout([candle], 'bearish', candles, i + 1);
 
   return {
     pattern: 'hangingMan',
@@ -323,7 +384,8 @@ function describeHangingMan(candles, i, opts = {}) {
       uptrend,
       lookback: merged.lookback,
     },
-    breakout: buildBreakout([candle], 'bearish', candles, i + 1),
+    breakout,
+    candleConfirmation,
   };
 }
 
@@ -375,6 +437,7 @@ function describeShootingStar(candles, i, opts = {}) {
   const up     = upperWick(candle);
   const lo     = lowerWick(candle);
   const uptrend = Array.isArray(candles) ? isUptrendBefore(candles, i, merged.lookback) : false;
+  const { breakout, candleConfirmation } = buildBreakout([candle], 'bearish', candles, i + 1);
 
   return {
     pattern: 'shootingStar',
@@ -395,7 +458,8 @@ function describeShootingStar(candles, i, opts = {}) {
       uptrend,
       lookback: merged.lookback,
     },
-    breakout: buildBreakout([candle], 'bearish', candles, i + 1),
+    breakout,
+    candleConfirmation,
   };
 }
 
@@ -431,6 +495,7 @@ function describeMarubozu(candle, fallbackIndex, allCandles, firstIdx) {
   const meaning = direction === 'bullish'
     ? 'Bullish momentum — buyers controlled the candle from open to close with no pushback.'
     : 'Bearish momentum — sellers controlled the candle from open to close with no pushback.';
+  const { breakout, candleConfirmation } = buildBreakout([candle], direction, allCandles, firstIdx);
 
   return {
     pattern: 'marubozu',
@@ -447,7 +512,8 @@ function describeMarubozu(candle, fallbackIndex, allCandles, firstIdx) {
       upperToRange: +(up   / range).toFixed(4),
       lowerToRange: +(lo   / range).toFixed(4),
     },
-    breakout: buildBreakout([candle], direction, allCandles, firstIdx),
+    breakout,
+    candleConfirmation,
   };
 }
 
@@ -485,6 +551,7 @@ function describeSpinningTop(candle, fallbackIndex, allCandles, firstIdx) {
   const body  = bodySize(candle);
   const up    = upperWick(candle);
   const lo    = lowerWick(candle);
+  const { breakout, candleConfirmation } = buildNeutralBreakout([candle], allCandles, firstIdx);
 
   return {
     pattern: 'spinningTop',
@@ -501,7 +568,8 @@ function describeSpinningTop(candle, fallbackIndex, allCandles, firstIdx) {
       lowerToRange:   +(lo   / range).toFixed(4),
       wickImbalance:  +(Math.abs(up - lo) / range).toFixed(4),
     },
-    breakout: buildNeutralBreakout([candle], allCandles, firstIdx),
+    breakout,
+    candleConfirmation,
   };
 }
 
@@ -561,6 +629,7 @@ function describeEngulfing(candles, i, opts = {}) {
   const meaning = direction === 'bullish'
     ? 'Bullish reversal — a bullish candle fully engulfs the prior bearish body; buyers seized control.'
     : 'Bearish reversal — a bearish candle fully engulfs the prior bullish body; sellers seized control.';
+  const { breakout, candleConfirmation } = buildBreakout([prev, curr], direction, candles, i + 1);
 
   return {
     pattern: direction === 'bullish' ? 'bullishEngulfing' : 'bearishEngulfing',
@@ -577,7 +646,8 @@ function describeEngulfing(candles, i, opts = {}) {
       engulfRatio: +(currBody / prevBody).toFixed(4),
     },
     context,
-    breakout: buildBreakout([prev, curr], direction, candles, i + 1),
+    breakout,
+    candleConfirmation,
   };
 }
 
@@ -628,6 +698,7 @@ function describeTweezer(candles, i, opts = {}) {
     ? Math.abs(prev.high - curr.high)
     : Math.abs(prev.low  - curr.low);
   const patternDirection = kind === 'top' ? 'bearish' : 'bullish';
+  const { breakout, candleConfirmation } = buildBreakout([prev, curr], patternDirection, candles, i + 1);
 
   return {
     pattern:   kind === 'top' ? 'tweezerTop' : 'tweezerBottom',
@@ -650,7 +721,8 @@ function describeTweezer(candles, i, opts = {}) {
       uptrend:   isUptrendBefore(candles, i - 1, merged.lookback),
       lookback:  merged.lookback,
     },
-    breakout: buildBreakout([prev, curr], patternDirection, candles, i + 1),
+    breakout,
+    candleConfirmation,
   };
 }
 
@@ -707,6 +779,7 @@ function describePiercing(candles, i, kind, opts = {}) {
     ? (curr.close - prev.close) / (prev.open - prev.close)
     : (prev.close - curr.close) / (prev.close - prev.open);
   const patternDirection = kind === 'piercing' ? 'bullish' : 'bearish';
+  const { breakout, candleConfirmation } = buildBreakout([prev, curr], patternDirection, candles, i + 1);
 
   return {
     pattern:   kind === 'piercing' ? 'piercingLine' : 'darkCloudCover',
@@ -728,7 +801,8 @@ function describePiercing(candles, i, kind, opts = {}) {
       uptrend:   isUptrendBefore(candles, i - 1, merged.lookback),
       lookback:  merged.lookback,
     },
-    breakout: buildBreakout([prev, curr], patternDirection, candles, i + 1),
+    breakout,
+    candleConfirmation,
   };
 }
 
@@ -789,6 +863,7 @@ function describeStar(candles, i, kind, opts = {}) {
   const merged = { ...STAR_DEFAULTS, ...opts };
   const c1 = candles[i - 2], c2 = candles[i - 1], c3 = candles[i];
   const patternDirection = kind === 'morning' ? 'bullish' : 'bearish';
+  const { breakout, candleConfirmation } = buildBreakout([c1, c2, c3], patternDirection, candles, i + 1);
 
   return {
     pattern:   kind === 'morning' ? 'morningStar' : 'eveningStar',
@@ -812,7 +887,8 @@ function describeStar(candles, i, kind, opts = {}) {
       uptrend:   isUptrendBefore(candles, i - 2, merged.lookback),
       lookback:  merged.lookback,
     },
-    breakout: buildBreakout([c1, c2, c3], patternDirection, candles, i + 1),
+    breakout,
+    candleConfirmation,
   };
 }
 
@@ -859,6 +935,7 @@ function describeTriple(candles, i, kind, opts = {}) {
   const merged = { ...TRIPLE_DEFAULTS, ...opts };
   const c1 = candles[i - 2], c2 = candles[i - 1], c3 = candles[i];
   const patternDirection = kind === 'soldiers' ? 'bullish' : 'bearish';
+  const { breakout, candleConfirmation } = buildBreakout([c1, c2, c3], patternDirection, candles, i + 1);
 
   return {
     pattern:   kind === 'soldiers' ? 'threeWhiteSoldiers' : 'threeBlackCrows',
@@ -882,7 +959,8 @@ function describeTriple(candles, i, kind, opts = {}) {
       uptrend:   isUptrendBefore(candles, i - 2, merged.lookback),
       lookback:  merged.lookback,
     },
-    breakout: buildBreakout([c1, c2, c3], patternDirection, candles, i + 1),
+    breakout,
+    candleConfirmation,
   };
 }
 
