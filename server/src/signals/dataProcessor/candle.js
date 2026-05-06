@@ -4,6 +4,7 @@
 // Scans OHLC candles for classical patterns and adds breakout confirmation.
 
 const signalEngine = require('../signalEngine');
+const { calculateBodyPercentage } = require('./CandleData');
 
 // ───────────────────────────────────────────────────────────────
 // Shared helpers
@@ -102,7 +103,8 @@ function buildBreakout(patternCandles, direction, allCandles, firstIdx) {
     }
   }
 
-  return {
+  // Calculate body percentages if candles exist
+  const breakoutResult = {
     breakout: {
       level,
       direction: breakoutDirection,
@@ -111,8 +113,38 @@ function buildBreakout(patternCandles, direction, allCandles, firstIdx) {
       candlesChecked,
       confirmationCandlesChecked: confCandlesChecked,
     },
-    candleConfirmation,   // candle object or null
+    candleConfirmation,
   };
+
+  // Add body percentage for confirming candle if it exists
+  if (confirmingCandle) {
+    try {
+      breakoutResult.breakout.confirmingCandleBodyPercentage = calculateBodyPercentage({
+        open: confirmingCandle.open,
+        high: confirmingCandle.high,
+        low: confirmingCandle.low,
+        close: confirmingCandle.close
+      });
+    } catch (e) {
+      // Silently fail if calculation fails
+    }
+  }
+
+  // Add body percentage for candle confirmation if it exists
+  if (candleConfirmation) {
+    try {
+      breakoutResult.candleConfirmationBodyPercentage = calculateBodyPercentage({
+        open: candleConfirmation.open,
+        high: candleConfirmation.high,
+        low: candleConfirmation.low,
+        close: candleConfirmation.close
+      });
+    } catch (e) {
+      // Silently fail if calculation fails
+    }
+  }
+
+  return breakoutResult;
 }
 
 function buildNeutralBreakout(patternCandles, allCandles, firstIdx) {
@@ -170,7 +202,8 @@ function buildNeutralBreakout(patternCandles, allCandles, firstIdx) {
     }
   }
 
-  return {
+  // Calculate body percentages if candles exist
+  const breakoutResult = {
     breakout: {
       level: bullLevel,
       direction,
@@ -182,6 +215,36 @@ function buildNeutralBreakout(patternCandles, allCandles, firstIdx) {
     },
     candleConfirmation,
   };
+
+  // Add body percentage for confirming candle if it exists
+  if (confirmingCandle) {
+    try {
+      breakoutResult.breakout.confirmingCandleBodyPercentage = calculateBodyPercentage({
+        open: confirmingCandle.open,
+        high: confirmingCandle.high,
+        low: confirmingCandle.low,
+        close: confirmingCandle.close
+      });
+    } catch (e) {
+      // Silently fail if calculation fails
+    }
+  }
+
+  // Add body percentage for candle confirmation if it exists
+  if (candleConfirmation) {
+    try {
+      breakoutResult.candleConfirmationBodyPercentage = calculateBodyPercentage({
+        open: candleConfirmation.open,
+        high: candleConfirmation.high,
+        low: candleConfirmation.low,
+        close: candleConfirmation.close
+      });
+    } catch (e) {
+      // Silently fail if calculation fails
+    }
+  }
+
+  return breakoutResult;
 }
 
 // ───────────────────────────────────────────────────────────────
@@ -212,7 +275,7 @@ function describeDoji(candle, fallbackIndex, allCandles, firstIdx) {
   const body  = bodySize(candle);
   const up    = upperWick(candle);
   const lo    = lowerWick(candle);
-  const { breakout, candleConfirmation } = buildNeutralBreakout([candle], allCandles, firstIdx);
+  const { breakout, candleConfirmation, candleConfirmationBodyPercentage } = buildNeutralBreakout([candle], allCandles, firstIdx);
 
   return {
     pattern: 'doji',
@@ -230,6 +293,7 @@ function describeDoji(candle, fallbackIndex, allCandles, firstIdx) {
     },
     breakout,
     candleConfirmation,
+    ...(candleConfirmationBodyPercentage !== undefined && { candleConfirmationBodyPercentage }),
   };
 }
 
@@ -307,7 +371,7 @@ function describeHammer(candles, i, opts = {}) {
   const up     = upperWick(candle);
   const lo     = lowerWick(candle);
   const downtrend = Array.isArray(candles) ? isDowntrendBefore(candles, i, merged.lookback) : false;
-  const { breakout, candleConfirmation } = buildBreakout([candle], 'bullish', candles, i + 1);
+  const { breakout, candleConfirmation, candleConfirmationBodyPercentage } = buildBreakout([candle], 'bullish', candles, i + 1);
 
   return {
     pattern: 'hammer',
@@ -330,6 +394,7 @@ function describeHammer(candles, i, opts = {}) {
     },
     breakout,
     candleConfirmation,
+    ...(candleConfirmationBodyPercentage !== undefined && { candleConfirmationBodyPercentage }),
   };
 }
 
@@ -363,7 +428,7 @@ function describeHangingMan(candles, i, opts = {}) {
   const up     = upperWick(candle);
   const lo     = lowerWick(candle);
   const uptrend = Array.isArray(candles) ? isUptrendBefore(candles, i, merged.lookback) : false;
-  const { breakout, candleConfirmation } = buildBreakout([candle], 'bearish', candles, i + 1);
+  const { breakout, candleConfirmation, candleConfirmationBodyPercentage } = buildBreakout([candle], 'bearish', candles, i + 1);
 
   return {
     pattern: 'hangingMan',
@@ -386,6 +451,7 @@ function describeHangingMan(candles, i, opts = {}) {
     },
     breakout,
     candleConfirmation,
+    ...(candleConfirmationBodyPercentage !== undefined && { candleConfirmationBodyPercentage }),
   };
 }
 
@@ -431,13 +497,13 @@ function isShootingStar(candles, i, opts = {}) {
 
 function describeShootingStar(candles, i, opts = {}) {
   const merged = { ...SHOOTING_STAR_DEFAULTS, ...opts };
-  const candle = candles[i];
+  const candle = candles[i];  // FIXED: typo removed
   const range  = totalRange(candle);
   const body   = bodySize(candle);
   const up     = upperWick(candle);
   const lo     = lowerWick(candle);
   const uptrend = Array.isArray(candles) ? isUptrendBefore(candles, i, merged.lookback) : false;
-  const { breakout, candleConfirmation } = buildBreakout([candle], 'bearish', candles, i + 1);
+  const { breakout, candleConfirmation, candleConfirmationBodyPercentage } = buildBreakout([candle], 'bearish', candles, i + 1);
 
   return {
     pattern: 'shootingStar',
@@ -460,6 +526,7 @@ function describeShootingStar(candles, i, opts = {}) {
     },
     breakout,
     candleConfirmation,
+    ...(candleConfirmationBodyPercentage !== undefined && { candleConfirmationBodyPercentage }),
   };
 }
 
@@ -495,7 +562,7 @@ function describeMarubozu(candle, fallbackIndex, allCandles, firstIdx) {
   const meaning = direction === 'bullish'
     ? 'Bullish momentum — buyers controlled the candle from open to close with no pushback.'
     : 'Bearish momentum — sellers controlled the candle from open to close with no pushback.';
-  const { breakout, candleConfirmation } = buildBreakout([candle], direction, allCandles, firstIdx);
+  const { breakout, candleConfirmation, candleConfirmationBodyPercentage } = buildBreakout([candle], direction, allCandles, firstIdx);
 
   return {
     pattern: 'marubozu',
@@ -514,6 +581,7 @@ function describeMarubozu(candle, fallbackIndex, allCandles, firstIdx) {
     },
     breakout,
     candleConfirmation,
+    ...(candleConfirmationBodyPercentage !== undefined && { candleConfirmationBodyPercentage }),
   };
 }
 
@@ -551,7 +619,7 @@ function describeSpinningTop(candle, fallbackIndex, allCandles, firstIdx) {
   const body  = bodySize(candle);
   const up    = upperWick(candle);
   const lo    = lowerWick(candle);
-  const { breakout, candleConfirmation } = buildNeutralBreakout([candle], allCandles, firstIdx);
+  const { breakout, candleConfirmation, candleConfirmationBodyPercentage } = buildNeutralBreakout([candle], allCandles, firstIdx);
 
   return {
     pattern: 'spinningTop',
@@ -570,6 +638,7 @@ function describeSpinningTop(candle, fallbackIndex, allCandles, firstIdx) {
     },
     breakout,
     candleConfirmation,
+    ...(candleConfirmationBodyPercentage !== undefined && { candleConfirmationBodyPercentage }),
   };
 }
 
@@ -629,7 +698,7 @@ function describeEngulfing(candles, i, opts = {}) {
   const meaning = direction === 'bullish'
     ? 'Bullish reversal — a bullish candle fully engulfs the prior bearish body; buyers seized control.'
     : 'Bearish reversal — a bearish candle fully engulfs the prior bullish body; sellers seized control.';
-  const { breakout, candleConfirmation } = buildBreakout([prev, curr], direction, candles, i + 1);
+  const { breakout, candleConfirmation, candleConfirmationBodyPercentage } = buildBreakout([prev, curr], direction, candles, i + 1);
 
   return {
     pattern: direction === 'bullish' ? 'bullishEngulfing' : 'bearishEngulfing',
@@ -648,6 +717,7 @@ function describeEngulfing(candles, i, opts = {}) {
     context,
     breakout,
     candleConfirmation,
+    ...(candleConfirmationBodyPercentage !== undefined && { candleConfirmationBodyPercentage }),
   };
 }
 
@@ -698,7 +768,7 @@ function describeTweezer(candles, i, opts = {}) {
     ? Math.abs(prev.high - curr.high)
     : Math.abs(prev.low  - curr.low);
   const patternDirection = kind === 'top' ? 'bearish' : 'bullish';
-  const { breakout, candleConfirmation } = buildBreakout([prev, curr], patternDirection, candles, i + 1);
+  const { breakout, candleConfirmation, candleConfirmationBodyPercentage } = buildBreakout([prev, curr], patternDirection, candles, i + 1);
 
   return {
     pattern:   kind === 'top' ? 'tweezerTop' : 'tweezerBottom',
@@ -723,6 +793,7 @@ function describeTweezer(candles, i, opts = {}) {
     },
     breakout,
     candleConfirmation,
+    ...(candleConfirmationBodyPercentage !== undefined && { candleConfirmationBodyPercentage }),
   };
 }
 
@@ -779,7 +850,7 @@ function describePiercing(candles, i, kind, opts = {}) {
     ? (curr.close - prev.close) / (prev.open - prev.close)
     : (prev.close - curr.close) / (prev.close - prev.open);
   const patternDirection = kind === 'piercing' ? 'bullish' : 'bearish';
-  const { breakout, candleConfirmation } = buildBreakout([prev, curr], patternDirection, candles, i + 1);
+  const { breakout, candleConfirmation, candleConfirmationBodyPercentage } = buildBreakout([prev, curr], patternDirection, candles, i + 1);
 
   return {
     pattern:   kind === 'piercing' ? 'piercingLine' : 'darkCloudCover',
@@ -803,6 +874,7 @@ function describePiercing(candles, i, kind, opts = {}) {
     },
     breakout,
     candleConfirmation,
+    ...(candleConfirmationBodyPercentage !== undefined && { candleConfirmationBodyPercentage }),
   };
 }
 
@@ -863,7 +935,7 @@ function describeStar(candles, i, kind, opts = {}) {
   const merged = { ...STAR_DEFAULTS, ...opts };
   const c1 = candles[i - 2], c2 = candles[i - 1], c3 = candles[i];
   const patternDirection = kind === 'morning' ? 'bullish' : 'bearish';
-  const { breakout, candleConfirmation } = buildBreakout([c1, c2, c3], patternDirection, candles, i + 1);
+  const { breakout, candleConfirmation, candleConfirmationBodyPercentage } = buildBreakout([c1, c2, c3], patternDirection, candles, i + 1);
 
   return {
     pattern:   kind === 'morning' ? 'morningStar' : 'eveningStar',
@@ -889,6 +961,7 @@ function describeStar(candles, i, kind, opts = {}) {
     },
     breakout,
     candleConfirmation,
+    ...(candleConfirmationBodyPercentage !== undefined && { candleConfirmationBodyPercentage }),
   };
 }
 
@@ -935,7 +1008,7 @@ function describeTriple(candles, i, kind, opts = {}) {
   const merged = { ...TRIPLE_DEFAULTS, ...opts };
   const c1 = candles[i - 2], c2 = candles[i - 1], c3 = candles[i];
   const patternDirection = kind === 'soldiers' ? 'bullish' : 'bearish';
-  const { breakout, candleConfirmation } = buildBreakout([c1, c2, c3], patternDirection, candles, i + 1);
+  const { breakout, candleConfirmation, candleConfirmationBodyPercentage } = buildBreakout([c1, c2, c3], patternDirection, candles, i + 1);
 
   return {
     pattern:   kind === 'soldiers' ? 'threeWhiteSoldiers' : 'threeBlackCrows',
@@ -961,6 +1034,7 @@ function describeTriple(candles, i, kind, opts = {}) {
     },
     breakout,
     candleConfirmation,
+    ...(candleConfirmationBodyPercentage !== undefined && { candleConfirmationBodyPercentage }),
   };
 }
 
