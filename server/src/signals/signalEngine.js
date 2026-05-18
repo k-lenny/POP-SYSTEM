@@ -136,15 +136,15 @@ const subscribeToCandles = (symbol, granularity) => {
 
   console.log(`[SignalEngine] Subscribing → ${symbol} ${granularity}s`)
 
-  derivWS.send({
-    ticks_history: symbol,
-    granularity:   granularity,
-    start:         oneYearAgo(),
-    style:         'candles',
-    end:           'latest',
-    subscribe:     1,
-    adjust_start_time: 1,
-  })
+derivWS.send({
+  ticks_history: symbol,
+  granularity,
+  count: 2000,        // ← request more candles
+  style: 'candles',
+  end: 'latest',
+  subscribe: 1,
+  adjust_start_time: 1,
+})
 }
 
 // ── Lazy subscription ──

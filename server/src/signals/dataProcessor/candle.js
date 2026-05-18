@@ -11,7 +11,7 @@ const { calculateBodyPercentage } = require('./CandleData');
 // ───────────────────────────────────────────────────────────────
 
 function bodySize(c)   { return Math.abs(c.close - c.open); }
-function totalRange(c) { return c.high - c.low; }
+function totalRange(c) { return Math.abs(c.high - c.low); }
 function upperWick(c)  { return c.high - Math.max(c.open, c.close); }
 function lowerWick(c)  { return Math.min(c.open, c.close) - c.low; }
 
@@ -39,8 +39,174 @@ function candleRef(candle, fallbackIndex) {
   };
 }
 
+function calcBodyPct(c) {
+  try { return calculateBodyPercentage(c); } catch (e) { return undefined; }
+}
+
 // ───────────────────────────────────────────────────────────────
-// Breakout helpers
+// Stage 1 – find breakout candle (body break) with dynamic wick rule
+//
+// invalidationLevel: the pattern's opposite extreme.
+// For bullish breakouts (looking for price to go above the highest high):
+//   invalidationLevel = lowest low — if price opens or closes below it first → null.
+// For bearish breakouts (looking for price to go below the lowest low):
+//   invalidationLevel = highest high — if price opens or closes above it first → null.
+// ───────────────────────────────────────────────────────────────
+
+function findBreakoutCandle(allCandles, startIdx, initialLevel, direction, invalidationLevel) {
+  let dynamicLevel = initialLevel;
+  for (let i = startIdx; i < allCandles.length; i++) {
+    const c = allCandles[i];
+    if (direction === 'bullish') {
+      // Invalidate if price opens or closes below the pattern's lowest low
+      if (invalidationLevel != null &&
+          (c.open < invalidationLevel || c.close < invalidationLevel)) {
+        return null;
+      }
+      if (c.open > dynamicLevel || c.close > dynamicLevel) {
+        return { candle: candleRef(c, i), index: i };
+      } else if (c.high > dynamicLevel) {
+        dynamicLevel = c.high;
+      }
+    } else { // bearish
+      // Invalidate if price opens or closes above the pattern's highest high
+      if (invalidationLevel != null &&
+          (c.open > invalidationLevel || c.close > invalidationLevel)) {
+        return null;
+      }
+      if (c.open < dynamicLevel || c.close < dynamicLevel) {
+        return { candle: candleRef(c, i), index: i };
+      } else if (c.low < dynamicLevel) {
+        dynamicLevel = c.low;
+      }
+    }
+  }
+  return null;
+}
+
+// ───────────────────────────────────────────────────────────────
+// Stage 2 – push confirmation (candleConfirmation) with dynamic wick rule
+//
+// invalidationLevel: the pattern's lowest low (bullish) or highest high
+// (bearish).  If any candle opens or closes beyond it before the confirmation
+// push is found, we return null immediately so candleConfirmation stays null.
+// ───────────────────────────────────────────────────────────────
+
+function findConfirmationPush(allCandles, startIdx, breakoutCandle, direction, invalidationLevel) {
+  if (startIdx >= allCandles.length) return null;
+
+  let dynamicLevel = direction === 'bullish'
+    ? breakoutCandle.high
+    : breakoutCandle.low;
+
+  for (let i = startIdx; i < allCandles.length; i++) {
+    const c = allCandles[i];
+    if (direction === 'bullish') {
+      // Invalidate if price crosses below the pattern's lowest low
+      if (invalidationLevel != null &&
+          (c.open < invalidationLevel || c.close < invalidationLevel)) {
+        return null;
+      }
+      if (c.open > dynamicLevel || c.close > dynamicLevel) {
+        const ref = candleRef(c, i);
+        return { candle: ref, index: i, bodyPercentage: calcBodyPct(ref) };
+      } else if (c.high > dynamicLevel) {
+        dynamicLevel = c.high;
+      }
+    } else { // bearish
+      // Invalidate if price crosses above the pattern's highest high
+      if (invalidationLevel != null &&
+          (c.open > invalidationLevel || c.close > invalidationLevel)) {
+        return null;
+      }
+      if (c.open < dynamicLevel || c.close < dynamicLevel) {
+        const ref = candleRef(c, i);
+        return { candle: ref, index: i, bodyPercentage: calcBodyPct(ref) };
+      } else if (c.low < dynamicLevel) {
+        dynamicLevel = c.low;
+      }
+    }
+  }
+  return null;
+}
+
+// ───────────────────────────────────────────────────────────────
+// Retest + V‑shape logic
+// ───────────────────────────────────────────────────────────────
+
+function addRetestAndVshape(allCandles, baseResult, direction) {
+  baseResult.candleConfirmationRetest       = null;
+  baseResult.candleConfirmationRetestVshape = null;
+
+  const confCandle = baseResult.candleConfirmation;
+  if (!confCandle || confCandle.index == null) return baseResult;
+
+  const startIdx = confCandle.index + 1;
+  if (startIdx >= allCandles.length) return baseResult;
+
+  const isBullish = direction === 'bullish';
+  const confHigh  = confCandle.high;
+  const confLow   = confCandle.low;
+
+  let vshapeCandle = null;
+  let vshapeIdx    = -1;
+  let retestCandle = null;
+  let retestIdx    = -1;
+
+  for (let i = startIdx; i < allCandles.length; i++) {
+    const c = allCandles[i];
+
+    if (isBullish) {
+      if (c.open > confHigh || c.close > confHigh) return baseResult;
+    } else {
+      if (c.open < confLow  || c.close < confLow)  return baseResult;
+    }
+
+    if (retestCandle && i > retestIdx) {
+      const broke = isBullish
+        ? (c.open < vshapeCandle.low  || c.close < vshapeCandle.low)
+        : (c.open > vshapeCandle.high || c.close > vshapeCandle.high);
+
+      if (broke) {
+        baseResult.candleConfirmationRetest       = retestCandle;
+        baseResult.candleConfirmationRetestVshape = vshapeCandle;
+        return baseResult;
+      }
+    }
+
+    if (!vshapeCandle) {
+      vshapeCandle = candleRef(c, i);
+      vshapeIdx    = i;
+    } else if (isBullish ? (c.low < vshapeCandle.low) : (c.high > vshapeCandle.high)) {
+      vshapeCandle = candleRef(c, i);
+      vshapeIdx    = i;
+      retestCandle = null;
+      retestIdx    = -1;
+    }
+
+    if (i > vshapeIdx) {
+      const inRange = isBullish
+        ? (c.low  >= confLow && c.low  <= confHigh)
+        : (c.high >= confLow && c.high <= confHigh);
+
+      if (inRange) {
+        const moreExtreme = !retestCandle || (
+          isBullish ? (c.low  < retestCandle.low)
+                    : (c.high > retestCandle.high)
+        );
+        if (moreExtreme) {
+          retestCandle = candleRef(c, i);
+          retestIdx    = i;
+        }
+      }
+    }
+  }
+
+  return baseResult;
+}
+
+// ───────────────────────────────────────────────────────────────
+// Build breakout for directional patterns (with retest fields)
 // ───────────────────────────────────────────────────────────────
 
 function buildBreakout(patternCandles, direction, allCandles, firstIdx) {
@@ -48,9 +214,12 @@ function buildBreakout(patternCandles, direction, allCandles, firstIdx) {
     ? Math.max(...patternCandles.map(c => c.high))
     : Math.min(...patternCandles.map(c => c.low));
 
+  const invalidationLevel = direction === 'bullish'
+    ? Math.min(...patternCandles.map(c => c.low))
+    : Math.max(...patternCandles.map(c => c.high));
+
   const breakoutDirection = direction === 'bullish' ? 'above' : 'below';
 
-  // No candles to scan
   if (!Array.isArray(allCandles) || firstIdx >= allCandles.length) {
     return {
       breakout: {
@@ -62,89 +231,70 @@ function buildBreakout(patternCandles, direction, allCandles, firstIdx) {
         confirmationCandlesChecked: 0,
       },
       candleConfirmation: null,
+      candleConfirmationRetest: null,
+      candleConfirmationRetestVshape: null,
     };
   }
 
-  // Find the breakout candle
-  let confirmingCandle = null;
-  let breakIdx = -1;
-  for (let k = firstIdx; k < allCandles.length; k++) {
-    const c = allCandles[k];
-    const broke = breakoutDirection === 'above'
-      ? (c.open > level || c.close > level)
-      : (c.open < level || c.close < level);
-
-    if (broke) {
-      confirmingCandle = candleRef(c, k);
-      breakIdx = k;
-      break;
-    }
-  }
-
-  const candlesChecked = breakIdx >= 0
-    ? breakIdx - firstIdx + 1
+  const stage1 = findBreakoutCandle(allCandles, firstIdx, level, direction, invalidationLevel);
+  const confirmingCandle = stage1 ? stage1.candle : null;
+  const confirmed = !!confirmingCandle;
+  const candlesChecked = stage1
+    ? stage1.index - firstIdx + 1
     : allCandles.length - firstIdx;
 
-  // Search for a second confirmation candle
-  let candleConfirmation = null;
+  let pushResult = null;
   let confCandlesChecked = 0;
-
-  if (confirmingCandle && breakIdx + 1 < allCandles.length) {
-    for (let k = breakIdx + 1; k < allCandles.length; k++) {
-      confCandlesChecked++;
-      const c = allCandles[k];
-      const pushed = breakoutDirection === 'above'
-        ? (c.open > confirmingCandle.high || c.close > confirmingCandle.high)
-        : (c.open < confirmingCandle.low  || c.close < confirmingCandle.low);
-      if (pushed) {
-        candleConfirmation = candleRef(c, k);
-        break;
+  if (stage1 && stage1.index + 1 < allCandles.length) {
+    pushResult = findConfirmationPush(allCandles, stage1.index + 1, confirmingCandle, direction, invalidationLevel);
+    if (pushResult) {
+      confCandlesChecked = stage1.index + 1;
+      for (let k = stage1.index + 1; k <= pushResult.index; k++) {
+        confCandlesChecked++;
       }
+    } else {
+      confCandlesChecked = allCandles.length - (stage1.index + 1);
     }
   }
 
-  // Calculate body percentages if candles exist
-  const breakoutResult = {
+  const confirmingBodyPct = confirmingCandle ? calcBodyPct(confirmingCandle) : undefined;
+
+  const baseResult = {
     breakout: {
       level,
       direction: breakoutDirection,
-      confirmed: !!confirmingCandle,
+      confirmed,
       confirmingCandle,
       candlesChecked,
       confirmationCandlesChecked: confCandlesChecked,
+      confirmingCandleBodyPercentage: confirmingBodyPct,
     },
-    candleConfirmation,
+    candleConfirmation: pushResult ? pushResult.candle : null,
+    candleConfirmationBodyPercentage: pushResult ? pushResult.bodyPercentage : undefined,
   };
 
-  // Add body percentage for confirming candle if it exists
-  if (confirmingCandle) {
-    try {
-      breakoutResult.breakout.confirmingCandleBodyPercentage = calculateBodyPercentage({
-        open: confirmingCandle.open,
-        high: confirmingCandle.high,
-        low: confirmingCandle.low,
-        close: confirmingCandle.close
-      });
-    } catch (e) {
-      // Silently fail if calculation fails
-    }
-  }
+  return addRetestAndVshape(allCandles, baseResult, direction);
+}
 
-  // Add body percentage for candle confirmation if it exists
-  if (candleConfirmation) {
-    try {
-      breakoutResult.candleConfirmationBodyPercentage = calculateBodyPercentage({
-        open: candleConfirmation.open,
-        high: candleConfirmation.high,
-        low: candleConfirmation.low,
-        close: candleConfirmation.close
-      });
-    } catch (e) {
-      // Silently fail if calculation fails
-    }
-  }
+// ───────────────────────────────────────────────────────────────
+// Neutral breakout (Doji, Spinning Top)
+// ───────────────────────────────────────────────────────────────
 
-  return breakoutResult;
+function findNeutralBreakoutCandle(allCandles, startIdx, bullLevel, bearLevel) {
+  let dynBull = bullLevel;
+  let dynBear = bearLevel;
+  for (let i = startIdx; i < allCandles.length; i++) {
+    const c = allCandles[i];
+    if (c.open > dynBull || c.close > dynBull) {
+      return { candle: candleRef(c, i), index: i, direction: 'above' };
+    }
+    if (c.open < dynBear || c.close < dynBear) {
+      return { candle: candleRef(c, i), index: i, direction: 'below' };
+    }
+    if (c.high > dynBull) dynBull = c.high;
+    if (c.low < dynBear)  dynBear = c.low;
+  }
+  return null;
 }
 
 function buildNeutralBreakout(patternCandles, allCandles, firstIdx) {
@@ -163,88 +313,58 @@ function buildNeutralBreakout(patternCandles, allCandles, firstIdx) {
         altLevel: bearLevel,
       },
       candleConfirmation: null,
+      candleConfirmationRetest: null,
+      candleConfirmationRetestVshape: null,
     };
   }
 
-  let confirmingCandle = null;
-  let breakIdx = -1;
-  let direction = 'above';
-  for (let k = firstIdx; k < allCandles.length; k++) {
-    const c = allCandles[k];
-    const brokeUp   = c.open > bullLevel || c.close > bullLevel;
-    const brokeDown = c.open < bearLevel || c.close < bearLevel;
-
-    if (brokeUp || brokeDown) {
-      direction = brokeUp ? 'above' : 'below';
-      confirmingCandle = candleRef(c, k);
-      breakIdx = k;
-      break;
-    }
-  }
-
-  const candlesChecked = breakIdx >= 0
-    ? breakIdx - firstIdx + 1
+  const stage1 = findNeutralBreakoutCandle(allCandles, firstIdx, bullLevel, bearLevel);
+  const confirmingCandle = stage1 ? stage1.candle : null;
+  const confirmed = !!confirmingCandle;
+  const direction = stage1 ? stage1.direction : 'above';
+  const candlesChecked = stage1
+    ? stage1.index - firstIdx + 1
     : allCandles.length - firstIdx;
 
-  let candleConfirmation = null;
+  let pushResult = null;
   let confCandlesChecked = 0;
-  if (confirmingCandle && breakIdx + 1 < allCandles.length) {
-    for (let k = breakIdx + 1; k < allCandles.length; k++) {
-      confCandlesChecked++;
-      const c = allCandles[k];
-      const pushed = direction === 'above'
-        ? (c.open > confirmingCandle.high || c.close > confirmingCandle.high)
-        : (c.open < confirmingCandle.low  || c.close < confirmingCandle.low);
-      if (pushed) {
-        candleConfirmation = candleRef(c, k);
-        break;
+  if (stage1 && stage1.index + 1 < allCandles.length) {
+    const invalidationLevel = direction === 'above' ? bearLevel : bullLevel;
+    pushResult = findConfirmationPush(
+      allCandles,
+      stage1.index + 1,
+      confirmingCandle,
+      direction === 'above' ? 'bullish' : 'bearish',
+      invalidationLevel
+    );
+    if (pushResult) {
+      confCandlesChecked = stage1.index + 1;
+      for (let k = stage1.index + 1; k <= pushResult.index; k++) {
+        confCandlesChecked++;
       }
+    } else {
+      confCandlesChecked = allCandles.length - (stage1.index + 1);
     }
   }
 
-  // Calculate body percentages if candles exist
-  const breakoutResult = {
+  const confirmingBodyPct = confirmingCandle ? calcBodyPct(confirmingCandle) : undefined;
+
+  const baseResult = {
     breakout: {
-      level: bullLevel,
+      level: direction === 'above' ? bullLevel : bearLevel,
       direction,
-      confirmed: true,
+      confirmed,
       confirmingCandle,
       candlesChecked,
       confirmationCandlesChecked: confCandlesChecked,
-      altLevel: bearLevel,
+      altLevel: direction === 'above' ? bearLevel : bullLevel,
+      confirmingCandleBodyPercentage: confirmingBodyPct,
     },
-    candleConfirmation,
+    candleConfirmation: pushResult ? pushResult.candle : null,
+    candleConfirmationBodyPercentage: pushResult ? pushResult.bodyPercentage : undefined,
   };
 
-  // Add body percentage for confirming candle if it exists
-  if (confirmingCandle) {
-    try {
-      breakoutResult.breakout.confirmingCandleBodyPercentage = calculateBodyPercentage({
-        open: confirmingCandle.open,
-        high: confirmingCandle.high,
-        low: confirmingCandle.low,
-        close: confirmingCandle.close
-      });
-    } catch (e) {
-      // Silently fail if calculation fails
-    }
-  }
-
-  // Add body percentage for candle confirmation if it exists
-  if (candleConfirmation) {
-    try {
-      breakoutResult.candleConfirmationBodyPercentage = calculateBodyPercentage({
-        open: candleConfirmation.open,
-        high: candleConfirmation.high,
-        low: candleConfirmation.low,
-        close: candleConfirmation.close
-      });
-    } catch (e) {
-      // Silently fail if calculation fails
-    }
-  }
-
-  return breakoutResult;
+  return addRetestAndVshape(allCandles, baseResult, direction === 'above' ? 'bullish' : 'bearish');
 }
 
 // ───────────────────────────────────────────────────────────────
@@ -275,7 +395,7 @@ function describeDoji(candle, fallbackIndex, allCandles, firstIdx) {
   const body  = bodySize(candle);
   const up    = upperWick(candle);
   const lo    = lowerWick(candle);
-  const { breakout, candleConfirmation, candleConfirmationBodyPercentage } = buildNeutralBreakout([candle], allCandles, firstIdx);
+  const result = buildNeutralBreakout([candle], allCandles, firstIdx);
 
   return {
     pattern: 'doji',
@@ -291,9 +411,7 @@ function describeDoji(candle, fallbackIndex, allCandles, firstIdx) {
       upperToRange:   +(up   / range).toFixed(4),
       lowerToRange:   +(lo   / range).toFixed(4),
     },
-    breakout,
-    candleConfirmation,
-    ...(candleConfirmationBodyPercentage !== undefined && { candleConfirmationBodyPercentage }),
+    ...result,
   };
 }
 
@@ -371,7 +489,7 @@ function describeHammer(candles, i, opts = {}) {
   const up     = upperWick(candle);
   const lo     = lowerWick(candle);
   const downtrend = Array.isArray(candles) ? isDowntrendBefore(candles, i, merged.lookback) : false;
-  const { breakout, candleConfirmation, candleConfirmationBodyPercentage } = buildBreakout([candle], 'bullish', candles, i + 1);
+  const result = buildBreakout([candle], 'bullish', candles, i + 1);
 
   return {
     pattern: 'hammer',
@@ -392,9 +510,7 @@ function describeHammer(candles, i, opts = {}) {
       downtrend,
       lookback: merged.lookback,
     },
-    breakout,
-    candleConfirmation,
-    ...(candleConfirmationBodyPercentage !== undefined && { candleConfirmationBodyPercentage }),
+    ...result,
   };
 }
 
@@ -428,7 +544,7 @@ function describeHangingMan(candles, i, opts = {}) {
   const up     = upperWick(candle);
   const lo     = lowerWick(candle);
   const uptrend = Array.isArray(candles) ? isUptrendBefore(candles, i, merged.lookback) : false;
-  const { breakout, candleConfirmation, candleConfirmationBodyPercentage } = buildBreakout([candle], 'bearish', candles, i + 1);
+  const result = buildBreakout([candle], 'bearish', candles, i + 1);
 
   return {
     pattern: 'hangingMan',
@@ -449,9 +565,7 @@ function describeHangingMan(candles, i, opts = {}) {
       uptrend,
       lookback: merged.lookback,
     },
-    breakout,
-    candleConfirmation,
-    ...(candleConfirmationBodyPercentage !== undefined && { candleConfirmationBodyPercentage }),
+    ...result,
   };
 }
 
@@ -497,13 +611,13 @@ function isShootingStar(candles, i, opts = {}) {
 
 function describeShootingStar(candles, i, opts = {}) {
   const merged = { ...SHOOTING_STAR_DEFAULTS, ...opts };
-  const candle = candles[i];  // FIXED: typo removed
+  const candle = candles[i];
   const range  = totalRange(candle);
   const body   = bodySize(candle);
   const up     = upperWick(candle);
   const lo     = lowerWick(candle);
   const uptrend = Array.isArray(candles) ? isUptrendBefore(candles, i, merged.lookback) : false;
-  const { breakout, candleConfirmation, candleConfirmationBodyPercentage } = buildBreakout([candle], 'bearish', candles, i + 1);
+  const result = buildBreakout([candle], 'bearish', candles, i + 1);
 
   return {
     pattern: 'shootingStar',
@@ -524,9 +638,7 @@ function describeShootingStar(candles, i, opts = {}) {
       uptrend,
       lookback: merged.lookback,
     },
-    breakout,
-    candleConfirmation,
-    ...(candleConfirmationBodyPercentage !== undefined && { candleConfirmationBodyPercentage }),
+    ...result,
   };
 }
 
@@ -562,7 +674,7 @@ function describeMarubozu(candle, fallbackIndex, allCandles, firstIdx) {
   const meaning = direction === 'bullish'
     ? 'Bullish momentum — buyers controlled the candle from open to close with no pushback.'
     : 'Bearish momentum — sellers controlled the candle from open to close with no pushback.';
-  const { breakout, candleConfirmation, candleConfirmationBodyPercentage } = buildBreakout([candle], direction, allCandles, firstIdx);
+  const result = buildBreakout([candle], direction, allCandles, firstIdx);
 
   return {
     pattern: 'marubozu',
@@ -579,9 +691,7 @@ function describeMarubozu(candle, fallbackIndex, allCandles, firstIdx) {
       upperToRange: +(up   / range).toFixed(4),
       lowerToRange: +(lo   / range).toFixed(4),
     },
-    breakout,
-    candleConfirmation,
-    ...(candleConfirmationBodyPercentage !== undefined && { candleConfirmationBodyPercentage }),
+    ...result,
   };
 }
 
@@ -619,7 +729,7 @@ function describeSpinningTop(candle, fallbackIndex, allCandles, firstIdx) {
   const body  = bodySize(candle);
   const up    = upperWick(candle);
   const lo    = lowerWick(candle);
-  const { breakout, candleConfirmation, candleConfirmationBodyPercentage } = buildNeutralBreakout([candle], allCandles, firstIdx);
+  const result = buildNeutralBreakout([candle], allCandles, firstIdx);
 
   return {
     pattern: 'spinningTop',
@@ -636,9 +746,7 @@ function describeSpinningTop(candle, fallbackIndex, allCandles, firstIdx) {
       lowerToRange:   +(lo   / range).toFixed(4),
       wickImbalance:  +(Math.abs(up - lo) / range).toFixed(4),
     },
-    breakout,
-    candleConfirmation,
-    ...(candleConfirmationBodyPercentage !== undefined && { candleConfirmationBodyPercentage }),
+    ...result,
   };
 }
 
@@ -698,7 +806,7 @@ function describeEngulfing(candles, i, opts = {}) {
   const meaning = direction === 'bullish'
     ? 'Bullish reversal — a bullish candle fully engulfs the prior bearish body; buyers seized control.'
     : 'Bearish reversal — a bearish candle fully engulfs the prior bullish body; sellers seized control.';
-  const { breakout, candleConfirmation, candleConfirmationBodyPercentage } = buildBreakout([prev, curr], direction, candles, i + 1);
+  const result = buildBreakout([prev, curr], direction, candles, i + 1);
 
   return {
     pattern: direction === 'bullish' ? 'bullishEngulfing' : 'bearishEngulfing',
@@ -715,9 +823,7 @@ function describeEngulfing(candles, i, opts = {}) {
       engulfRatio: +(currBody / prevBody).toFixed(4),
     },
     context,
-    breakout,
-    candleConfirmation,
-    ...(candleConfirmationBodyPercentage !== undefined && { candleConfirmationBodyPercentage }),
+    ...result,
   };
 }
 
@@ -768,7 +874,7 @@ function describeTweezer(candles, i, opts = {}) {
     ? Math.abs(prev.high - curr.high)
     : Math.abs(prev.low  - curr.low);
   const patternDirection = kind === 'top' ? 'bearish' : 'bullish';
-  const { breakout, candleConfirmation, candleConfirmationBodyPercentage } = buildBreakout([prev, curr], patternDirection, candles, i + 1);
+  const result = buildBreakout([prev, curr], patternDirection, candles, i + 1);
 
   return {
     pattern:   kind === 'top' ? 'tweezerTop' : 'tweezerBottom',
@@ -791,9 +897,7 @@ function describeTweezer(candles, i, opts = {}) {
       uptrend:   isUptrendBefore(candles, i - 1, merged.lookback),
       lookback:  merged.lookback,
     },
-    breakout,
-    candleConfirmation,
-    ...(candleConfirmationBodyPercentage !== undefined && { candleConfirmationBodyPercentage }),
+    ...result,
   };
 }
 
@@ -850,7 +954,7 @@ function describePiercing(candles, i, kind, opts = {}) {
     ? (curr.close - prev.close) / (prev.open - prev.close)
     : (prev.close - curr.close) / (prev.close - prev.open);
   const patternDirection = kind === 'piercing' ? 'bullish' : 'bearish';
-  const { breakout, candleConfirmation, candleConfirmationBodyPercentage } = buildBreakout([prev, curr], patternDirection, candles, i + 1);
+  const result = buildBreakout([prev, curr], patternDirection, candles, i + 1);
 
   return {
     pattern:   kind === 'piercing' ? 'piercingLine' : 'darkCloudCover',
@@ -872,21 +976,47 @@ function describePiercing(candles, i, kind, opts = {}) {
       uptrend:   isUptrendBefore(candles, i - 1, merged.lookback),
       lookback:  merged.lookback,
     },
-    breakout,
-    candleConfirmation,
-    ...(candleConfirmationBodyPercentage !== undefined && { candleConfirmationBodyPercentage }),
+    ...result,
   };
 }
 
 // ───────────────────────────────────────────────────────────────
 // Morning Star / Evening Star
+//
+// The scanner runs EXACTLY ONE of these two pairs — never both:
+//
+//   opts.star.invertedAxis = false (default) → STANDARD pair
+//     GREEN candle = close > open  |  RED candle = close < open
+//     isMorningStar      : c1 RED,   c3 GREEN  (bullish reversal after downtrend)
+//     isEveningStar      : c1 GREEN, c3 RED    (bearish reversal after uptrend)
+//
+//   opts.star.invertedAxis = true → INVERTED pair
+//     On instruments where a LOWER number = a HIGHER displayed price:
+//     GREEN candle = close < open  |  RED candle = close > open
+//     isMorningStarInverted : c1 RED,   c3 GREEN  (bullish reversal)
+//     isEveningStarInverted : c1 GREEN, c3 RED    (bearish reversal)
+//
+// WHY they must never run together:
+//   standard morning  checks c1.close < c1.open  (c1 RED)
+//   inverted evening  checks c1.close < c1.open  (c1 GREEN on inv axis)
+//   → identical numeric condition, different meaning → cross-contamination
+//   A normal Morning Star would be labelled as an Evening Star if both ran.
+//
+// Rule enforced at the pattern level:
+//   c1 GREEN on screen → Evening Star only  (never Morning Star)
+//   c1 RED   on screen → Morning Star only  (never Evening Star)
+//
+// Inverted-axis star body ratio is relaxed to 0.65 (vs 0.30 standard) because
+// on negated instruments the middle candle body/range ratio sits around 0.60
+// and is still genuinely the smaller candle between two large ones.
 // ───────────────────────────────────────────────────────────────
 
 const STAR_DEFAULTS = {
-  largeBodyRatio: 0.6,
-  starBodyRatio:  0.3,
-  closeIntoBody:  0.5,
-  lookback:       5,
+  largeBodyRatio:         0.6,
+  starBodyRatio:          0.3,
+  starBodyRatioInverted:  0.65,   // relaxed threshold for inverted-axis star candle
+  closeIntoBody:          0.5,
+  lookback:               5,
 };
 
 function isLargeBody(c, ratio) {
@@ -901,15 +1031,18 @@ function isSmallBody(c, ratio) {
   return r > 0 && b / r <= ratio;
 }
 
+// ─── Standard (normal axis) ───────────────────────────────────
+
 function isMorningStar(candles, i, opts = {}) {
   if (!Array.isArray(candles) || i < 2) return false;
   const { largeBodyRatio, starBodyRatio, closeIntoBody } = { ...STAR_DEFAULTS, ...opts };
   const c1 = candles[i - 2], c2 = candles[i - 1], c3 = candles[i];
-  if (!(c1.close < c1.open)) return false;
+
+  if (!(c1.close < c1.open)) return false;                          // c1 bearish (red)
   if (!isLargeBody(c1, largeBodyRatio)) return false;
   if (!isSmallBody(c2, starBodyRatio)) return false;
-  if (!(Math.max(c2.open, c2.close) < c1.close)) return false;
-  if (!(c3.close > c3.open)) return false;
+  if (!(Math.max(c2.open, c2.close) < c1.close)) return false;     // star gapped down
+  if (!(c3.close > c3.open)) return false;                          // c3 bullish (green)
   if (!isLargeBody(c3, largeBodyRatio)) return false;
   const threshold = c1.close + (c1.open - c1.close) * closeIntoBody;
   if (!(c3.close > threshold)) return false;
@@ -920,27 +1053,177 @@ function isEveningStar(candles, i, opts = {}) {
   if (!Array.isArray(candles) || i < 2) return false;
   const { largeBodyRatio, starBodyRatio, closeIntoBody } = { ...STAR_DEFAULTS, ...opts };
   const c1 = candles[i - 2], c2 = candles[i - 1], c3 = candles[i];
-  if (!(c1.close > c1.open)) return false;
+
+  if (!(c1.close > c1.open)) return false;                          // c1 bullish (green)
   if (!isLargeBody(c1, largeBodyRatio)) return false;
   if (!isSmallBody(c2, starBodyRatio)) return false;
-  if (!(Math.min(c2.open, c2.close) > c1.close)) return false;
-  if (!(c3.close < c3.open)) return false;
+  if (!(Math.min(c2.open, c2.close) > c1.close)) return false;     // star gapped up
+  if (!(c3.close < c3.open)) return false;                          // c3 bearish (red)
   if (!isLargeBody(c3, largeBodyRatio)) return false;
   const threshold = c1.close - (c1.close - c1.open) * closeIntoBody;
   if (!(c3.close < threshold)) return false;
   return true;
 }
 
+// ─── Inverted-axis variants ───────────────────────────────────
+//
+// Evening Star on inverted axis:
+//   c1  large GREEN  → close < open  (numerically fell = visually rose)
+//   c2  small star   → entire body numerically below c1.close
+//                      (max(open,close) < c1.close  = visually gapped up)
+//   c3  large RED    → close > open  (numerically rose = visually fell)
+//                      closes numerically above the 50% threshold of c1's body
+//
+// Morning Star on inverted axis: exact mirror.
+
+function isEveningStarInverted(candles, i, opts = {}) {
+  if (!Array.isArray(candles) || i < 2) return false;
+  const { largeBodyRatio, starBodyRatioInverted, closeIntoBody } =
+    { ...STAR_DEFAULTS, ...opts };
+  const c1 = candles[i - 2], c2 = candles[i - 1], c3 = candles[i];
+
+  // c1: large GREEN candle on inverted axis → close < open
+  if (!(c1.close < c1.open)) return false;
+  if (!isLargeBody(c1, largeBodyRatio)) return false;
+
+  // c2: star — body is small relative to its own range
+  if (!isSmallBody(c2, starBodyRatioInverted)) return false;
+
+  // c2 gapped up visually = the entire body is numerically BELOW c1.close
+  // (max of open/close is still less than c1.close)
+  if (!(Math.max(c2.open, c2.close) < c1.close)) return false;
+
+  // c3: large RED candle on inverted axis → close > open
+  if (!(c3.close > c3.open)) return false;
+  if (!isLargeBody(c3, largeBodyRatio)) return false;
+
+  // c3 closes well into c1's body.
+  // c1 body: from c1.close (numerically low end) to c1.open (numerically high end).
+  // Threshold = c1.close + closeIntoBody * (c1.open - c1.close).
+  // c3.close must be numerically above this threshold (deeper into the body).
+  const threshold = c1.close + (c1.open - c1.close) * closeIntoBody;
+  if (!(c3.close > threshold)) return false;
+
+  return true;
+}
+
+function isMorningStarInverted(candles, i, opts = {}) {
+  if (!Array.isArray(candles) || i < 2) return false;
+  const { largeBodyRatio, starBodyRatioInverted, closeIntoBody } =
+    { ...STAR_DEFAULTS, ...opts };
+  const c1 = candles[i - 2], c2 = candles[i - 1], c3 = candles[i];
+
+  // c1: large RED candle on inverted axis → close > open
+  if (!(c1.close > c1.open)) return false;
+  if (!isLargeBody(c1, largeBodyRatio)) return false;
+
+  // c2: star — body is small relative to its own range
+  if (!isSmallBody(c2, starBodyRatioInverted)) return false;
+
+  // c2 gapped down visually = the entire body is numerically ABOVE c1.close
+  // (min of open/close is still greater than c1.close)
+  if (!(Math.min(c2.open, c2.close) > c1.close)) return false;
+
+  // c3: large GREEN candle on inverted axis → close < open
+  if (!(c3.close < c3.open)) return false;
+  if (!isLargeBody(c3, largeBodyRatio)) return false;
+
+  // c3 closes well into c1's body.
+  // c1 body: from c1.open (numerically low end) to c1.close (numerically high end).
+  // Threshold = c1.close - closeIntoBody * (c1.close - c1.open).
+  // c3.close must be numerically below this threshold (deeper into the body).
+  const threshold = c1.close - (c1.close - c1.open) * closeIntoBody;
+  if (!(c3.close < threshold)) return false;
+
+  return true;
+}
+
+// ───────────────────────────────────────────────────────────────
+// Evening Star Scenario  (bearish reversal — standalone pattern)
+//
+// Conditions (standard axis: GREEN = close > open, RED = close < open):
+//   c1: large GREEN candle  → c1.close > c1.open
+//   c2: small star body     → body/range <= 0.65
+//                             min(c2.open, c2.close) > c1.close  (star gapped above)
+//   c3: large RED candle    → c3.close < c3.open
+//                             c3.close < c1.close - (c1.close - c1.open) * 0.5
+//                             (c3 closes at least 50% into c1 body)
+// ───────────────────────────────────────────────────────────────
+
+const EVENING_STAR_SCENARIO_DEFAULTS = {
+  largeBodyRatio:        0.6,
+  starBodyRatioScenario: 0.65,
+  closeIntoBody:         0.5,
+  lookback:              5,
+};
+
+function isEveningStarScenario(candles, i, opts = {}) {
+  if (!Array.isArray(candles) || i < 2) return false;
+  const { largeBodyRatio, starBodyRatioScenario, closeIntoBody } =
+    { ...EVENING_STAR_SCENARIO_DEFAULTS, ...opts };
+  const c1 = candles[i - 2], c2 = candles[i - 1], c3 = candles[i];
+
+  // c1 — large GREEN candle
+  if (!(c1.close > c1.open)) return false;
+  if (!isLargeBody(c1, largeBodyRatio)) return false;
+
+  // c2 — star: small body, sits above c1.close
+  if (!isSmallBody(c2, starBodyRatioScenario)) return false;
+  if (!(Math.min(c2.open, c2.close) > c1.close)) return false;
+
+  // c3 — large RED candle, closes at least 50% into c1 body
+  if (!(c3.close < c3.open)) return false;
+  if (!isLargeBody(c3, largeBodyRatio)) return false;
+  const threshold = c1.close - (c1.close - c1.open) * closeIntoBody;
+  if (!(c3.close < threshold)) return false;
+
+  return true;
+}
+
+function describeEveningStarScenario(candles, i, opts = {}) {
+  const merged = { ...EVENING_STAR_SCENARIO_DEFAULTS, ...opts };
+  const c1 = candles[i - 2], c2 = candles[i - 1], c3 = candles[i];
+  const result = buildBreakout([c1, c2, c3], 'bearish', candles, i + 1);
+
+  return {
+    pattern:       'eveningStarScenario',
+    patternLength: 3,
+    direction:     'bearish',
+    meaning:       'Bearish reversal — large green c1, small star c2 gapped above c1 close, large red c3 closing at least 50% into c1 body.',
+    candles: {
+      first: candleRef(c1, i - 2),
+      star:  candleRef(c2, i - 1),
+      third: candleRef(c3, i),
+    },
+    metrics: {
+      firstBody:  bodySize(c1),
+      starBody:   bodySize(c2),
+      thirdBody:  bodySize(c3),
+      threshold:  +(c1.close - (c1.close - c1.open) * merged.closeIntoBody).toFixed(6),
+    },
+    context: {
+      downtrend: isDowntrendBefore(candles, i - 2, merged.lookback),
+      uptrend:   isUptrendBefore(candles, i - 2, merged.lookback),
+      lookback:  merged.lookback,
+    },
+    ...result,
+  };
+}
+
+// ─── describe (shared for both axes) ─────────────────────────
+
 function describeStar(candles, i, kind, opts = {}) {
   const merged = { ...STAR_DEFAULTS, ...opts };
   const c1 = candles[i - 2], c2 = candles[i - 1], c3 = candles[i];
   const patternDirection = kind === 'morning' ? 'bullish' : 'bearish';
-  const { breakout, candleConfirmation, candleConfirmationBodyPercentage } = buildBreakout([c1, c2, c3], patternDirection, candles, i + 1);
+  const invertedAxis = !!merged.invertedAxis;
+  const result = buildBreakout([c1, c2, c3], patternDirection, candles, i + 1);
 
   return {
     pattern:   kind === 'morning' ? 'morningStar' : 'eveningStar',
     patternLength: 3,
     direction: patternDirection,
+    invertedAxis,
     meaning:   kind === 'morning'
       ? 'Strong bullish reversal — bearish candle, indecisive gap-down star, then a bullish candle closing well into the first body.'
       : 'Strong bearish reversal — bullish candle, indecisive gap-up star, then a bearish candle closing well into the first body.',
@@ -959,9 +1242,7 @@ function describeStar(candles, i, kind, opts = {}) {
       uptrend:   isUptrendBefore(candles, i - 2, merged.lookback),
       lookback:  merged.lookback,
     },
-    breakout,
-    candleConfirmation,
-    ...(candleConfirmationBodyPercentage !== undefined && { candleConfirmationBodyPercentage }),
+    ...result,
   };
 }
 
@@ -1008,7 +1289,7 @@ function describeTriple(candles, i, kind, opts = {}) {
   const merged = { ...TRIPLE_DEFAULTS, ...opts };
   const c1 = candles[i - 2], c2 = candles[i - 1], c3 = candles[i];
   const patternDirection = kind === 'soldiers' ? 'bullish' : 'bearish';
-  const { breakout, candleConfirmation, candleConfirmationBodyPercentage } = buildBreakout([c1, c2, c3], patternDirection, candles, i + 1);
+  const result = buildBreakout([c1, c2, c3], patternDirection, candles, i + 1);
 
   return {
     pattern:   kind === 'soldiers' ? 'threeWhiteSoldiers' : 'threeBlackCrows',
@@ -1032,9 +1313,7 @@ function describeTriple(candles, i, kind, opts = {}) {
       uptrend:   isUptrendBefore(candles, i - 2, merged.lookback),
       lookback:  merged.lookback,
     },
-    breakout,
-    candleConfirmation,
-    ...(candleConfirmationBodyPercentage !== undefined && { candleConfirmationBodyPercentage }),
+    ...result,
   };
 }
 
@@ -1081,12 +1360,24 @@ function findPatterns(candles, opts = {}) {
     if (isDarkCloudCover(candles, i, opts.piercing)) {
       results.push(describePiercing(candles, i, 'darkCloud', opts.piercing));
     }
+
+    // ── Morning Star / Evening Star ──────────────────────────────
+    // Both functions handle two candle shapes each — no flags needed.
+    // isEveningStar and isMorningStar each contain a standard branch and
+    // an alternate branch (covering instruments like negated-price futures).
+    // The scanner simply calls both; at most one fires per window because
+    // they are mutually exclusive by their c1+c2+c3 conditions combined.
     if (isMorningStar(candles, i, opts.star)) {
       results.push(describeStar(candles, i, 'morning', opts.star));
     }
     if (isEveningStar(candles, i, opts.star)) {
       results.push(describeStar(candles, i, 'evening', opts.star));
     }
+
+    if (isEveningStarScenario(candles, i, opts.eveningStarScenario)) {
+      results.push(describeEveningStarScenario(candles, i, opts.eveningStarScenario));
+    }
+
     if (isThreeWhiteSoldiers(candles, i, opts.triple)) {
       results.push(describeTriple(candles, i, 'soldiers', opts.triple));
     }
@@ -1129,8 +1420,12 @@ module.exports = {
   isDarkCloudCover,
   describePiercing,
   isMorningStar,
+  isMorningStarInverted,
   isEveningStar,
+  isEveningStarInverted,
   describeStar,
+  isEveningStarScenario,
+  describeEveningStarScenario,
   isThreeWhiteSoldiers,
   isThreeBlackCrows,
   describeTriple,

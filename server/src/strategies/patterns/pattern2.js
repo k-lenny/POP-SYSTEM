@@ -458,6 +458,46 @@ class Pattern2Engine extends EventEmitter {
   }
 
   /**
+   * Check G — Body-break of firstSwing's opposite extreme.
+   *
+   * Scans candles from firstSwing.index to candidateSwing.index (inclusive).
+   * At least one candle in that range must have body-broken beyond the firstSwing
+   * candle's opposite extreme:
+   *
+   *   Bullish (two lows): at least one candle where close > firstSwingCandle.high
+   *                       OR open > firstSwingCandle.high
+   *   Bearish (two highs): at least one candle where close < firstSwingCandle.low
+   *                        OR open < firstSwingCandle.low
+   *
+   * Returns true if the condition is met, false otherwise.
+   */
+  _hasBodyBrokenFirstSwingOppositeExtreme(firstSwing, candidateSwing, enrichedCandles, direction) {
+    const firstCandle = enrichedCandles[firstSwing.index];
+    if (!firstCandle) return false;
+
+    const start = firstSwing.index;
+    const end = candidateSwing.index;
+
+    if (direction === 'bullish') {
+      const threshold = firstCandle.high;
+      for (let i = start; i <= end; i++) {
+        const c = enrichedCandles[i];
+        if (!c) continue;
+        if (c.close > threshold || c.open > threshold) return true;
+      }
+    } else {
+      const threshold = firstCandle.low;
+      for (let i = start; i <= end; i++) {
+        const c = enrichedCandles[i];
+        if (!c) continue;
+        if (c.close < threshold || c.open < threshold) return true;
+      }
+    }
+
+    return false;
+  }
+
+  /**
    * detect
    * - For each swing treat it as firstSwing
    * - scan forward for same-type swings (bounded by lookaheadLimit)
@@ -470,6 +510,12 @@ class Pattern2Engine extends EventEmitter {
    * Retest locking: the lock (retestVshape body-break) is only valid if it occurred
    * BEFORE the firstSwing was crossed. If firstSwing was crossed before the lock
    * was established, the retest is nullified regardless.
+   *
+   * Check G: before accepting any candidate as secondSwing, at least one candle
+   * between firstSwing.index and candidateSwing.index (inclusive) must have
+   * body-broken the firstSwing candle's opposite extreme:
+   *   Bullish: close or open > firstSwingCandle.high
+   *   Bearish: close or open < firstSwingCandle.low
    */
   async detect(symbol, granularity, candles) {
     this._initStore(symbol, granularity);
@@ -504,6 +550,7 @@ class Pattern2Engine extends EventEmitter {
     let noVShape = 0;
     let noBreakout = 0;
     let failedOTE = 0;
+    let failedBodyBreak = 0;
 
     for (let i = 0; i < swings.length - 1; i++) {
       const firstSwing = swings[i];
@@ -537,6 +584,15 @@ class Pattern2Engine extends EventEmitter {
 
         const direction = this._getPatternDirection(firstSwing, candidateSwing);
         if (!direction) continue;
+
+        // Check G: body must have broken firstSwing's opposite extreme between the two swings
+        if (!this._hasBodyBrokenFirstSwingOppositeExtreme(firstSwing, candidateSwing, enrichedCandles, direction)) {
+          if (this.debug) {
+            this.logger.debug(`[Pattern2Engine] Candidate rejected — no body-break of firstSwing opposite extreme: firstIdx=${i}, candidateIdx=${candidateIdx}`);
+          }
+          failedBodyBreak++;
+          continue;
+        }
 
         const vshape = this._findVShapeSimple(firstSwing, candidateSwing, enrichedCandles, direction);
         if (!vshape) continue;
@@ -602,6 +658,15 @@ class Pattern2Engine extends EventEmitter {
         const direction = this._getPatternDirection(firstSwing, candidateSwing);
         if (!direction) {
           noDirection++;
+          continue;
+        }
+
+        // Check G (fallback path): body must have broken firstSwing's opposite extreme
+        if (!this._hasBodyBrokenFirstSwingOppositeExtreme(firstSwing, candidateSwing, enrichedCandles, direction)) {
+          if (this.debug) {
+            this.logger.debug(`[Pattern2Engine] Fallback candidate rejected — no body-break of firstSwing opposite extreme: firstIdx=${i}, candidateIdx=${candidateIdx}`);
+          }
+          failedBodyBreak++;
           continue;
         }
 
@@ -861,6 +926,7 @@ class Pattern2Engine extends EventEmitter {
     this.logger.info(`  Rejected - No V-Shape: ${noVShape}`);
     this.logger.info(`  Rejected - No Breakout: ${noBreakout}`);
     this.logger.info(`  Rejected - Failed OTE: ${failedOTE}`);
+    this.logger.info(`  Rejected - Failed Body-Break Check: ${failedBodyBreak}`);
     this.logger.info(`  ✓ Patterns Found: ${patterns.length}`);
 
     this.store[symbol][granularity] = patterns;

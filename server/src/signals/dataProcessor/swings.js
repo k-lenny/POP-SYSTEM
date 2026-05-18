@@ -22,6 +22,66 @@ const isSaneCandle = (c) => {
   );
 };
 
+// ── Scenario detection ──────────────────────────────────────────────────────
+//
+// Scenario 1 — "Close-rejection swing low"
+//
+// Identifies a candle (B) as a scenario-based swing low when ALL of:
+//   1. B's close is strictly lower than both prev (A) and next (C) candle closes.
+//      → B's close is the weakest close in the local window.
+//   2. C's close is above B's close by at least a minimum threshold.
+//      → The candle after B must show genuine upside recovery, not a flat close.
+//   3. B is bearish (close < open).
+//      → The pattern requires B itself to be a down-close candle; a bullish
+//        close-in-the-middle candle is structural, not a rejection scenario.
+//   4. The standard wick-based swing-low rule does NOT already fire on B.
+//      → Avoids double-tagging candles already captured by detectAll/detectLatest.
+//
+// Rationale (from the example A/B/C):
+//   A: O=541.15  H=546.21  L=540.04  C=546.21  (bullish, close at high)
+//   B: O=546.24  H=546.52  L=540.80  C=542.66  (bearish, closes well off open)
+//   C: O=542.82  H=547.13  L=542.60  C=546.70  (bullish, strong recovery)
+//
+//   B.close (542.66) < A.close (546.21) ✓
+//   B.close (542.66) < C.close (546.70) ✓   → lowest close in trio
+//   C.close (546.70) > B.close + threshold  ✓   → clear rejection
+//   B.close (542.66) < B.open (546.24)      ✓   → B is bearish
+//   Standard wick-low rule on B? B.low(540.80) > A.low(540.04) → NOT a standard swing low ✓
+//
+// Returns true when all four conditions hold.
+//
+const SCENARIO_RECOVERY_THRESHOLD = 0.10; // min points C must close above B
+
+const isScenarioSwingLow = (prev, current, next) => {
+  // Guard: all three candles must be sane
+  if (!isSaneCandle(prev) || !isSaneCandle(current) || !isSaneCandle(next)) return false;
+
+  // 1. Current close is the lowest of the three closes
+  const lowestClose =
+    current.close < prev.close && current.close < next.close;
+  if (!lowestClose) return false;
+
+  // 2. Next candle closes meaningfully above current (rejection confirmation)
+  const hasRecovery = next.close - current.close >= SCENARIO_RECOVERY_THRESHOLD;
+  if (!hasRecovery) return false;
+
+  // 3. Current candle is bearish (down-close)
+  const isBearish = current.close < current.open;
+  if (!isBearish) return false;
+
+  // 4. Standard wick-based swing-low rule does NOT already fire
+  //    (standard: current.low strictly less than both neighbors' lows)
+  const isAlreadyStandardSwingLow =
+    current.low < prev.low && current.low < next.low;
+  if (isAlreadyStandardSwingLow) return false;
+
+  return true;
+};
+
+// Placeholder for future scenario highs — symmetric to the above
+// const isScenarioSwingHigh = (prev, current, next) => { ... };
+// ────────────────────────────────────────────────────────────────────────────
+
 class SwingEngine extends EventEmitter {
   /**
    * Create a SwingEngine instance.
@@ -74,7 +134,9 @@ class SwingEngine extends EventEmitter {
   }
 
   // ── Build a swing object ──
-  _buildSwing(type, candle, index, strength) {
+  // scenarioBased: true when this swing was detected via a scenario rule
+  // (rather than the standard wick-comparison algorithm).
+  _buildSwing(type, candle, index, strength, scenarioBased = false) {
     return {
       type,
       price: type === 'high' ? candle.high : candle.low,
@@ -90,6 +152,7 @@ class SwingEngine extends EventEmitter {
       strength,
       candleIndex: index,
       direction: null,
+      'scenario-based': scenarioBased,
     };
   }
 
@@ -150,16 +213,33 @@ class SwingEngine extends EventEmitter {
         }
 
         if (isSwingHigh) {
-          const swing = this._buildSwing('high', current, i, strength);
+          const swing = this._buildSwing('high', current, i, strength, false);
           swings.push(swing);
           this._registerSwing(symbol, granularity, swing);
         }
 
         if (isSwingLow) {
-          const swing = this._buildSwing('low', current, i, strength);
+          const swing = this._buildSwing('low', current, i, strength, false);
           swings.push(swing);
           this._registerSwing(symbol, granularity, swing);
         }
+
+        // ── Scenario detection (runs only when standard rules did not fire) ──
+        // Uses the immediate neighbors (i-1, i, i+1) regardless of `strength`,
+        // because scenario patterns are by definition single-candle signals.
+        if (!isSwingLow && i >= 1 && i < candles.length - 1) {
+          const prev1 = candles[i - 1];
+          const next1 = candles[i + 1];
+
+          if (isScenarioSwingLow(prev1, current, next1)) {
+            const swing = this._buildSwing('low', current, i, strength, true);
+            swings.push(swing);
+            this._registerSwing(symbol, granularity, swing);
+            this.logger.info(`[SwingEngine] 🎯 Scenario Swing Low (close-rejection) → ${symbol} @ ${granularity}s | Price: ${swing.price} | keyPrice: ${swing.keyPrice} | ${swing.formattedTime}`);
+            metrics.increment('scenario_swings');
+          }
+        }
+        // Placeholder: scenario swing high check would go here
       }
 
       // Sort by time ascending
@@ -241,7 +321,7 @@ class SwingEngine extends EventEmitter {
       }
 
       if (isSwingHigh) {
-        const swing = this._buildSwing('high', current, i, strength);
+        const swing = this._buildSwing('high', current, i, strength, false);
         this.store[symbol][granularity].push(swing);
         this._registerSwing(symbol, granularity, swing);
         newSwings.push(swing);
@@ -251,7 +331,7 @@ class SwingEngine extends EventEmitter {
       }
 
       if (isSwingLow) {
-        const swing = this._buildSwing('low', current, i, strength);
+        const swing = this._buildSwing('low', current, i, strength, false);
         this.store[symbol][granularity].push(swing);
         this._registerSwing(symbol, granularity, swing);
         newSwings.push(swing);
@@ -259,6 +339,26 @@ class SwingEngine extends EventEmitter {
         if (this.emitEvents) this.emit('newSwing', { swing });
         metrics.increment('new_swings');
       }
+
+      // ── Scenario detection (incremental) ──
+      // Only runs when the standard low rule did NOT fire and the candle hasn't
+      // already been tagged as a low by a previous detectLatest call.
+      if (!isSwingLow && !alreadyLow && i >= 1 && i < candles.length - 1) {
+        const prev1 = candles[i - 1];
+        const next1 = candles[i + 1];
+
+        if (isScenarioSwingLow(prev1, current, next1)) {
+          const swing = this._buildSwing('low', current, i, strength, true);
+          this.store[symbol][granularity].push(swing);
+          this._registerSwing(symbol, granularity, swing);
+          newSwings.push(swing);
+          this.logger.info(`[SwingEngine] 🎯 Scenario Swing Low (close-rejection) → ${symbol} @ ${granularity}s | Price: ${swing.price} | keyPrice: ${swing.keyPrice} | ${swing.formattedTime}`);
+          if (this.emitEvents) this.emit('newSwing', { swing });
+          metrics.increment('scenario_swings');
+          metrics.increment('new_swings');
+        }
+      }
+      // Placeholder: scenario swing high check would go here
 
       if (newSwings.length > 0) {
         this.updateDirections(symbol, granularity, false);
@@ -367,6 +467,19 @@ class SwingEngine extends EventEmitter {
     return arr ? arr.slice(-n) : [];
   }
 
+  // ── Scenario-only getters ──
+  getScenarioSwings(symbol, granularity) {
+    return this.get(symbol, granularity).filter((s) => s['scenario-based'] === true);
+  }
+
+  getScenarioLows(symbol, granularity) {
+    return this.getScenarioSwings(symbol, granularity).filter((s) => s.type === 'low');
+  }
+
+  getScenarioHighs(symbol, granularity) {
+    return this.getScenarioSwings(symbol, granularity).filter((s) => s.type === 'high');
+  }
+
   getAll() {
     const copy = {};
     for (const [symbol, symData] of Object.entries(this.store)) {
@@ -388,6 +501,7 @@ class SwingEngine extends EventEmitter {
     const swings = this.get(symbol, granularity);
     const highs = swings.filter((s) => s.type === 'high');
     const lows = swings.filter((s) => s.type === 'low');
+    const scenarioSwings = swings.filter((s) => s['scenario-based'] === true);
 
     return {
       symbol,
@@ -395,6 +509,7 @@ class SwingEngine extends EventEmitter {
       total: swings.length,
       highs: highs.length,
       lows: lows.length,
+      scenarioBased: scenarioSwings.length,
       latestHigh: this.getLatestHigh(symbol, granularity),
       latestLow: this.getLatestLow(symbol, granularity),
     };
@@ -404,3 +519,5 @@ class SwingEngine extends EventEmitter {
 const swingEngine = new SwingEngine();
 module.exports = swingEngine;
 module.exports.calculateKeyPrice = calculateKeyPrice;
+module.exports.isScenarioSwingLow = isScenarioSwingLow;
+module.exports.SCENARIO_RECOVERY_THRESHOLD = SCENARIO_RECOVERY_THRESHOLD;

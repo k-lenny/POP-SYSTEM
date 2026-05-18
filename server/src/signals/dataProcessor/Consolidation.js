@@ -1,3 +1,5 @@
+const { calculateBodyPercentage } = require('./CandleData');
+
 function formatTime(t) {
   if (t == null) return null;
   try {
@@ -113,7 +115,8 @@ function findRetestBreakoutAbove(candles, startIdx, vPrice, invalidationLevel) {
     if (c.open > vPrice || c.close > vPrice) {
       const trigger = c.open > vPrice && c.close > vPrice ? 'open_and_close'
                     : c.open > vPrice ? 'open' : 'close';
-      return { ...candleRef(c, k), trigger, brokenLevel: vPrice };
+      const bodyPercentage = calculateBodyPercentage(c);
+      return { ...candleRef(c, k), trigger, brokenLevel: vPrice, data: { bodyPercentage } };
     }
   }
   return null;
@@ -128,7 +131,8 @@ function findRetestBreakoutBelow(candles, startIdx, vPrice, invalidationLevel) {
     if (c.open < vPrice || c.close < vPrice) {
       const trigger = c.open < vPrice && c.close < vPrice ? 'open_and_close'
                     : c.open < vPrice ? 'open' : 'close';
-      return { ...candleRef(c, k), trigger, brokenLevel: vPrice };
+      const bodyPercentage = calculateBodyPercentage(c);
+      return { ...candleRef(c, k), trigger, brokenLevel: vPrice, data: { bodyPercentage } };
     }
   }
   return null;

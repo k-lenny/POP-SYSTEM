@@ -29,7 +29,61 @@ class Pattern3Engine extends EventEmitter {
     return new Date(ts).toISOString().replace('T', ' ').substring(0, 19);
   }
 
-  _findSecondExtremeSwing(swings, firstIdx) {
+  /**
+   * Check G — Body-break of firstSwing's opposite extreme.
+   *
+   * Scans candles from firstSwing.index to candidateSwing.index (inclusive).
+   * At least one candle in that range must have body-broken beyond the firstSwing
+   * candle's opposite extreme:
+   *
+   *   Bullish (firstSwing.type === 'low'):  close > firstCandle.high OR open > firstCandle.high
+   *   Bearish (firstSwing.type === 'high'): close < firstCandle.low  OR open < firstCandle.low
+   *
+   * Returns true if the condition is met, false otherwise.
+   */
+  _hasBodyBrokenFirstSwingOppositeExtreme(firstSwing, candidateSwing, candles) {
+    const firstCandle = candles[firstSwing.index];
+    if (!firstCandle) return false;
+
+    const start = firstSwing.index;
+    const end = candidateSwing.index;
+
+    if (firstSwing.type === 'low') {
+      // bullish: body must have broken above firstCandle.high
+      const threshold = firstCandle.high;
+      for (let i = start; i <= end; i++) {
+        const c = candles[i];
+        if (!c) continue;
+        if (c.close > threshold || c.open > threshold) return true;
+      }
+    } else {
+      // bearish: body must have broken below firstCandle.low
+      const threshold = firstCandle.low;
+      for (let i = start; i <= end; i++) {
+        const c = candles[i];
+        if (!c) continue;
+        if (c.close < threshold || c.open < threshold) return true;
+      }
+    }
+
+    return false;
+  }
+
+  /**
+   * Find the best (most extreme) second swing of the same type as firstSwing,
+   * scanning forward up to lookaheadLimit swings.
+   *
+   * Rules:
+   *  - Must be the same type as firstSwing
+   *  - Must not exceed firstSwing's price (breaks early if a more-extreme-than-first swing is found)
+   *  - Must pass Check G: at least one candle between firstSwing.index and candidate.index
+   *    (inclusive) must have body-broken the firstSwing candle's opposite extreme
+   *      Bullish (type=low):  close > firstCandle.high OR open > firstCandle.high
+   *      Bearish (type=high): close < firstCandle.low  OR open < firstCandle.low
+   *  - Among all qualifying candidates, the most extreme price wins
+   *    (highest price for type=high, lowest price for type=low)
+   */
+  _findSecondExtremeSwing(swings, firstIdx, candles) {
     const firstSwing = swings[firstIdx];
     const type = firstSwing.type;
     const firstPrice = firstSwing.price;
@@ -44,8 +98,12 @@ class Pattern3Engine extends EventEmitter {
       const s = swings[j];
       if (s.type !== type) continue;
 
+      // Break early if a swing more extreme than firstSwing is found
       if (type === 'high' && s.price > firstPrice) break;
       if (type === 'low' && s.price < firstPrice) break;
+
+      // Check G: body must have broken firstSwing's opposite extreme
+      if (!this._hasBodyBrokenFirstSwingOppositeExtreme(firstSwing, s, candles)) continue;
 
       if (type === 'high' && s.price > bestPrice) {
         bestPrice = s.price;
@@ -288,7 +346,7 @@ class Pattern3Engine extends EventEmitter {
 
     for (let i = 0; i < swings.length - 1; i++) {
       const firstSwing = swings[i];
-      const found = this._findSecondExtremeSwing(swings, i);
+      const found = this._findSecondExtremeSwing(swings, i, candles);
       if (!found) continue;
 
       const secondSwing = found.swing;

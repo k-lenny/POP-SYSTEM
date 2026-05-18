@@ -56,7 +56,10 @@ class FinalEngine {
         setup.OBCross,
         setup.OBSetupExtremeCandidates || [],
         candleIndexMap,
-        candles
+        candles,
+        setup.setupOB,
+        symbol,
+        granularity
       );
 
       let resolvedOBSetupExtreme = setup.OBSetupExtreme;
@@ -132,11 +135,6 @@ class FinalEngine {
         candles
       );
 
-      // OBOppositeExtremeCandidates is derived by iterating every entry in
-      // OBSetupExtremeCandidates (including the raw absolute extreme), finding
-      // the OBOppositeExtreme anchored on each one, and collecting those whose
-      // price matches any pattern/pattern2/pattern3. Deduplicated by index and
-      // sorted in discovery order.
       const OBOppositeExtremeCandidates = this._findOBOppositeExtremeCandidates(
         setup.type,
         OBSetupExtremeCandidates,
@@ -197,13 +195,15 @@ class FinalEngine {
   }
 
   /**
-   * Finds the single absolute extreme candle after the OB cross:
-   *   EQH — candle with the highest high after the cross (scan to end of candles)
-   *   EQL — candle with the lowest low after the cross (scan to end of candles)
-   * Merges it with the pattern-matched candidates from confirmedSetup.js,
-   * deduplicates by candle index, and sorts in discovery order.
+   * Builds the full OBSetupExtremeCandidates list by merging three sources:
+   *   1. Pattern-matched candidates already identified in confirmedSetup.js
+   *   2. The single absolute extreme candle after the OB cross
+   *      (lowest low for EQL, highest high for EQH across ALL candles after cross)
+   *   3. The qualifying OB-range swing candle from swingEngine (see _findOBRangeSwingCandidate)
+   *
+   * All three are deduplicated by candle index and sorted in discovery order.
    */
-  _buildOBSetupExtremeCandidates(type, OBCross, patternMatchedCandidates, candleIndexMap, candles) {
+  _buildOBSetupExtremeCandidates(type, OBCross, patternMatchedCandidates, candleIndexMap, candles, setupOB, symbol, granularity) {
     if (!OBCross || !candleIndexMap || !candles || !candles.length) {
       return [...patternMatchedCandidates];
     }
@@ -212,38 +212,153 @@ class FinalEngine {
     if (crossPos === undefined) return [...patternMatchedCandidates];
 
     const isEQL = type === 'EQL';
-    let extremeCandle = null;
 
+    // ── Source 1: pattern-matched candidates from confirmedSetup ─────────────
+    const mergedMap = new Map();
+    for (const c of patternMatchedCandidates) {
+      mergedMap.set(c.index, c);
+    }
+
+    // ── Source 2: absolute extreme candle after the cross ────────────────────
+    let extremeCandle = null;
     for (let i = crossPos + 1; i < candles.length; i++) {
       const c = candles[i];
       if (!extremeCandle) {
         extremeCandle = c;
         continue;
       }
-      if (isEQL && c.low < extremeCandle.low) {
-        extremeCandle = c;
-      } else if (!isEQL && c.high > extremeCandle.high) {
-        extremeCandle = c;
+      if (isEQL && c.low < extremeCandle.low) extremeCandle = c;
+      else if (!isEQL && c.high > extremeCandle.high) extremeCandle = c;
+    }
+    if (extremeCandle) {
+      const absoluteExtremeCandidate = {
+        index: extremeCandle.index,
+        price: isEQL ? extremeCandle.low : extremeCandle.high,
+        formattedTime: extremeCandle.formattedTime,
+      };
+      if (!mergedMap.has(absoluteExtremeCandidate.index)) {
+        mergedMap.set(absoluteExtremeCandidate.index, absoluteExtremeCandidate);
       }
     }
 
-    if (!extremeCandle) return [...patternMatchedCandidates];
-
-    const absoluteExtremeCandidate = {
-      index: extremeCandle.index,
-      price: isEQL ? extremeCandle.low : extremeCandle.high,
-      formattedTime: extremeCandle.formattedTime,
-    };
-
-    const mergedMap = new Map();
-    for (const c of patternMatchedCandidates) {
-      mergedMap.set(c.index, c);
-    }
-    if (!mergedMap.has(absoluteExtremeCandidate.index)) {
-      mergedMap.set(absoluteExtremeCandidate.index, absoluteExtremeCandidate);
+    // ── Source 3: qualifying OB-range swing from swingEngine ─────────────────
+    const obRangeSwingCandidate = this._findOBRangeSwingCandidate(
+      isEQL,
+      crossPos,
+      candles,
+      candleIndexMap,
+      setupOB,
+      symbol,
+      granularity
+    );
+    if (obRangeSwingCandidate && !mergedMap.has(obRangeSwingCandidate.index)) {
+      mergedMap.set(obRangeSwingCandidate.index, obRangeSwingCandidate);
     }
 
     return Array.from(mergedMap.values()).sort((a, b) => a.index - b.index);
+  }
+
+  /**
+   * Finds the first swing (from swingEngine) after the OB cross whose wick price
+   * sits inside the OB range AND that has completed the acceptance→violation sequence:
+   *
+   *   EQL (swing low):
+   *     - swing.price (low) must be >= setupOB.low and <= setupOB.high
+   *     - After that swing candle, a subsequent candle must body-close/open ABOVE
+   *       swing.high (acceptance above the wick high)
+   *     - Then, after acceptance, a subsequent candle must body-close/open BELOW
+   *       swing.price / swing.low (violation back below the swing low)
+   *
+   *   EQH (swing high):
+   *     - swing.price (high) must be >= setupOB.low and <= setupOB.high
+   *     - After that swing candle, a subsequent candle must body-close/open BELOW
+   *       swing.low (acceptance below the wick low)
+   *     - Then, after acceptance, a subsequent candle must body-close/open ABOVE
+   *       swing.price / swing.high (violation back above the swing high)
+   *
+   * Returns the first qualifying swing as { index, price, formattedTime }, or null.
+   */
+  _findOBRangeSwingCandidate(isEQL, crossPos, candles, candleIndexMap, setupOB, symbol, granularity) {
+    if (!setupOB || setupOB.high == null || setupOB.low == null) return null;
+
+    const obHigh = setupOB.high;
+    const obLow  = setupOB.low;
+
+    // Pull actual swings from swingEngine — same engine already populated in getConfirmedSetups
+    const allSwings = isEQL
+      ? swingEngine.getLows(symbol, granularity)
+      : swingEngine.getHighs(symbol, granularity);
+
+    // Only consider swings whose candle array position is after the OB cross
+    // and whose wick price falls inside the OB range
+    const eligibleSwings = allSwings.filter(swing => {
+      const swingPos = candleIndexMap.get(swing.index);
+      if (swingPos === undefined || swingPos <= crossPos) return false;
+      // For a swing low: swing.price is the low (wick). Must be inside OB range.
+      // For a swing high: swing.price is the high (wick). Must be inside OB range.
+      return swing.price >= obLow && swing.price <= obHigh;
+    });
+
+    // Sort by position ascending so we return the earliest qualifying swing
+    eligibleSwings.sort((a, b) => {
+      const posA = candleIndexMap.get(a.index) ?? Infinity;
+      const posB = candleIndexMap.get(b.index) ?? Infinity;
+      return posA - posB;
+    });
+
+    for (const swing of eligibleSwings) {
+      const swingPos = candleIndexMap.get(swing.index);
+
+      // swing.high / swing.low are the full wick extents of the swing candle
+      const wickHigh = swing.high;
+      const wickLow  = swing.low;
+      const wickPrice = swing.price; // low for EQL swing, high for EQH swing
+
+      let acceptanceSeen = false;
+
+      for (let j = swingPos + 1; j < candles.length; j++) {
+        const c = candles[j];
+        const bodyHigh = Math.max(c.open, c.close);
+        const bodyLow  = Math.min(c.open, c.close);
+
+        if (isEQL) {
+          if (!acceptanceSeen) {
+            // Phase 1: body must close/open above the swing candle's wick high
+            if (bodyHigh > wickHigh) {
+              acceptanceSeen = true;
+            }
+          } else {
+            // Phase 2: body must close/open below the swing low (violation)
+            if (bodyLow < wickPrice) {
+              return {
+                index: swing.index,
+                price: wickPrice,
+                formattedTime: swing.formattedTime,
+              };
+            }
+          }
+        } else {
+          // EQH
+          if (!acceptanceSeen) {
+            // Phase 1: body must close/open below the swing candle's wick low
+            if (bodyLow < wickLow) {
+              acceptanceSeen = true;
+            }
+          } else {
+            // Phase 2: body must close/open above the swing high (violation)
+            if (bodyHigh > wickPrice) {
+              return {
+                index: swing.index,
+                price: wickPrice,
+                formattedTime: swing.formattedTime,
+              };
+            }
+          }
+        }
+      }
+    }
+
+    return null;
   }
 
   /**
@@ -268,7 +383,6 @@ class FinalEngine {
     const mergedMap = new Map();
 
     for (const setupCandidate of OBSetupExtremeCandidates) {
-      // Derive the OBOppositeExtreme anchored on this specific setup candidate
       const oppositeExtreme = this._findOBOppositeExtreme(
         type,
         setupCandidate,
@@ -277,8 +391,6 @@ class FinalEngine {
       );
       if (!oppositeExtreme) continue;
 
-      // Only collect if price matches any pattern — deduplicate by index so the
-      // same opposite candle reached from multiple setup candidates is not repeated
       if (
         p1Prices.has(oppositeExtreme.price) ||
         p2Prices.has(oppositeExtreme.price) ||
